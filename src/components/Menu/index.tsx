@@ -26,7 +26,9 @@ const Menu = () => {
   return (
     <nav className="menu" aria-label="Navegação principal">
       <button
-        className="menu__mobile-button"
+        className={`menu__mobile-button ${
+          isMenuOpen ? "menu__mobile-button--open" : ""
+        }`}
         type="button"
         aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
         aria-expanded={isMenuOpen}
@@ -34,6 +36,9 @@ const Menu = () => {
         onClick={toggleMenu}
       >
         <img
+          className={
+            isMenuOpen ? "menu__icon-close-button" : "menu__icon-menu-mobile"
+          }
           src={isMenuOpen ? IconCloseButton : IconMenuMobile}
           alt=""
           aria-hidden="true"
