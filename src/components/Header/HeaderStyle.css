@@ -8,3 +8,12 @@
   margin: 0 auto;
   padding: 1rem;
 }
+
+.header__button {
+  padding: 0.2rem 0.8rem;
+  border-radius: 0.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
