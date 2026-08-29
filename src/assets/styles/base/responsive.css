@@ -1,3 +1,7 @@
-header {
-  min-width: 280px;
+/* HEADER */
+
+@media (max-width: 420px) {
+  header {
+    min-width: 280px;
+  }
 }

@@ -11,16 +11,6 @@
   padding: 0;
 }
 
-/* Imagens e mídias */
-img,
-picture,
-video,
-canvas,
-svg {
-  display: block;
-  max-width: 100%;
-}
-
 /* Formulários - herdar fonte do projeto */
 input,
 button,
