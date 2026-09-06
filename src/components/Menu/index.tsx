@@ -1,10 +1,17 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+
 import "./MenuStyle.css";
 
 import IconMenuMobile from "../../assets/images/icons/icon-menu-mobile.svg";
 import IconCloseButton from "../../assets/images/icons/icon-close-button.svg";
 
-const menuItems = [
+interface MenuItem {
+  href: string;
+  label: string;
+}
+
+const menuItems: MenuItem[] = [
   { href: "/", label: "Início" },
   { href: "/servicos", label: "Serviços" },
   { href: "/como-funciona", label: "Como funciona?" },
@@ -51,9 +58,9 @@ const Menu = () => {
       >
         {menuItems.map(({ href, label }) => (
           <li className="menu__item" key={href}>
-            <a className="menu__link" href={href} onClick={closeMenu}>
+            <Link className="menu__link" to={href} onClick={closeMenu}>
               {label}
-            </a>
+            </Link>
           </li>
         ))}
       </ul>
