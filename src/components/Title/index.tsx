@@ -23,6 +23,8 @@ export interface TitleProps extends HTMLAttributes<HTMLHeadingElement> {
   color?: CSSProperties["color"];
   fullWidth?: boolean;
   width?: CSSProperties["width"];
+  margin?: CSSProperties["margin"];
+  padding?: CSSProperties["padding"];
 }
 
 export const Title = forwardRef<HTMLHeadingElement, TitleProps>(
@@ -38,6 +40,8 @@ export const Title = forwardRef<HTMLHeadingElement, TitleProps>(
       width,
       className = "",
       style,
+      margin,
+      padding,
       ...props
     },
     ref,
@@ -54,6 +58,8 @@ export const Title = forwardRef<HTMLHeadingElement, TitleProps>(
       ...(color && {
         "--title-color": color,
       }),
+      ...(margin && { margin }),
+      ...(padding && { padding }),
       ...style,
     } as CSSProperties;
 
