@@ -25,6 +25,7 @@ const Header = () => {
       <Menu />
 
       <Button
+        to="/login"
         backgroundColor="var(--color-primary)"
         hoverBackgroundColor="var(--color-dark)"
       >
