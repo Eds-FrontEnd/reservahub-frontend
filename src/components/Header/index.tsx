@@ -1,4 +1,5 @@
 import LogoReservaHub from "../../assets/images/logo/reservahub_logo.png";
+import { Button } from "../Button";
 
 import Menu from "../Menu";
 
@@ -23,9 +24,12 @@ const Header = () => {
 
       <Menu />
 
-      <a className="header__button" href="/login">
+      <Button
+        backgroundColor="var(--color-primary)"
+        hoverBackgroundColor="var(--color-dark)"
+      >
         Entrar
-      </a>
+      </Button>
     </header>
   );
 };
