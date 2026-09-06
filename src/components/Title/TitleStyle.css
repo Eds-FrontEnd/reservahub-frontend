@@ -1,0 +1,73 @@
+.title {
+  --title-color: var(--color-dark);
+  --title-font-size: 1.5rem;
+
+  display: block;
+  margin: 0;
+  color: var(--title-color);
+  font-family: var(--font-main);
+  font-size: var(--title-font-size);
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.title--left {
+  text-align: left;
+}
+
+.title--center {
+  text-align: center;
+}
+
+.title--right {
+  text-align: right;
+}
+
+.title--small {
+  --title-font-size: 1.25rem;
+}
+
+.title--medium {
+  --title-font-size: 1.5rem;
+}
+
+.title--large {
+  --title-font-size: 2rem;
+}
+
+.title--xlarge {
+  --title-font-size: 2.5rem;
+}
+
+.title--full-width {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .title--large {
+    --title-font-size: 1.75rem;
+  }
+
+  .title--xlarge {
+    --title-font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title--small {
+    --title-font-size: 1.125rem;
+  }
+
+  .title--medium {
+    --title-font-size: 1.375rem;
+  }
+
+  .title--large {
+    --title-font-size: 1.5rem;
+  }
+
+  .title--xlarge {
+    --title-font-size: 1.75rem;
+  }
+}
