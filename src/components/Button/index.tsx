@@ -4,6 +4,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
+import { Link, type LinkProps } from "react-router-dom";
 
 import "./ButtonStyle.css";
 
@@ -20,9 +21,13 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   textColor?: string;
   backgroundColor?: string;
   hoverBackgroundColor?: string;
+  to?: LinkProps["to"];
 }
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+export const Button = forwardRef<
+  HTMLButtonElement | HTMLAnchorElement,
+  ButtonProps
+>(
   (
     {
       children,
@@ -38,6 +43,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       className = "",
       disabled,
       type = "button",
+      to,
       ...buttonProps
     },
     ref,
@@ -45,7 +51,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const isDisabled = disabled || loading;
 
     const style = {
-      ...(textColor && { "--button-text-color": textColor }),
+      ...(textColor && {
+        "--button-text-color": textColor,
+      }),
       ...(backgroundColor && {
         "--button-background-color": backgroundColor,
       }),
@@ -54,40 +62,64 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       }),
     } as CSSProperties;
 
+    const classes = [
+      "action-button",
+      `action-button--${size}`,
+      fullWidth && "action-button--full-width",
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const content = loading ? (
+      <>
+        <span className="action-button__spinner" aria-hidden="true" />
+        <span>{loadingText}</span>
+      </>
+    ) : (
+      <>
+        {icon && iconPosition === "left" && (
+          <span className="action-button__icon" aria-hidden="true">
+            {icon}
+          </span>
+        )}
+
+        <span className="action-button__label">{children}</span>
+
+        {icon && iconPosition === "right" && (
+          <span className="action-button__icon" aria-hidden="true">
+            {icon}
+          </span>
+        )}
+      </>
+    );
+
+    if (to && !isDisabled) {
+      return (
+        <Link
+          to={to}
+          className={classes}
+          style={style}
+          aria-busy={loading}
+          aria-disabled={loading}
+          ref={ref as React.Ref<HTMLAnchorElement>}
+        >
+          {content}
+        </Link>
+      );
+    }
+
     return (
       <button
         {...buttonProps}
-        ref={ref}
+        ref={ref as React.Ref<HTMLButtonElement>}
         type={type}
-        className={`action-button action-button--${size} ${
-          fullWidth ? "action-button--full-width" : ""
-        } ${className}`}
+        className={classes}
         style={style}
         disabled={isDisabled}
         aria-busy={loading}
       >
-        {loading ? (
-          <>
-            <span className="action-button__spinner" aria-hidden="true" />
-            <span>{loadingText}</span>
-          </>
-        ) : (
-          <>
-            {icon && iconPosition === "left" && (
-              <span className="action-button__icon" aria-hidden="true">
-                {icon}
-              </span>
-            )}
-
-            <span className="action-button__label">{children}</span>
-
-            {icon && iconPosition === "right" && (
-              <span className="action-button__icon" aria-hidden="true">
-                {icon}
-              </span>
-            )}
-          </>
-        )}
+        {content}
       </button>
     );
   },
