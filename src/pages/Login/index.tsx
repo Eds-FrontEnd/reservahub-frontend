@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
 import { loginSchema } from "../../schemas/loginSchema";
+import { loginUser } from "../../services/authService";
 
 import "./LoginStyle.css";
 
@@ -76,7 +77,10 @@ const LoginPage = () => {
     }
 
     setErrors({});
-    setLoginError(true);
+
+    const authenticated = loginUser(formData.email, formData.password);
+
+    setLoginError(!authenticated);
   };
 
   return (

@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
 import { registerSchema } from "../../schemas/registerSchema";
+import { registerUser } from "../../services/authService";
 
 import "./RegisterStyle.css";
 
@@ -76,7 +77,10 @@ const RegisterPage = () => {
     }
 
     setErrors({});
-    setRegisterError(true);
+
+    const registered = registerUser(formData);
+
+    setRegisterError(!registered);
   };
 
   return (
@@ -88,7 +92,7 @@ const RegisterPage = () => {
 
         <form className="register__form" onSubmit={handleSubmit} noValidate>
           <div className="register__field">
-            <label htmlFor="email">E-mail</label>
+            <label htmlFor="email">Cadastre um E-mail</label>
 
             <input
               id="email"
@@ -111,7 +115,7 @@ const RegisterPage = () => {
           </div>
 
           <div className="register__field">
-            <label htmlFor="password">Senha</label>
+            <label htmlFor="password">Cadastre uma Senha</label>
 
             <input
               id="password"
@@ -143,7 +147,7 @@ const RegisterPage = () => {
 
         {registerError && (
           <div className="register__error" role="alert">
-            <p>Conta criada com sucesso!</p>
+            <p>Este e-mail já está cadastrado.</p>
           </div>
         )}
 
