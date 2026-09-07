@@ -1,6 +1,7 @@
 const USERS_KEY = "users";
 
 export interface User {
+  name: string;
   email: string;
   password: string;
 }
@@ -29,10 +30,11 @@ export const registerUser = (user: User): boolean => {
   return true;
 };
 
-export const loginUser = (email: string, password: string): boolean => {
+export const loginUser = (email: string, password: string): User | null => {
   const users = getUsers();
 
-  return users.some(
-    (user) => user.email === email && user.password === password,
+  return (
+    users.find((user) => user.email === email && user.password === password) ??
+    null
   );
 };

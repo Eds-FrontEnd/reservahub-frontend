@@ -7,6 +7,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
 import Modal from "../../components/Modal";
+import { useAuth } from "../../contexts/AutContext";
 import { loginSchema } from "../../schemas/loginSchema";
 import { loginUser } from "../../services/authService";
 
@@ -14,6 +15,7 @@ import "./LoginStyle.css";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -84,11 +86,12 @@ const LoginPage = () => {
 
     setErrors({});
 
-    const authenticated = loginUser(formData.email, formData.password);
+    const authenticatedUser = loginUser(formData.email, formData.password);
 
-    setLoginError(!authenticated);
+    setLoginError(!authenticatedUser);
 
-    if (authenticated) {
+    if (authenticatedUser) {
+      login(authenticatedUser);
       setModalOpen(true);
     }
   };
