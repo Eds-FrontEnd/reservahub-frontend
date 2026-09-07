@@ -1,6 +1,7 @@
 .image {
   --image-background: var(--color-white);
   --image-border-radius: 0.5rem;
+  outline: none;
 }
 
 .image--full-width {
