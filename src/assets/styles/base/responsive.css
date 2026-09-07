@@ -7,7 +7,7 @@
 }
 
 /* HOME - PAGE */
-@media (max-width: 725px) {
+@media (max-width: 820px) {
   .home_description {
     width: 100%;
     padding: 2rem;
@@ -35,9 +35,7 @@
     width: 100%;
     max-width: 100%;
   }
-}
 
-@media (max-width: 380px) {
   .home_images {
     padding-bottom: 2rem;
   }
