@@ -15,35 +15,12 @@
 }
 
 .home_description {
-  padding: 2rem 0;
+  padding: 1rem;
 }
 
-@media (max-width: 660px) {
-  .home_description {
-    width: 100%;
-    padding: 2rem;
-  }
-
-  .home_description h1 {
-    text-align: center;
-  }
-
-  .home_description button {
-    width: 100%;
-    max-width: 265px;
-    margin: 0 auto;
-  }
-  .home_description {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 2rem 1rem;
-  }
-
-  .home_description button {
-    width: 100%;
-    max-width: 100%;
-  }
+.home_images {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }

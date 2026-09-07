@@ -1,4 +1,5 @@
-import SmartImage from "../../assets/images/products/smartphone_home.png";
+import SmartImageFront from "../../assets/images/products/smartphone_front.png";
+import SmartImageBack from "../../assets/images/products/smartphone_back.png";
 
 import { Image } from "../../components/Image";
 import { Title } from "../../components/Title";
@@ -34,13 +35,22 @@ const HomePage = () => {
             Ver Smartphones
           </Button>
         </span>
-        <Image
-          src={SmartImage}
-          alt="Foto de um Iphone frente e verso"
-          width={295}
-          height={295}
-          priority
-        />
+        <span className="home_images">
+          <Image
+            src={SmartImageFront}
+            alt="Foto de um Iphone frente"
+            width={204}
+            height={420}
+            priority
+          />
+          <Image
+            src={SmartImageBack}
+            alt="Foto de um Iphone verso"
+            width={204}
+            height={420}
+            priority
+          />
+        </span>
       </section>
       <Footer />
     </main>

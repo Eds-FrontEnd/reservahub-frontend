@@ -5,3 +5,40 @@
     min-width: 320px;
   }
 }
+
+/* HOME - PAGE */
+@media (max-width: 725px) {
+  .home_description {
+    width: 100%;
+    padding: 2rem;
+  }
+
+  .home_description h1 {
+    text-align: center;
+  }
+
+  .home_description button {
+    width: 100%;
+    max-width: 265px;
+    margin: 0 auto;
+  }
+  .home_description {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+
+  .home_description button {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .home_images {
+    padding-bottom: 2rem;
+  }
+}
