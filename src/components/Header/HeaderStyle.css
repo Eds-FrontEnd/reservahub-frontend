@@ -3,7 +3,7 @@
   max-width: 1200px;
   height: auto;
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
   margin: 0 auto;
   padding: 1rem;
@@ -16,4 +16,30 @@
   cursor: pointer;
   background-color: var(--color-primary);
   color: var(--color-white);
+}
+
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 0.25rem;
+}
+
+.header__action img {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.header__action:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
 }

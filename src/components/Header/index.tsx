@@ -1,6 +1,10 @@
-import LogoReservaHub from "../../assets/images/logo/reservahub_logo.png";
-import { Button } from "../Button";
+import { Link } from "react-router-dom";
 
+import IconSearch from "../../assets/images/icons/icon-search.svg";
+import IconCart from "../../assets/images/icons/icon-cart.svg";
+import IconUser from "../../assets/images/icons/icon-user.svg";
+
+import { Logo } from "../Logo";
 import Menu from "../Menu";
 
 import "./HeaderStyle.css";
@@ -8,29 +12,35 @@ import "./HeaderStyle.css";
 const Header = () => {
   return (
     <header className="header">
-      <a
-        className="header__logo"
-        href="/"
-        aria-label="ReservaHub - página inicial"
-      >
-        <img
-          src={LogoReservaHub}
-          alt="ReservaHub"
-          width="158"
-          height="34"
-          decoding="async"
-        />
-      </a>
+      <Logo />
 
-      <Menu />
+      <nav className="header__navigation" aria-label="Navegação principal">
+        <Menu />
+      </nav>
 
-      <Button
-        to="/login"
-        backgroundColor="var(--color-primary)"
-        hoverBackgroundColor="var(--color-dark)"
-      >
-        Entrar
-      </Button>
+      <nav className="header__actions" aria-label="Ações do usuário">
+        <Link className="header__action" to="/buscar" aria-label="Pesquisar">
+          <img
+            src={IconSearch}
+            alt=""
+            width="24"
+            height="24"
+            decoding="async"
+          />
+        </Link>
+
+        <Link className="header__action" to="/carrinho" aria-label="Carrinho">
+          <img src={IconCart} alt="" width="24" height="24" decoding="async" />
+        </Link>
+
+        <Link
+          className="header__action"
+          to="/login"
+          aria-label="Entrar na minha conta"
+        >
+          <img src={IconUser} alt="" width="24" height="24" decoding="async" />
+        </Link>
+      </nav>
     </header>
   );
 };

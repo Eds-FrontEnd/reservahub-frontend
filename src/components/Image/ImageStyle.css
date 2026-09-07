@@ -1,15 +1,6 @@
 .image {
   --image-background: var(--color-white);
   --image-border-radius: 0.5rem;
-
-  position: relative;
-  display: block;
-  width: fit-content;
-  max-width: 100%;
-  margin: 0;
-  overflow: hidden;
-  background-color: var(--image-background);
-  border-radius: var(--image-border-radius);
 }
 
 .image--full-width {

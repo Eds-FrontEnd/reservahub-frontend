@@ -16,7 +16,7 @@ const menuItems: MenuItem[] = [
   { href: "/servicos", label: "Serviços" },
   { href: "/como-funciona", label: "Como funciona?" },
   { href: "/sobre", label: "Sobre" },
-  { href: "/contato", label: "Contato" },
+  { href: "/assine", label: "Assine" },
 ];
 
 const Menu = () => {
