@@ -1,7 +1,7 @@
 .action-button {
   --button-text-color: var(--color-white);
   --button-background-color: var(--color-primary);
-  --button-hover-background-color: var(--color-dark);
+  --button-hover-background-color: var(--color-black);
 
   display: inline-flex;
   align-items: center;

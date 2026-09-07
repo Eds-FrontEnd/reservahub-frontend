@@ -1,5 +1,5 @@
 .title {
-  --title-color: var(--color-dark);
+  --title-color: var(--color-black);
   --title-font-size: 1.5rem;
 
   display: block;

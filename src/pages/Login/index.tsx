@@ -134,7 +134,7 @@ const LoginPage = () => {
           <Button
             type="submit"
             backgroundColor="var(--color-primary)"
-            hoverBackgroundColor="var(--color-dark)"
+            hoverBackgroundColor="var(--color-black)"
           >
             Entrar
           </Button>
