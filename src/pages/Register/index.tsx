@@ -1,28 +1,39 @@
 import type React from "react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
+import Modal from "../../components/Modal";
 import { registerSchema } from "../../schemas/registerSchema";
 import { registerUser } from "../../services/authService";
 
 import "./RegisterStyle.css";
 
 const RegisterPage = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
     password: "",
   });
 
   const [errors, setErrors] = useState<{
+    name?: string;
     email?: string;
     password?: string;
   }>({});
 
   const [registerError, setRegisterError] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const validateField = (field: "email" | "password", value: string) => {
+  const validateField = (
+    field: "name" | "email" | "password",
+    value: string,
+  ) => {
     const result = registerSchema.shape[field].safeParse(value);
 
     setErrors((currentErrors) => {
@@ -47,7 +58,7 @@ const RegisterPage = () => {
       [name]: value,
     }));
 
-    validateField(name as "email" | "password", value);
+    validateField(name as "name" | "email" | "password", value);
 
     setRegisterError(false);
   };
@@ -59,12 +70,13 @@ const RegisterPage = () => {
 
     if (!result.success) {
       const fieldErrors: {
+        name?: string;
         email?: string;
         password?: string;
       } = {};
 
       result.error.issues.forEach((issue) => {
-        const field = issue.path[0] as "email" | "password";
+        const field = issue.path[0] as "name" | "email" | "password";
 
         if (!fieldErrors[field]) {
           fieldErrors[field] = issue.message;
@@ -81,7 +93,10 @@ const RegisterPage = () => {
     const registered = registerUser(formData);
 
     setRegisterError(!registered);
+    setModalOpen(registered);
   };
+
+  const isError = registerError;
 
   return (
     <main className="register">
@@ -91,6 +106,28 @@ const RegisterPage = () => {
         </header>
 
         <form className="register__form" onSubmit={handleSubmit} noValidate>
+          <div className="register__field">
+            <label htmlFor="name">Cadastre o seu Nome</label>
+
+            <input
+              id="name"
+              name="name"
+              type="text"
+              value={formData.name}
+              autoComplete="name"
+              required
+              aria-invalid={Boolean(errors.name)}
+              aria-describedby={errors.name ? "name-error" : undefined}
+              onChange={handleChange}
+            />
+
+            {errors.name && (
+              <span id="name-error" className="register__field-error">
+                {errors.name}
+              </span>
+            )}
+          </div>
+
           <div className="register__field">
             <label htmlFor="email">Cadastre um E-mail</label>
 
@@ -134,6 +171,12 @@ const RegisterPage = () => {
                 {errors.password}
               </span>
             )}
+
+            {isError && (
+              <span id="register-error" className="register__field-error">
+                Este nome ou e-mail já está cadastrado.
+              </span>
+            )}
           </div>
 
           <Button
@@ -145,15 +188,24 @@ const RegisterPage = () => {
           </Button>
         </form>
 
-        {registerError && (
-          <div className="register__error" role="alert">
-            <p>Este e-mail já está cadastrado.</p>
-          </div>
-        )}
+        <Modal
+          open={modalOpen}
+          title={"Cadastro concluído!"}
+          message={
+            "Sua conta foi criada com sucesso. Você será redirecionado para o login."
+          }
+          redirectUrl={"/login"}
+          redirectDelay={3000}
+          icon={<CheckCircleIcon />}
+          iconColor={"var(--color-secondary)"}
+          titleColor={"var(--color-secondary)"}
+          onNavigate={navigate}
+        />
 
         <footer className="register__footer">
-          <p>Já possui uma conta?</p>
-          <Link to="/login">Entrar</Link>
+          <p>
+            Já possui uma conta? <Link to="/login">Entrar</Link>
+          </p>
         </footer>
       </section>
     </main>

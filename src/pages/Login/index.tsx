@@ -1,15 +1,20 @@
 import type React from "react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
+import Modal from "../../components/Modal";
 import { loginSchema } from "../../schemas/loginSchema";
 import { loginUser } from "../../services/authService";
 
 import "./LoginStyle.css";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -21,6 +26,7 @@ const LoginPage = () => {
   }>({});
 
   const [loginError, setLoginError] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const validateField = (field: "email" | "password", value: string) => {
     const result = loginSchema.shape[field].safeParse(value);
@@ -81,6 +87,10 @@ const LoginPage = () => {
     const authenticated = loginUser(formData.email, formData.password);
 
     setLoginError(!authenticated);
+
+    if (authenticated) {
+      setModalOpen(true);
+    }
   };
 
   return (
@@ -133,6 +143,12 @@ const LoginPage = () => {
                 {errors.password}
               </span>
             )}
+
+            {loginError && (
+              <div className="login__error" role="alert">
+                <p>E-mail ou senha incorretos.</p>
+              </div>
+            )}
           </div>
 
           <Button
@@ -146,13 +162,24 @@ const LoginPage = () => {
 
         {loginError && (
           <div className="login__error" role="alert">
-            <p>E-mail ou senha incorretos.</p>
-
             <Link className="login__forgot-password" to="/recuperar-senha">
               Esqueci minha senha
             </Link>
           </div>
         )}
+
+        <Modal
+          open={modalOpen}
+          title="Login realizado!"
+          message="Login realizado com sucesso. Você será redirecionado para a página inicial."
+          redirectUrl="/"
+          redirectDelay={3000}
+          icon={<CheckCircleIcon />}
+          iconColor="var(--color-secondary)"
+          titleColor="var(--color-secondary)"
+          onNavigate={navigate}
+          closeUrl="/"
+        />
 
         <footer className="login__footer">
           <p>Ainda não possui uma conta?</p>

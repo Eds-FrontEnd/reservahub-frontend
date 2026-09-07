@@ -9,10 +9,6 @@
   background-color: var(--color-blue);
 }
 
-.register__form {
-  background-color: var(--color-white);
-}
-
 .register__container {
   width: 100%;
   max-width: 280px;
@@ -52,7 +48,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.35rem;
+  background-color: var(--color-white);
 }
 
 .register__field {

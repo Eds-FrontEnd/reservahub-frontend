@@ -103,6 +103,12 @@
   transform: translateY(-1px);
 }
 
+.login__error p {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-red);
+}
+
 .login__forgot-password {
   font-size: 0.8rem;
   color: var(--color-primary);
