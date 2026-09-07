@@ -107,7 +107,7 @@ const RegisterPage = () => {
 
         <form className="register__form" onSubmit={handleSubmit} noValidate>
           <div className="register__field">
-            <label htmlFor="name">Cadastre o seu Nome</label>
+            <label htmlFor="name">Nome</label>
 
             <input
               id="name"
@@ -129,7 +129,7 @@ const RegisterPage = () => {
           </div>
 
           <div className="register__field">
-            <label htmlFor="email">Cadastre um E-mail</label>
+            <label htmlFor="email">E-mail</label>
 
             <input
               id="email"
@@ -152,7 +152,7 @@ const RegisterPage = () => {
           </div>
 
           <div className="register__field">
-            <label htmlFor="password">Cadastre uma Senha</label>
+            <label htmlFor="password">Senha</label>
 
             <input
               id="password"
