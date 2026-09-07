@@ -1,8 +1,7 @@
-import { useState } from "react";
 import type React from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import IconArrowBack from "../../assets/images/icons/icon-arrow-back.svg";
 import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
 import { loginSchema } from "../../schemas/loginSchema";
