@@ -1,3 +1,6 @@
+import { useState } from "react";
+import type { SubmitEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AccessTime,
   ArrowForward,
@@ -6,10 +9,14 @@ import {
   Phone,
   WhatsApp,
 } from "@mui/icons-material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
+import Modal from "../../components/Modal";
+import { saveContact } from "../../services/ContactService";
 import "./ContactStyles.css";
+import { Button } from "../../components/Button";
 
 interface ContactChannel {
   title: string;
@@ -42,9 +49,31 @@ const contactChannels: ContactChannel[] = [
 ];
 
 const ContactPage = () => {
+  const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+
+    const contact = {
+      name: String(formData.get("name") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      subject: String(formData.get("subject") ?? ""),
+      message: String(formData.get("message") ?? ""),
+    };
+
+    saveContact(contact);
+
+    event.currentTarget.reset();
+    setModalOpen(true);
+  };
+
   return (
     <main className="contact-page">
       <Header />
+
       <section className="contact-channels" aria-labelledby="channels-title">
         <div className="contact-container">
           <div className="contact-section-heading">
@@ -86,6 +115,7 @@ const ContactPage = () => {
           </div>
         </div>
       </section>
+
       <section className="contact-form-section" aria-labelledby="form-title">
         <div className="contact-container contact-form-section__grid">
           <div className="contact-form-section__info">
@@ -124,7 +154,7 @@ const ContactPage = () => {
             </div>
           </div>
 
-          <form className="contact-form">
+          <form className="contact-form" onSubmit={handleSubmit}>
             <div className="contact-form__row">
               <div className="contact-form__field">
                 <label htmlFor="contact-name">Nome</label>
@@ -184,10 +214,13 @@ const ContactPage = () => {
               />
             </div>
 
-            <button type="submit" className="contact-form__submit">
+            <Button
+              type="submit"
+              backgroundColor="var(--color-secondary)"
+              hoverBackgroundColor="var(--color-primary)"
+            >
               Enviar mensagem
-              <ArrowForward aria-hidden="true" />
-            </button>
+            </Button>
 
             <p className="contact-form__privacy">
               Ao enviar, você concorda com nossa política de privacidade.
@@ -195,7 +228,20 @@ const ContactPage = () => {
           </form>
         </div>
       </section>
+
       <Footer />
+
+      <Modal
+        open={modalOpen}
+        title="Mensagem enviada!"
+        message="Sua mensagem foi enviada com sucesso. Você será redirecionado para a página inicial."
+        redirectUrl="/"
+        redirectDelay={3000}
+        icon={<CheckCircleIcon />}
+        iconColor="var(--color-secondary)"
+        titleColor="var(--color-secondary)"
+        onNavigate={navigate}
+      />
     </main>
   );
 };

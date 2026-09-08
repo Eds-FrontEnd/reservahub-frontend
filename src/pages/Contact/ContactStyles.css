@@ -431,13 +431,17 @@
   transform: translateY(-2px);
 }
 
+button .contact-form__submit:hover {
+  background-color: var(--color-primary);
+}
+
 .contact-form__submit svg {
   font-size: 20px;
 }
 
 .contact-form__privacy {
   margin: 0;
-  color: var(--color-blue);
+  color: var(--color-gray-light);
   font-size: 0.75rem;
   line-height: 1.5;
   text-align: center;
