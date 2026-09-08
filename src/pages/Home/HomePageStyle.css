@@ -12,6 +12,7 @@
   align-items: center;
   flex-wrap: wrap;
   background-color: var(--color-blue);
+  padding: 0 8rem;
 }
 
 .home_description {
