@@ -53,6 +53,13 @@
   margin-top: 1rem;
 }
 
+.catalog-button .action-button--medium {
+  width: 45px;
+  height: 45px;
+  font-size: 1rem;
+  border-radius: 50px;
+}
+
 @media (max-width: 768px) {
   .catalog-header {
     padding: 1rem;
