@@ -10,6 +10,7 @@ const LoginPage = lazy(() => import("../pages/Login"));
 const RegisterPage = lazy(() => import("../pages/Register"));
 const Product = lazy(() => import("../pages/Products"));
 const ProductDetailPage = lazy(() => import("../pages/ProductDetail/index"));
+const SmartPhoneSubscription = lazy(() => import("../pages/Subscription"));
 
 const AppRoutes = () => {
   return (
@@ -25,6 +26,7 @@ const AppRoutes = () => {
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/cadastrar" element={<RegisterPage />} />
+          <Route path="/como-funciona" element={<SmartPhoneSubscription />} />
         </Route>
       </Routes>
     </Suspense>
