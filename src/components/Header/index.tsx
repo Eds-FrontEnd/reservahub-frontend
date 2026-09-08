@@ -9,11 +9,13 @@ import { Logo } from "../Logo";
 import Menu from "../Menu";
 
 import { useAuth } from "../../contexts/AutContext";
+import { useCart } from "../../contexts/CartContext";
 
 import "./HeaderStyle.css";
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
+  const { openCart, totalItems } = useCart();
 
   return (
     <header className="header">
@@ -34,19 +36,33 @@ const Header = () => {
           />
         </Link>
 
-        <Link className="header__action" to="/carrinho" aria-label="Carrinho">
+        <button
+          type="button"
+          className="header__action header__cart"
+          onClick={openCart}
+          aria-label={`Carrinho com ${totalItems} ${
+            totalItems === 1 ? "produto" : "produtos"
+          }`}
+        >
           <img src={IconCart} alt="" width="24" height="24" decoding="async" />
-        </Link>
+
+          {totalItems > 0 && (
+            <span className="header__cart-badge" aria-hidden="true">
+              {totalItems}
+            </span>
+          )}
+        </button>
 
         {isAuthenticated ? (
           <div className="header__account">
             <span className="header__welcome">
               Seja bem-vindo(a), {user?.name}!
             </span>
+
             <Link
               className="header__action"
               to="/"
-              aria-label="Entrar na minha conta"
+              aria-label="Sair da minha conta"
               onClick={logout}
             >
               <img

@@ -1,5 +1,5 @@
 import React, { useState, useId } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
 import AccessAlarmIcon from "@mui/icons-material/AccessAlarm";
 
@@ -11,13 +11,14 @@ import Modal from "../../components/Modal";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../contexts/AutContext";
+import { useCart } from "../../contexts/CartContext";
 
 import "./ProductDetailStyle.css";
 
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { addItem } = useCart();
 
   const item = (mockSmartphones as SmartphoneSubscriptionItem[]).find(
     (phone) => phone.id === id,
@@ -54,9 +55,7 @@ export const ProductDetailPage: React.FC = () => {
       return;
     }
 
-    navigate("/checkout", {
-      state: { smartphone: item, planMonths: selectedPlanMonths },
-    });
+    addItem(item, selectedPlanMonths);
   };
 
   const handleCloseModal = () => {
