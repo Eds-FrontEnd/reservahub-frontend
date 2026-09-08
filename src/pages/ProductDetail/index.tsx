@@ -4,13 +4,15 @@ import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
 import AccessAlarmIcon from "@mui/icons-material/AccessAlarm";
 
 import mockSmartphones from "../../data/mock-smartphones.json";
-// IMPORTAÇÃO CORRIGIDA (Adicionado o prefixo "type" ou vindo do componente ProductCard)
+
 import { type SmartphoneSubscriptionItem } from "../../components/Product";
 import { Button } from "../../components/Button";
 import Modal from "../../components/Modal";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../contexts/AutContext";
+
+import "./ProductDetailStyle.css";
 
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -69,96 +71,92 @@ export const ProductDetailPage: React.FC = () => {
   return (
     <main className="catalog-container">
       <Header />
-      <section
-        className="product-detail-container"
-        style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto" }}
-      >
-        <figure className="phone-card__figure">
+      <section className="product-detail">
+        <figure className="product-detail__figure">
           <img
             src={item.image}
             alt={`Smartphone ${item.product} - Modelo ${item.model}`}
-            className="phone-card__image"
+            className="product-detail__image"
           />
-          <span className="phone-card__badge-plan">{item.planType}</span>
+          <span className="product-detail__badge-plan">{item.planType}</span>
         </figure>
 
-        <header className="phone-card__header">
-          <span className="phone-card__model">{item.model}</span>
-          <h1>{item.product}</h1>
-        </header>
+        <div className="product-detail__content">
+          <header className="product-detail__header">
+            <span className="product-detail__model">{item.model}</span>
+            <h1 className="product-detail__title">{item.product}</h1>
+          </header>
 
-        <p className="phone-card__description">{item.description}</p>
+          <p className="product-detail__description">{item.description}</p>
 
-        <ul
-          className="phone-card__benefits"
-          aria-label="Benefícios incluídos no plano"
-        >
-          {/* TIPAGEM DOS PARÂMETROS ADICIONADA AQUI */}
-          {item.benefits.map((benefit: string, index: number) => (
-            <li
-              key={`${item.id}-benefit-${index}`}
-              className="phone-card__benefit-item"
-            >
-              ✓ {benefit}
-            </li>
-          ))}
-        </ul>
+          <ul
+            className="product-detail__benefits"
+            aria-label="Benefícios incluídos no plano"
+          >
+            {item.benefits.map((benefit: string, index: number) => (
+              <li
+                key={`${item.id}-benefit-${index}`}
+                className="product-detail__benefit-item"
+              >
+                ✓ {benefit}
+              </li>
+            ))}
+          </ul>
 
-        <div className="phone-card__pricing">
-          <span className="phone-card__price-value">{formattedPrice}</span>
-          <span className="phone-card__price-period">/mês</span>
-        </div>
-
-        <div className="phone-card__status" role="status" aria-live="polite">
-          {isOutOfStock ? (
-            <span className="phone-card__stock--out">Aguardando novo lote</span>
-          ) : (
-            <span className="phone-card__stock--in">
-              <AccessAlarmIcon className="animated-alarm-icon" /> {item.stock}{" "}
-              unidades disponíveis
+          <div className="product-detail__pricing">
+            <span className="product-detail__price-value">
+              {formattedPrice}
             </span>
-          )}
-        </div>
-
-        <footer className="phone-card__actions">
-          <div className="phone-card__field">
-            <label htmlFor={planSelectId} className="phone-card__label">
-              Plano:
-            </label>
-            <select
-              id={planSelectId}
-              value={selectedPlanMonths}
-              onChange={handlePlanChange}
-              disabled={isOutOfStock}
-              className="phone-card__select"
-            >
-              <option value={12}>12 Meses (Upgrade grátis)</option>
-              <option value={24}>24 Meses (Menor parcela)</option>
-              <option value={1}>Sem Fidelidade (+15%)</option>
-            </select>
+            <span className="product-detail__price-period">/mês</span>
           </div>
 
-          <Button
-            type="button"
-            onClick={handleSubscribe}
-            disabled={isOutOfStock}
-            className="phone-card__button"
-            backgroundColor="var(--color-secondary)"
+          <div
+            className="product-detail__status"
+            role="status"
+            aria-live="polite"
           >
-            {isOutOfStock ? "Avise quando chegar" : "Assinar Agora"}
-          </Button>
-        </footer>
-      </section>
+            {isOutOfStock ? (
+              <span className="product-detail__stock product-detail__stock--out">
+                Aguardando novo lote
+              </span>
+            ) : (
+              <span className="product-detail__stock product-detail__stock--in">
+                <AccessAlarmIcon className="animated-alarm-icon" /> {item.stock}{" "}
+                unidades disponíveis
+              </span>
+            )}
+          </div>
 
-      <Modal
-        open={isAuthModalOpen}
-        title="Autenticação necessária"
-        message="É preciso fazer login ou cadastrar uma conta para realizar a assinatura."
-        buttonText="Ir para o Login"
-        buttonUrl="/login"
-        closeUrl="/login"
-        onClose={handleCloseModal}
-      />
+          <footer className="product-detail__actions">
+            <div className="product-detail__field">
+              <label htmlFor={planSelectId} className="product-detail__label">
+                Plano:
+              </label>
+              <select
+                id={planSelectId}
+                value={selectedPlanMonths}
+                onChange={handlePlanChange}
+                disabled={isOutOfStock}
+                className="product-detail__select"
+              >
+                <option value={12}>12 Meses (Upgrade grátis)</option>
+                <option value={24}>24 Meses (Menor parcela)</option>
+                <option value={1}>Sem Fidelidade (+15%)</option>
+              </select>
+            </div>
+
+            <Button
+              type="button"
+              onClick={handleSubscribe}
+              disabled={isOutOfStock}
+              className="product-detail__button"
+              backgroundColor="var(--color-secondary)"
+            >
+              {isOutOfStock ? "Avise quando chegar" : "Assinar Agora"}
+            </Button>
+          </footer>
+        </div>
+      </section>
 
       <Modal
         open={isAuthModalOpen}
@@ -171,6 +169,7 @@ export const ProductDetailPage: React.FC = () => {
         titleColor="var(--color-secondary)"
         buttonUrl="/login"
         closeUrl="/login"
+        onClose={handleCloseModal}
       />
       <Footer />
     </main>
