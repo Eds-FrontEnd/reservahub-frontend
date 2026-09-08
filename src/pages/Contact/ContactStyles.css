@@ -511,6 +511,15 @@ button .contact-form__submit:hover {
   }
 }
 
+#contact-name-error,
+#contact-email-error,
+#contact-subject-error,
+#contact-message-error {
+  margin-top: -0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-red);
+}
+
 @media (max-width: 768px) {
   .contact-container {
     width: min(100% - 32px, 600px);

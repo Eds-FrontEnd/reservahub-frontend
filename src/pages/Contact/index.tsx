@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { SubmitEvent } from "react";
+import type { ChangeEvent, SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AccessTime,
@@ -14,9 +14,10 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 import Modal from "../../components/Modal";
-import { saveContact } from "../../services/ContactService";
-import "./ContactStyles.css";
 import { Button } from "../../components/Button";
+import { saveContact } from "../../services/ContactService";
+import { contactSchema } from "../../schemas/ContactSchema";
+import "./ContactStyles.css";
 
 interface ContactChannel {
   title: string;
@@ -24,6 +25,13 @@ interface ContactChannel {
   href: string;
   icon: React.ReactNode;
   external?: boolean;
+}
+
+interface ContactFormData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
 }
 
 const contactChannels: ContactChannel[] = [
@@ -52,6 +60,34 @@ const ContactPage = () => {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateField = (field: keyof ContactFormData, value: string) => {
+    const result = contactSchema.shape[field].safeParse(value);
+
+    setErrors((currentErrors) => {
+      const updatedErrors = { ...currentErrors };
+
+      if (result.success) {
+        delete updatedErrors[field];
+      } else {
+        updatedErrors[field] = result.error.issues[0].message;
+      }
+
+      return updatedErrors;
+    });
+  };
+
+  const handleChange = (
+    event: ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
+    const { name, value } = event.target;
+
+    validateField(name as keyof ContactFormData, value);
+  };
+
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -64,7 +100,27 @@ const ContactPage = () => {
       message: String(formData.get("message") ?? ""),
     };
 
-    saveContact(contact);
+    const result = contactSchema.safeParse(contact);
+
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0];
+
+        if (typeof field === "string" && !fieldErrors[field]) {
+          fieldErrors[field] = issue.message;
+        }
+      });
+
+      setErrors(fieldErrors);
+
+      return;
+    }
+
+    setErrors({});
+
+    saveContact(result.data);
 
     event.currentTarget.reset();
     setModalOpen(true);
@@ -165,8 +221,18 @@ const ContactPage = () => {
                   type="text"
                   placeholder="Digite seu nome"
                   autoComplete="name"
-                  required
+                  onChange={handleChange}
+                  aria-invalid={Boolean(errors.name)}
+                  aria-describedby={
+                    errors.name ? "contact-name-error" : undefined
+                  }
                 />
+
+                {errors.name && (
+                  <span id="contact-name-error" className="contact-form__error">
+                    {errors.name}
+                  </span>
+                )}
               </div>
 
               <div className="contact-form__field">
@@ -178,8 +244,21 @@ const ContactPage = () => {
                   type="email"
                   placeholder="seu@email.com"
                   autoComplete="email"
-                  required
+                  onChange={handleChange}
+                  aria-invalid={Boolean(errors.email)}
+                  aria-describedby={
+                    errors.email ? "contact-email-error" : undefined
+                  }
                 />
+
+                {errors.email && (
+                  <span
+                    id="contact-email-error"
+                    className="contact-form__error"
+                  >
+                    {errors.email}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -190,7 +269,11 @@ const ContactPage = () => {
                 id="contact-subject"
                 name="subject"
                 defaultValue=""
-                required
+                onChange={handleChange}
+                aria-invalid={Boolean(errors.subject)}
+                aria-describedby={
+                  errors.subject ? "contact-subject-error" : undefined
+                }
               >
                 <option value="" disabled>
                   Selecione um assunto
@@ -200,6 +283,15 @@ const ContactPage = () => {
                 <option value="parceria">Parceria</option>
                 <option value="outro">Outro</option>
               </select>
+
+              {errors.subject && (
+                <span
+                  id="contact-subject-error"
+                  className="contact-form__error"
+                >
+                  {errors.subject}
+                </span>
+              )}
             </div>
 
             <div className="contact-form__field">
@@ -210,8 +302,21 @@ const ContactPage = () => {
                 name="message"
                 placeholder="Como podemos ajudar?"
                 rows={5}
-                required
+                onChange={handleChange}
+                aria-invalid={Boolean(errors.message)}
+                aria-describedby={
+                  errors.message ? "contact-message-error" : undefined
+                }
               />
+
+              {errors.message && (
+                <span
+                  id="contact-message-error"
+                  className="contact-form__error"
+                >
+                  {errors.message}
+                </span>
+              )}
             </div>
 
             <Button
