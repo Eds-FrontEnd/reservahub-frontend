@@ -20,6 +20,7 @@ const AppRoutes = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/smartphones" element={<Product />} />
         <Route path="/contato" element={<ContactPage />} />
+        <Route path="/como-funciona" element={<SmartPhoneSubscription />} />
 
         <Route element={<PrivateRoute />}>
           <Route path="/smartphones/:id" element={<ProductDetailPage />} />
@@ -28,7 +29,6 @@ const AppRoutes = () => {
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/cadastrar" element={<RegisterPage />} />
-          <Route path="/como-funciona" element={<SmartPhoneSubscription />} />
         </Route>
       </Routes>
     </Suspense>
