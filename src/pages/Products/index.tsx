@@ -3,6 +3,8 @@ import "./ProductsStyle.css";
 
 import mockSmartphones from "../../data/mock-smartphones.json";
 
+import AddIcon from "@mui/icons-material/Add";
+
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import ProductCard, {
@@ -41,10 +43,10 @@ export const ProductsPage: React.FC = () => {
             <Button
               type="button"
               onClick={handleLoadMore}
-              backgroundColor="var(--color-secondary)"
-              hoverBackgroundColor="var(--color-primary"
+              backgroundColor="var(--color-primary)"
+              hoverBackgroundColor="var(--color-secondary)"
             >
-              Carregar mais Produtos...
+              <AddIcon />
             </Button>
           )}
         </span>
