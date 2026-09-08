@@ -69,7 +69,12 @@
 }
 
 .header__account {
-  font-size: 0.9rem;
   display: flex;
+  align-items: center;
   gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.header__welcome {
+  white-space: nowrap;
 }
