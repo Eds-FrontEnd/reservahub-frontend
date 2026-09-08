@@ -1,4 +1,3 @@
-/* Container de Produtos */
 .products-catalog {
   display: flex;
   justify-content: center;
@@ -7,7 +6,6 @@
   margin-top: 1.5rem;
 }
 
-/* Bloco Principal do Card */
 .phone-card {
   display: flex;
   flex-direction: column;
@@ -16,6 +14,9 @@
   padding-top: 0.8rem;
   border-radius: 16px;
   background-color: var(--color-white);
+  color: var(--color-text-dark);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease;
@@ -23,14 +24,16 @@
 
 .phone-card:hover {
   transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-/* Elementos do Card */
 .phone-card__figure {
-  margin: 0 auto;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 .phone-card__image {
@@ -39,6 +42,7 @@
   border-radius: 15px;
   object-fit: contain;
   margin: 0 auto;
+  display: block;
 }
 
 .phone-card__badge-plan {
@@ -46,7 +50,6 @@
   justify-content: center;
   align-items: center;
   width: fit-content;
-  margin: 0.5rem auto 0;
   padding: 0.3rem 0.75rem;
   border-radius: 0.5rem;
   font-size: 0.75rem;
@@ -54,27 +57,33 @@
   color: var(--color-white);
   background-color: var(--color-primary);
   position: absolute;
-  top: 5px;
+  top: 10px;
   right: 10px;
+  z-index: 2;
 }
 
 .phone-card__header {
   text-align: center;
+  padding: 0.5rem 1rem 0;
 }
 
 .phone-card__model {
   display: block;
   font-size: 0.75rem;
-  color: var(--color-text-muted, #666);
+  color: var(--color-gray-light);
   margin: 0 auto;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .phone-card__title {
   display: block;
   max-width: 195px;
   margin: 0 auto;
-  padding: 0.5rem 0;
+  padding: 0.25rem 0;
   font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -85,6 +94,7 @@
   font-size: 0.85rem;
   padding: 0 1rem;
   margin: 0.5rem 0;
+  color: var(--color-gray-light);
 }
 
 .phone-card__benefits {
@@ -103,6 +113,7 @@
   align-items: baseline;
   font-size: 1.3rem;
   margin: 0.5rem 0;
+  color: var(--color-text-dark);
 }
 
 .phone-card__price-value {
@@ -112,6 +123,7 @@
 .phone-card__price-period {
   font-size: 0.85rem;
   margin-left: 0.2rem;
+  color: var(--color-gray-light);
 }
 
 /* Modificadores de Status */
@@ -138,6 +150,7 @@
   display: flex;
   flex-direction: column;
   padding: 0 1rem;
+  margin-top: auto;
 }
 
 .phone-card__field {
@@ -155,24 +168,34 @@
 .phone-card__select {
   padding: 0.3rem;
   border-radius: 6px;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   outline: none;
   cursor: pointer;
 }
 
-/* Ações de Botão */
 .phone-card__button {
-  padding: 0.75rem 2rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 11px;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--color-secondary);
-  color: var(--color-white);
-  margin: 1rem auto 2rem;
+  background-color: var(--color-secondary);
+  color: var(--color-white) !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0.5rem auto 1.5rem;
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+  width: 80%;
+  box-sizing: border-box;
+}
+
+.phone-card__button:hover {
+  opacity: 0.9;
 }
 
 .phone-card__button:disabled {
@@ -180,11 +203,8 @@
   cursor: not-allowed;
 }
 
-/* ProductStyle.css */
-
-/* Define os quadros da animação de despertador */
+/* Animação do Alarme */
 @keyframes shakeAlarm3x {
-  /* --- 1ª Balançada --- */
   0% {
     transform: rotate(0deg);
   }
@@ -194,16 +214,12 @@
   6% {
     transform: rotate(-15deg);
   }
-
-  /* --- 2ª Balançada --- */
   9% {
     transform: rotate(15deg);
   }
   12% {
     transform: rotate(-15deg);
   }
-
-  /* --- 3ª Balançada --- */
   15% {
     transform: rotate(10deg);
   }
@@ -213,24 +229,19 @@
   21% {
     transform: rotate(0deg);
   }
-
-  /* --- Pausa (22% até 100%) --- */
   100% {
     transform: rotate(0deg);
   }
 }
 
 .animated-alarm-icon {
-  display: inline-block;
+  display: inline-block !important;
   vertical-align: middle;
   transform-origin: bottom center;
 }
 
-.phone-card:hover {
-  transform: translateY(-8px);
-}
-
-/* Aplica a animação com ciclo total de 2 segundos */
-.phone-card:hover .animated-alarm-icon {
+.phone-card:hover .animated-alarm-icon,
+.product-detail-container:hover .animated-alarm-icon,
+.phone-card__stock--in:hover .animated-alarm-icon {
   animation: shakeAlarm3x 2s ease-in-out infinite;
 }

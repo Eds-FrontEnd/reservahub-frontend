@@ -1,6 +1,4 @@
-import React, { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-
+import React from "react";
 import "./ProductsStyle.css";
 
 import mockSmartphones from "../../data/mock-smartphones.json";
@@ -12,17 +10,6 @@ import ProductCard, {
 } from "../../components/Product/index";
 
 export const ProductsPage: React.FC = () => {
-  const navigate = useNavigate();
-
-  const handleSubscribe = useCallback(
-    (smartphone: SmartphoneSubscriptionItem, planMonths: number) => {
-      navigate("/checkout", {
-        state: { smartphone, planMonths },
-      });
-    },
-    [navigate],
-  );
-
   return (
     <main className="catalog-container">
       <Header />
@@ -33,11 +20,7 @@ export const ProductsPage: React.FC = () => {
 
       <section className="catalog-grid" aria-label="Lista de Smartphones">
         {(mockSmartphones as SmartphoneSubscriptionItem[]).map((smartphone) => (
-          <ProductCard
-            key={smartphone.id}
-            item={smartphone}
-            onSubscribe={handleSubscribe}
-          />
+          <ProductCard key={smartphone.id} item={smartphone} />
         ))}
       </section>
       <Footer />

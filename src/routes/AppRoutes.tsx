@@ -1,23 +1,38 @@
-import { Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { Route, Routes } from "react-router-dom";
 
-import HomePage from "../pages/Home";
-import LoginPage from "../pages/Login";
-import RegisterPage from "../pages/Register";
-
+import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
-import Product from "../pages/Products";
+
+const HomePage = lazy(() => import("../pages/Home"));
+const LoginPage = lazy(() => import("../pages/Login"));
+const RegisterPage = lazy(() => import("../pages/Register"));
+const Product = lazy(() => import("../pages/Products"));
+const ProductDetailPage = lazy(() => import("../pages/ProductDetail/index"));
+
+const PageLoader = () => (
+  <div style={{ display: "grid", placeItems: "center", minHeight: "100vh" }}>
+    <p>Carregando...</p>
+  </div>
+);
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/smartphones" element={<Product />} />
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/smartphones" element={<Product />} />
 
-      <Route element={<PublicRoute />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/cadastrar" element={<RegisterPage />} />
-      </Route>
-    </Routes>
+        <Route element={<PrivateRoute />}>
+          <Route path="/smartphones/:id" element={<ProductDetailPage />} />
+        </Route>
+
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/cadastrar" element={<RegisterPage />} />
+        </Route>
+      </Routes>
+    </Suspense>
   );
 };
 
