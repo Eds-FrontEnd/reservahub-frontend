@@ -50,7 +50,7 @@
   padding: 0.3rem 0.75rem;
   border-radius: 0.5rem;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--color-white);
   background-color: var(--color-primary);
   position: absolute;
@@ -116,15 +116,18 @@
 
 /* Modificadores de Status */
 .phone-card__stock--in {
-  color: var(--color-success, #2e7d32);
+  color: var(--color-secondary);
   font-size: 0.8rem;
   text-align: center;
   margin: 0.5rem 0;
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .phone-card__stock--out {
-  color: var(--color-error, #d32f2f);
+  color: var(--color-red);
   font-size: 0.8rem;
   text-align: center;
   margin: 0.5rem 0;
@@ -175,4 +178,59 @@
 .phone-card__button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* ProductStyle.css */
+
+/* Define os quadros da animação de despertador */
+@keyframes shakeAlarm3x {
+  /* --- 1ª Balançada --- */
+  0% {
+    transform: rotate(0deg);
+  }
+  3% {
+    transform: rotate(15deg);
+  }
+  6% {
+    transform: rotate(-15deg);
+  }
+
+  /* --- 2ª Balançada --- */
+  9% {
+    transform: rotate(15deg);
+  }
+  12% {
+    transform: rotate(-15deg);
+  }
+
+  /* --- 3ª Balançada --- */
+  15% {
+    transform: rotate(10deg);
+  }
+  18% {
+    transform: rotate(-15deg);
+  }
+  21% {
+    transform: rotate(0deg);
+  }
+
+  /* --- Pausa (22% até 100%) --- */
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.animated-alarm-icon {
+  display: inline-block;
+  vertical-align: middle;
+  transform-origin: bottom center;
+}
+
+.phone-card:hover {
+  transform: translateY(-8px);
+}
+
+/* Aplica a animação com ciclo total de 2 segundos */
+.phone-card:hover .animated-alarm-icon {
+  animation: shakeAlarm3x 2s ease-in-out infinite;
 }

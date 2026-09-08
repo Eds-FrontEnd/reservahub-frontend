@@ -1,8 +1,12 @@
 import React, { useState, useCallback, useId, memo } from "react";
-
 import "./ProductStyle.css";
+
+import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
+import AccessAlarmIcon from "@mui/icons-material/AccessAlarm";
+
 import { Button } from "../Button";
 import Modal from "../Modal";
+
 import { useAuth } from "../../contexts/AutContext";
 
 export interface SmartphoneSubscriptionItem {
@@ -137,7 +141,8 @@ export const ProductCard: React.FC<ProductCardProps> = memo(
               </span>
             ) : (
               <span className="phone-card__stock--in">
-                * {item.stock} unidades disponíveis
+                <AccessAlarmIcon className="animated-alarm-icon" /> {item.stock}{" "}
+                unidades disponíveis
               </span>
             )}
           </div>
@@ -182,6 +187,19 @@ export const ProductCard: React.FC<ProductCardProps> = memo(
           buttonUrl="/login"
           closeUrl="/login"
           onClose={handleCloseModal}
+        />
+
+        <Modal
+          open={isAuthModalOpen}
+          title="Quaaaaaase!"
+          message="É preciso fazer login ou cadastrar uma conta para realizar a assinatura."
+          redirectUrl="/login"
+          redirectDelay={3000}
+          icon={<ReportGmailerrorredIcon />}
+          iconColor="var(--color-secondary)"
+          titleColor="var(--color-secondary)"
+          buttonUrl="/login"
+          closeUrl="/login"
         />
       </>
     );

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 import "./MenuStyle.css";
 
@@ -13,10 +13,9 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { href: "/", label: "Início" },
-  { href: "/servicos", label: "Serviços" },
   { href: "/como-funciona", label: "Como funciona?" },
-  { href: "/sobre", label: "Sobre" },
-  { href: "/assine", label: "Assine" },
+  { href: "/smartphones", label: "Assine Agora!" },
+  { href: "/contato", label: "Contato" },
 ];
 
 const Menu = () => {
@@ -58,9 +57,14 @@ const Menu = () => {
       >
         {menuItems.map(({ href, label }) => (
           <li className="menu__item" key={href}>
-            <Link className="menu__link" to={href} onClick={closeMenu}>
+            <NavLink
+              className="menu__link"
+              to={href}
+              end={href === "/"}
+              onClick={closeMenu}
+            >
               {label}
-            </Link>
+            </NavLink>
           </li>
         ))}
       </ul>
