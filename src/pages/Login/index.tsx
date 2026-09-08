@@ -9,7 +9,7 @@ import { Logo } from "../../components/Logo";
 import Modal from "../../components/Modal";
 import { useAuth } from "../../contexts/AutContext";
 import { loginSchema } from "../../schemas/loginSchema";
-import { loginUser } from "../../services/authService";
+import { loginUser } from "../../services/AuthService";
 
 import "./LoginStyle.css";
 

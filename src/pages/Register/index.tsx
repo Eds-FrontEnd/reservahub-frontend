@@ -8,7 +8,7 @@ import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
 import Modal from "../../components/Modal";
 import { registerSchema } from "../../schemas/registerSchema";
-import { registerUser } from "../../services/authService";
+import { registerUser } from "../../services/AuthService";
 
 import "./RegisterStyle.css";
 
