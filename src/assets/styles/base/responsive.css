@@ -1,7 +1,6 @@
-/* HEADER */
-
+/* MAIN */
 @media (max-width: 420px) {
-  header {
+  main {
     min-width: 320px;
   }
 }
