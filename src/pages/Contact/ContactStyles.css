@@ -47,6 +47,8 @@
 }
 
 .contact-eyebrow--dark {
+  margin: 0 auto;
+  margin-bottom: 20px;
   color: var(--color-secondary);
 }
 
@@ -170,8 +172,13 @@
 }
 
 .contact-section-heading {
+  width: 100%;
   max-width: 580px;
-  margin-bottom: 48px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  margin: 0 auto 58px;
 }
 
 .contact-section-heading h2,
@@ -200,7 +207,7 @@
 }
 
 .contact-channels {
-  padding: 3rem 0;
+  padding: 2rem 0 4rem;
   background: var(--color-blue);
 }
 
@@ -219,6 +226,7 @@
   border-radius: var(24px);
   background: var(--color-white);
   color: inherit;
+  border-radius: 16px;
   text-decoration: none;
   transition:
     transform 180ms ease,
