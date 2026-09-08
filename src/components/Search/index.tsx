@@ -4,6 +4,8 @@ import TextField from "@mui/material/TextField";
 
 import mockSmartphones from "../../data/mock-smartphones.json";
 
+import { useAuth } from "../../contexts/AutContext";
+
 import "./SearchStyle.css";
 
 interface SmartphoneSubscriptionItem {
@@ -26,6 +28,8 @@ interface SearchProps {
 
 const Search: React.FC<SearchProps> = ({ open, onClose }) => {
   const navigate = useNavigate();
+
+  const { isAuthenticated } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
 
@@ -96,6 +100,11 @@ const Search: React.FC<SearchProps> = ({ open, onClose }) => {
 
   const handleViewProduct = (id: string) => {
     onClose();
+
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
 
     navigate(`/smartphones/${id}`);
   };
@@ -200,9 +209,15 @@ const Search: React.FC<SearchProps> = ({ open, onClose }) => {
                       type="button"
                       className="search-results__view"
                       onClick={() => handleViewProduct(smartphone.id)}
-                      aria-label={`Ver ${smartphone.product}`}
+                      aria-label={
+                        isAuthenticated
+                          ? `Ver ${smartphone.product}`
+                          : `Entre ou crie a conta para ver ${smartphone.product}`
+                      }
                     >
-                      Ver
+                      {isAuthenticated
+                        ? "Ver"
+                        : "Entre ou crie a conta para ver"}
                     </button>
                   </li>
                 ))}

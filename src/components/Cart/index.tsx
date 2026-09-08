@@ -6,6 +6,8 @@ import { useCart } from "../../contexts/CartContext";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
+import IconBag from "../../assets/images/icons/icon-bag.svg";
+
 import Modal from "../Modal";
 
 import "./CartStyle.css";
@@ -120,9 +122,13 @@ export const Cart: React.FC = () => {
             <div className="cart-drawer__content">
               {items.length === 0 ? (
                 <div className="cart-drawer__empty">
-                  <span aria-hidden="true">🛒</span>
+                  <span aria-hidden="true">
+                    <img src={IconBag} />
+                  </span>
 
-                  <h3>Seu carrinho está vazio</h3>
+                  <h3>
+                    Seu carrinho está vazio. Não vá embora de sacola vazia.
+                  </h3>
 
                   <p>Adicione um smartphone para começar sua assinatura.</p>
                 </div>
