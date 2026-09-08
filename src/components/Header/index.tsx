@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import IconSearch from "../../assets/images/icons/icon-search.svg";
 import IconCart from "../../assets/images/icons/icon-cart.svg";
@@ -16,15 +16,12 @@ import { useCart } from "../../contexts/CartContext";
 import "./HeaderStyle.css";
 
 const Header: React.FC = () => {
-  const navigate = useNavigate();
-
   const { isAuthenticated, user, logout } = useAuth();
   const { openCart, totalItems } = useCart();
 
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
 
   const handleOpenSearch = () => {
-    navigate("/smartphones");
     setIsSearchOpen(true);
   };
 
