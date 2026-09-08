@@ -4,6 +4,7 @@ import "./ProductsStyle.css";
 import mockSmartphones from "../../data/mock-smartphones.json";
 
 import AddIcon from "@mui/icons-material/Add";
+import Tooltip from "@mui/material/Tooltip";
 
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -40,14 +41,16 @@ export const ProductsPage: React.FC = () => {
         ))}
         <span className="catalog-button">
           {hasMore && (
-            <Button
-              type="button"
-              onClick={handleLoadMore}
-              backgroundColor="var(--color-primary)"
-              hoverBackgroundColor="var(--color-secondary)"
-            >
-              <AddIcon />
-            </Button>
+            <Tooltip title="Carregar mais produtos" placement="top" arrow>
+              <Button
+                type="button"
+                onClick={handleLoadMore}
+                backgroundColor="var(--color-primary)"
+                hoverBackgroundColor="var(--color-secondary)"
+              >
+                <AddIcon />
+              </Button>
+            </Tooltip>
           )}
         </span>
       </section>
