@@ -1,0 +1,178 @@
+/* Container de Produtos */
+.products-catalog {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+/* Bloco Principal do Card */
+.phone-card {
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  position: relative;
+  padding-top: 0.8rem;
+  border-radius: 16px;
+  background-color: var(--color-white);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.phone-card:hover {
+  transform: translateY(-8px);
+}
+
+/* Elementos do Card */
+.phone-card__figure {
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.phone-card__image {
+  width: 230px;
+  height: 200px;
+  border-radius: 15px;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+.phone-card__badge-plan {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  margin: 0.5rem auto 0;
+  padding: 0.3rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  position: absolute;
+  top: 5px;
+  right: 10px;
+}
+
+.phone-card__header {
+  text-align: center;
+}
+
+.phone-card__model {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #666);
+  margin: 0 auto;
+}
+
+.phone-card__title {
+  display: block;
+  max-width: 195px;
+  margin: 0 auto;
+  padding: 0.5rem 0;
+  font-size: 1rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.phone-card__description {
+  font-size: 0.85rem;
+  padding: 0 1rem;
+  margin: 0.5rem 0;
+}
+
+.phone-card__benefits {
+  list-style: none;
+  padding: 0 1rem;
+  margin: 0.5rem 0;
+}
+
+.phone-card__benefit-item {
+  font-size: 0.8rem;
+}
+
+.phone-card__pricing {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  font-size: 1.3rem;
+  margin: 0.5rem 0;
+}
+
+.phone-card__price-value {
+  font-weight: bold;
+}
+
+.phone-card__price-period {
+  font-size: 0.85rem;
+  margin-left: 0.2rem;
+}
+
+/* Modificadores de Status */
+.phone-card__stock--in {
+  color: var(--color-success, #2e7d32);
+  font-size: 0.8rem;
+  text-align: center;
+  margin: 0.5rem 0;
+  display: block;
+}
+
+.phone-card__stock--out {
+  color: var(--color-error, #d32f2f);
+  font-size: 0.8rem;
+  text-align: center;
+  margin: 0.5rem 0;
+  display: block;
+}
+
+.phone-card__actions {
+  display: flex;
+  flex-direction: column;
+  padding: 0 1rem;
+}
+
+.phone-card__field {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.phone-card__label {
+  font-size: 0.85rem;
+}
+
+.phone-card__select {
+  padding: 0.3rem;
+  border-radius: 6px;
+  font-size: 0.6rem;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Ações de Botão */
+.phone-card__button {
+  padding: 0.75rem 2rem;
+  border-radius: 11px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--color-secondary);
+  color: var(--color-white);
+  margin: 1rem auto 2rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.phone-card__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

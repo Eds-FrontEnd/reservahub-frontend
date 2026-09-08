@@ -1,0 +1,18 @@
+.catalog-grid {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: var(--color-black);
+  padding: 1.5rem;
+}
+.catalog-header {
+  background-color: var(--color-blue);
+  padding: 1rem;
+}
+
+.catalog-header h1,
+.catalog-header p {
+  font-family: 800;
+  text-align: center;
+}

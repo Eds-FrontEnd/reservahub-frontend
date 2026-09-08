@@ -185,8 +185,9 @@ const LoginPage = () => {
         />
 
         <footer className="login__footer">
-          <p>Ainda não possui uma conta?</p>
-          <Link to="/cadastrar">Criar conta</Link>
+          <p>
+            Ainda não possui uma conta? <Link to="/cadastrar">Criar conta</Link>
+          </p>
         </footer>
       </section>
     </main>

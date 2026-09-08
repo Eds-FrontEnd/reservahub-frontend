@@ -3,10 +3,10 @@ import SmartImageBack from "../../assets/images/products/smartphone_back.png";
 
 import { Image } from "../../components/Image";
 import { Title } from "../../components/Title";
-
-import Header from "../../components/Header";
-import "./HomePageStyle.css";
 import { Button } from "../../components/Button";
+
+import "./HomePageStyle.css";
+import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 
 const HomePage = () => {
@@ -28,7 +28,7 @@ const HomePage = () => {
             Seu próximo smartphone está a poucos cliques de distância.
           </Title>
           <Button
-            to="/smartphone"
+            to="/smartphones"
             backgroundColor="var(--color-secondary)"
             hoverBackgroundColor="var(--color-primary)"
           >

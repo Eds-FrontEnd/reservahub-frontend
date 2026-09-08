@@ -5,11 +5,13 @@ import LoginPage from "../pages/Login";
 import RegisterPage from "../pages/Register";
 
 import PublicRoute from "./PublicRoute";
+import Product from "../pages/Products";
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/smartphones" element={<Product />} />
 
       <Route element={<PublicRoute />}>
         <Route path="/login" element={<LoginPage />} />
