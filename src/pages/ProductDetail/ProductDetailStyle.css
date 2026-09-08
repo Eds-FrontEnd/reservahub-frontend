@@ -150,6 +150,7 @@
   border: 1px solid var(--color-gray-light);
   font-size: 1rem;
   background-color: var(--color-white);
+  cursor: pointer;
 }
 
 .product-detail__button {
