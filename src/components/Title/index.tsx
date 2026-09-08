@@ -8,15 +8,16 @@ import {
 
 import "./TitleStyle.css";
 
-type TitleLevel = 1 | 2 | 3 | 4 | 5 | 6;
+type TitleElement = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p" | "span";
 
 type TitleAlign = "left" | "center" | "right";
 
 type TitleSize = "small" | "medium" | "large" | "xlarge";
 
-export interface TitleProps extends HTMLAttributes<HTMLHeadingElement> {
+export interface TitleProps extends HTMLAttributes<HTMLElement> {
   children: ReactNode;
-  level?: TitleLevel;
+  as?: TitleElement;
+  level?: 1 | 2 | 3 | 4 | 5 | 6;
   align?: TitleAlign;
   size?: TitleSize;
   fontSize?: CSSProperties["fontSize"];
@@ -27,10 +28,11 @@ export interface TitleProps extends HTMLAttributes<HTMLHeadingElement> {
   padding?: CSSProperties["padding"];
 }
 
-export const Title = forwardRef<HTMLHeadingElement, TitleProps>(
+export const Title = forwardRef<HTMLElement, TitleProps>(
   (
     {
       children,
+      as,
       level = 2,
       align = "left",
       size = "medium",
@@ -46,7 +48,7 @@ export const Title = forwardRef<HTMLHeadingElement, TitleProps>(
     },
     ref,
   ) => {
-    const HeadingTag = `h${level}` as ElementType;
+    const HeadingTag = (as ?? `h${level}`) as ElementType;
 
     const titleStyle = {
       ...(width && {
@@ -58,8 +60,12 @@ export const Title = forwardRef<HTMLHeadingElement, TitleProps>(
       ...(color && {
         "--title-color": color,
       }),
-      ...(margin && { margin }),
-      ...(padding && { padding }),
+      ...(margin && {
+        margin,
+      }),
+      ...(padding && {
+        padding,
+      }),
       ...style,
     } as CSSProperties;
 

@@ -16,12 +16,12 @@ const HomePage = () => {
       <section className="home_section">
         <span className="home_description">
           <Title
-            width="22rem"
+            width="34rem"
             fullWidth={false}
             level={1}
             size="large"
             align="left"
-            color="var(--color-blue)"
+            color="var(--color-primary)"
             title="Seu próximo smartphone está a poucos toques de distância."
             padding="1.5rem 0 1.5rem 0"
           >

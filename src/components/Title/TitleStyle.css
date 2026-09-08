@@ -1,15 +1,9 @@
 .title {
-  --title-color: var(--color-black);
-  --title-font-size: 1.5rem;
-
-  display: block;
+  width: var(--title-width, auto);
   margin: 0;
-  color: var(--title-color);
-  font-family: var(--font-main);
-  font-size: var(--title-font-size);
-  font-weight: 700;
-  line-height: 1.2;
-  text-wrap: balance;
+  padding: 0;
+  color: var(--title-color, var(--color-primary));
+  text-align: left;
 }
 
 .title--left {
@@ -24,50 +18,43 @@
   text-align: right;
 }
 
-.title--small {
-  --title-font-size: 1.25rem;
-}
-
-.title--medium {
-  --title-font-size: 1.5rem;
-}
-
-.title--large {
-  --title-font-size: 2rem;
-}
-
-.title--xlarge {
-  --title-font-size: 2.5rem;
-}
-
 .title--full-width {
   width: 100%;
 }
 
-@media (max-width: 768px) {
-  .title--large {
-    --title-font-size: 1.75rem;
-  }
-
-  .title--xlarge {
-    --title-font-size: 2rem;
-  }
+.title--small {
+  font-size: var(--title-font-size, 0.875rem);
 }
 
-@media (max-width: 480px) {
-  .title--small {
-    --title-font-size: 1.125rem;
-  }
+.title--medium {
+  font-size: var(--title-font-size, 1.0625rem);
+}
 
-  .title--medium {
-    --title-font-size: 1.375rem;
-  }
+.title--large {
+  font-size: var(--title-font-size, clamp(2rem, 4vw, 3rem));
+}
 
-  .title--large {
-    --title-font-size: 1.5rem;
-  }
+.title--xlarge {
+  font-size: var(--title-font-size, clamp(2.5rem, 5vw, 4.5rem));
+}
 
-  .title--xlarge {
-    --title-font-size: 1.75rem;
-  }
+.title:is(h1, h2, h3, h4, h5, h6) {
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.title:is(p) {
+  color: var(--title-color, var(--color-gray-light));
+  font-size: var(--title-font-size, 1.0625rem);
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: normal;
+}
+
+.title:is(span) {
+  display: inline;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
 }
