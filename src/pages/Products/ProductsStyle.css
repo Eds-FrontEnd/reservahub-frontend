@@ -7,9 +7,8 @@
 
 .catalog-header {
   background-color: var(--color-blue);
-  padding: 2rem 1rem;
+  padding: 2rem 0 4rem;
   text-align: center;
-  color: var(--color-white);
 }
 
 .catalog-header h1 {
@@ -25,13 +24,25 @@
   color: var(--color-secondary);
 }
 
+.catalog-header h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
 .catalog-grid {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
   gap: 1.5rem;
-  background-color: var(--color-black);
-  padding: 3rem 1.5rem;
+  background-color: var(--color-blue);
+  padding: 1.5rem;
   flex: 1;
 }
 
@@ -44,7 +55,7 @@
 
 @media (max-width: 768px) {
   .catalog-header {
-    padding: 1.5rem 1rem;
+    padding: 1rem;
   }
 
   .catalog-header h1 {

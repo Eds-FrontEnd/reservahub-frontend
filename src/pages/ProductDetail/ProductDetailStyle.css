@@ -158,7 +158,13 @@
   font-weight: 700;
 }
 
-@media (min-width: 768px) {
+.product-detail__footer {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+}
+
+@media (min-width: 800px) {
   .product-detail {
     flex-direction: row;
     align-items: flex-start;

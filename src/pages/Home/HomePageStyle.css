@@ -11,7 +11,7 @@
   justify-content: space-around;
   align-items: center;
   flex-wrap: wrap;
-  background-color: var(--color-black);
+  background-color: var(--color-blue);
 }
 
 .home_description {

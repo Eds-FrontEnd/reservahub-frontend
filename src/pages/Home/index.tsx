@@ -21,7 +21,7 @@ const HomePage = () => {
             level={1}
             size="large"
             align="left"
-            color="var(--color-white)"
+            color="var(--color-blue)"
             title="Seu próximo smartphone está a poucos toques de distância."
             padding="1.5rem 0 1.5rem 0"
           >

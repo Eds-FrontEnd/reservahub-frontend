@@ -171,7 +171,9 @@ export const ProductDetailPage: React.FC = () => {
         closeUrl="/login"
         onClose={handleCloseModal}
       />
-      <Footer />
+      <div className="product-detail__footer">
+        <Footer />
+      </div>
     </main>
   );
 };
