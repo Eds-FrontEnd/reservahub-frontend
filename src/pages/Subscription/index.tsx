@@ -3,15 +3,11 @@ import Header from "../../components/Header";
 import "./SmartphoneStyles.css";
 
 import {
-  CheckCircle,
   ChevronRight,
   PhoneAndroid,
-  Security,
   ShoppingCart,
   Smartphone,
-  SwapHoriz,
   Tune,
-  VerifiedUser,
 } from "@mui/icons-material";
 
 interface Step {
@@ -49,24 +45,6 @@ const steps: Step[] = [
     description:
       "Tenha acesso ao seu smartphone durante o período contratado, com praticidade e segurança.",
     icon: <PhoneAndroid aria-hidden="true" />,
-  },
-];
-
-const benefits = [
-  {
-    title: "Mais liberdade",
-    description: "Escolha um aparelho sem precisar comprar tudo de uma vez.",
-    icon: <SwapHoriz aria-hidden="true" />,
-  },
-  {
-    title: "Praticidade",
-    description: "Faça tudo online, de forma simples e transparente.",
-    icon: <CheckCircle aria-hidden="true" />,
-  },
-  {
-    title: "Segurança",
-    description: "Conte com condições claras e suporte durante sua assinatura.",
-    icon: <Security aria-hidden="true" />,
   },
 ];
 

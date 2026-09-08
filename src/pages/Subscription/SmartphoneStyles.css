@@ -350,7 +350,7 @@
 
 .subscription-steps {
   padding: 2rem 0 4rem;
-  background: var(--color-white);
+  background: var(--color-blue);
 }
 
 .subscription-steps__list {
@@ -368,6 +368,7 @@
   border-radius: var(24px);
   background: var(--color-white);
   box-shadow: var(0 12px 35px rgba(0, 51, 153, 0.08));
+  border-radius: 16px;
   text-align: center;
 }
 
