@@ -1,0 +1,20 @@
+.page-loader {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  gap: 1.2rem;
+  background-color: var(--color-white);
+}
+
+.page-loader__spinner {
+  color: var(--color-secondary);
+}
+
+.page-loader__text {
+  color: var(--color-black);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
