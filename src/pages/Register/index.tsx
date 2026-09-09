@@ -182,7 +182,7 @@ const RegisterPage = () => {
           <Button
             type="submit"
             backgroundColor="var(--color-primary)"
-            hoverBackgroundColor="var(--color-black)"
+            hoverBackgroundColor="var(--color-secondary)"
           >
             Criar conta
           </Button>
