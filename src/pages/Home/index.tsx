@@ -14,42 +14,45 @@ const HomePage = () => {
     <main className="home">
       <Header />
       <section className="home_section">
-        <span className="home_description">
-          <Title
-            width="34rem"
-            fullWidth={false}
-            level={1}
-            size="large"
-            align="left"
-            color="var(--color-primary)"
-            title="Seu próximo smartphone está a poucos toques de distância."
-            padding="1.5rem 0 1.5rem 0"
-          >
-            Seu próximo smartphone está a poucos cliques de distância.
-          </Title>
-          <Button
-            to="/smartphones"
-            backgroundColor="var(--color-secondary)"
-            hoverBackgroundColor="var(--color-primary)"
-          >
-            Ver Smartphones
-          </Button>
-        </span>
-        <span className="home_images">
-          <Image
-            src={SmartImageFront}
-            alt="Foto de um Iphone frente"
-            width={204}
-            height={420}
-            priority
-          />
-          <Image
-            src={SmartImageBack}
-            alt="Foto de um Iphone verso"
-            width={204}
-            height={420}
-            priority
-          />
+        <span className="home_int">
+          <span className="home_description">
+            <Title
+              width="34rem"
+              fullWidth={false}
+              level={1}
+              size="large"
+              align="left"
+              color="var(--color-primary)"
+              title="Seu próximo smartphone está a poucos toques de distância."
+              padding="1.5rem 0 1.5rem 0"
+              id="home_title"
+            >
+              Seu próximo smartphone está a poucos cliques de distância.
+            </Title>
+            <Button
+              to="/smartphones"
+              backgroundColor="var(--color-secondary)"
+              hoverBackgroundColor="var(--color-primary)"
+            >
+              Ver Smartphones
+            </Button>
+          </span>
+          <span className="home_images">
+            <Image
+              src={SmartImageFront}
+              alt="Foto de um Iphone frente"
+              width={204}
+              height={420}
+              priority
+            />
+            <Image
+              src={SmartImageBack}
+              alt="Foto de um Iphone verso"
+              width={204}
+              height={420}
+              priority
+            />
+          </span>
         </span>
       </section>
       <Footer />

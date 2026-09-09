@@ -200,6 +200,7 @@ const RegisterPage = () => {
           iconColor={"var(--color-secondary)"}
           titleColor={"var(--color-secondary)"}
           onNavigate={navigate}
+          closeUrl="/login"
         />
 
         <footer className="register__footer">

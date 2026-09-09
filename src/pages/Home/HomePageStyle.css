@@ -15,6 +15,15 @@
   padding: 0 2rem;
 }
 
+.home_int {
+  width: 100%;
+  max-width: 1100px;
+  height: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .home_description {
   padding: 1rem;
 }
@@ -24,14 +33,4 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 0.75rem;
-}
-
-/*HOME */
-@media (max-width: 420px) {
-  .home_section {
-    padding: auto;
-  }
-  .home_section .home_description h1.title.title--left.title--large {
-    width: auto;
-  }
 }
