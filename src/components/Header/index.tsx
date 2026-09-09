@@ -21,6 +21,12 @@ const Header: React.FC = () => {
 
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
 
+  const firstName = user?.name
+    ?.trim()
+    .split(" ")[0]
+    .toLowerCase()
+    .replace(/^./, (letter) => letter.toUpperCase());
+
   const handleOpenSearch = () => {
     setIsSearchOpen(true);
   };
@@ -80,7 +86,7 @@ const Header: React.FC = () => {
           {isAuthenticated ? (
             <div className="header__account">
               <span className="header__welcome">
-                Seja bem-vindo(a), {user?.name}!
+                Seja bem-vindo(a), {firstName}!
               </span>
 
               <Link
