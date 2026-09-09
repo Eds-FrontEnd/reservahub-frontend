@@ -30,11 +30,8 @@ export const ProductsPage: React.FC = () => {
     <main className="catalog-container">
       <Header />
       <header className="catalog-header">
-        <h2>Assine Já!</h2>
         <h1>Clube de Assinatura de Smartphones</h1>
-        <p>Escolha seu modelo ideal com seguro total e upgrade garantido.</p>
       </header>
-
       <section className="catalog-grid" aria-label="Lista de Smartphones">
         {visibleSmartphones.map((smartphone) => (
           <ProductCard key={smartphone.id} item={smartphone} />
