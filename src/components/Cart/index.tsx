@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useCart } from "../../contexts/CartContext";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import Tooltip from "@mui/material/Tooltip";
 
 import IconBag from "../../assets/images/icons/icon-bag.svg";
 
@@ -134,67 +135,92 @@ export const Cart: React.FC = () => {
                 </div>
               ) : (
                 <ul className="cart-drawer__items">
-                  {items.map((item) => (
-                    <li
-                      key={`${item.id}-${item.planMonths}`}
-                      className="cart-item"
-                    >
-                      <img
-                        src={item.image}
-                        alt={`${item.product} - ${item.model}`}
-                        className="cart-item__image"
-                      />
+                  {items.map((item) => {
+                    const isStockLimitReached = item.quantity >= item.stock;
 
-                      <div className="cart-item__content">
-                        <h3>{item.product}</h3>
+                    return (
+                      <li
+                        key={`${item.id}-${item.planMonths}`}
+                        className="cart-item"
+                      >
+                        <img
+                          src={item.image}
+                          alt={`${item.product} - ${item.model}`}
+                          className="cart-item__image"
+                        />
 
-                        <span className="cart-item__model">{item.model}</span>
+                        <div className="cart-item__content">
+                          <h3>{item.product}</h3>
 
-                        <span className="cart-item__plan">
-                          Plano: {getPlanName(item.planMonths)}
-                        </span>
+                          <span className="cart-item__model">{item.model}</span>
 
-                        <strong className="cart-item__price">
-                          {formatPrice(item.monthlyPrice)}
-                          <small>/mês</small>
-                        </strong>
+                          <span className="cart-item__plan">
+                            Plano: {getPlanName(item.planMonths)}
+                          </span>
 
-                        <div className="cart-item__actions">
-                          <div
-                            className="cart-item__quantity"
-                            aria-label={`Quantidade de ${item.product}`}
-                          >
+                          <strong className="cart-item__price">
+                            {formatPrice(item.monthlyPrice)}
+                            <small>/mês</small>
+                          </strong>
+
+                          <div className="cart-item__actions">
+                            <div
+                              className="cart-item__quantity"
+                              aria-label={`Quantidade de ${item.product}`}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(item.id, -1)}
+                                aria-label={`Diminuir quantidade de ${item.product}`}
+                              >
+                                -
+                              </button>
+
+                              <span aria-live="polite">{item.quantity}</span>
+
+                              <Tooltip
+                                title={
+                                  isStockLimitReached
+                                    ? `Estoque máximo atingido. Há apenas ${item.stock} unidade${
+                                        item.stock === 1 ? "" : "s"
+                                      } disponível${
+                                        item.stock === 1 ? "" : "eis"
+                                      } para este smartphone.`
+                                    : "Adicionar unidade"
+                                }
+                                placement="top"
+                                arrow
+                              >
+                                <span>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateQuantity(item.id, 1)}
+                                    disabled={isStockLimitReached}
+                                    aria-label={
+                                      isStockLimitReached
+                                        ? `Estoque máximo de ${item.product} atingido`
+                                        : `Aumentar quantidade de ${item.product}`
+                                    }
+                                  >
+                                    +
+                                  </button>
+                                </span>
+                              </Tooltip>
+                            </div>
+
                             <button
                               type="button"
-                              onClick={() => updateQuantity(item.id, -1)}
-                              aria-label={`Diminuir quantidade de ${item.product}`}
+                              className="cart-item__remove"
+                              onClick={() => removeItem(item.id)}
+                              aria-label={`Remover ${item.product} do carrinho`}
                             >
-                              -
-                            </button>
-
-                            <span aria-live="polite">{item.quantity}</span>
-
-                            <button
-                              type="button"
-                              onClick={() => updateQuantity(item.id, 1)}
-                              aria-label={`Aumentar quantidade de ${item.product}`}
-                            >
-                              +
+                              Remover
                             </button>
                           </div>
-
-                          <button
-                            type="button"
-                            className="cart-item__remove"
-                            onClick={() => removeItem(item.id)}
-                            aria-label={`Remover ${item.product} do carrinho`}
-                          >
-                            Remover
-                          </button>
                         </div>
-                      </div>
-                    </li>
-                  ))}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>

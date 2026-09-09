@@ -18,7 +18,7 @@ import "./ProductDetailStyle.css";
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated } = useAuth();
-  const { addItem } = useCart();
+  const { addItem, items } = useCart();
 
   const item = (mockSmartphones as SmartphoneSubscriptionItem[]).find(
     (phone) => phone.id === id,
@@ -43,12 +43,18 @@ export const ProductDetailPage: React.FC = () => {
 
   const isOutOfStock = item.stock === 0;
 
+  const cartItem = items.find((cartItem) => cartItem.id === item.id);
+
+  const cartQuantity = cartItem?.quantity ?? 0;
+
+  const isStockLimitReached = cartQuantity >= item.stock;
+
   const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedPlanMonths(Number(e.target.value));
   };
 
   const handleSubscribe = () => {
-    if (isOutOfStock) return;
+    if (isOutOfStock || isStockLimitReached) return;
 
     if (!isAuthenticated) {
       setIsAuthModalOpen(true);
@@ -70,6 +76,7 @@ export const ProductDetailPage: React.FC = () => {
   return (
     <main className="catalog-container">
       <Header />
+
       <section className="product-detail">
         <figure className="product-detail__figure">
           <img
@@ -77,12 +84,14 @@ export const ProductDetailPage: React.FC = () => {
             alt={`Smartphone ${item.product} - Modelo ${item.model}`}
             className="product-detail__image"
           />
+
           <span className="product-detail__badge-plan">{item.planType}</span>
         </figure>
 
         <div className="product-detail__content">
           <header className="product-detail__header">
             <span className="product-detail__model">{item.model}</span>
+
             <h1 className="product-detail__title">{item.product}</h1>
           </header>
 
@@ -106,6 +115,7 @@ export const ProductDetailPage: React.FC = () => {
             <span className="product-detail__price-value">
               {formattedPrice}
             </span>
+
             <span className="product-detail__price-period">/mês</span>
           </div>
 
@@ -118,10 +128,14 @@ export const ProductDetailPage: React.FC = () => {
               <span className="product-detail__stock product-detail__stock--out">
                 Aguardando novo lote
               </span>
+            ) : isStockLimitReached ? (
+              <span className="product-detail__stock product-detail__stock--out">
+                Estoque máximo atingido
+              </span>
             ) : (
               <span className="product-detail__stock product-detail__stock--in">
-                <AccessAlarmIcon className="animated-alarm-icon" /> {item.stock}{" "}
-                unidades disponíveis
+                <AccessAlarmIcon className="animated-alarm-icon" />{" "}
+                {item.stock - cartQuantity} unidades disponíveis
               </span>
             )}
           </div>
@@ -131,11 +145,12 @@ export const ProductDetailPage: React.FC = () => {
               <label htmlFor={planSelectId} className="product-detail__label">
                 Plano:
               </label>
+
               <select
                 id={planSelectId}
                 value={selectedPlanMonths}
                 onChange={handlePlanChange}
-                disabled={isOutOfStock}
+                disabled={isOutOfStock || isStockLimitReached}
                 className="product-detail__select"
               >
                 <option value={12}>12 Meses (Upgrade grátis)</option>
@@ -147,11 +162,13 @@ export const ProductDetailPage: React.FC = () => {
             <Button
               type="button"
               onClick={handleSubscribe}
-              disabled={isOutOfStock}
+              disabled={isOutOfStock || isStockLimitReached}
               className="product-detail__button"
               backgroundColor="var(--color-secondary)"
             >
-              {isOutOfStock ? "Avise quando chegar" : "Assinar Agora"}
+              {isOutOfStock || isStockLimitReached
+                ? "Avise-me"
+                : "Assinar Agora"}
             </Button>
           </footer>
         </div>
@@ -170,6 +187,7 @@ export const ProductDetailPage: React.FC = () => {
         closeUrl="/login"
         onClose={handleCloseModal}
       />
+
       <div className="product-detail__footer">
         <Footer />
       </div>
