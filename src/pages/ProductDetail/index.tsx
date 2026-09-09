@@ -165,6 +165,7 @@ export const ProductDetailPage: React.FC = () => {
               disabled={isOutOfStock || isStockLimitReached}
               className="product-detail__button"
               backgroundColor="var(--color-secondary)"
+              hoverBackgroundColor="var(--color-primary)"
             >
               {isOutOfStock || isStockLimitReached
                 ? "Avise-me"

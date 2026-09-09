@@ -85,6 +85,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ item }) => {
             type="button"
             className="phone-card__button"
             backgroundColor="var(--color-secondary)"
+            hoverBackgroundColor="var(--color-primary"
             onClick={handleLearnMoreClick}
           >
             Saiba Mais
