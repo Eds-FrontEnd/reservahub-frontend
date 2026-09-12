@@ -53,7 +53,13 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ item }) => {
           className="phone-card__image"
         />
         <span
-          className="phone-card__badge-plan"
+          className={`phone-card__badge-plan ${
+            item.planType === "Mensal Flex"
+              ? "phone-card__badge-plan--monthly"
+              : item.planType === "Anual"
+                ? "phone-card__badge-plan--annual"
+                : ""
+          }`}
           aria-label={`Plano: ${item.planType}`}
         >
           {item.planType}
