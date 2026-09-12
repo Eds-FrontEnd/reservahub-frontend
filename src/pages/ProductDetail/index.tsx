@@ -14,6 +14,7 @@ import { useAuth } from "../../contexts/AutContext";
 import { useCart } from "../../contexts/CartContext";
 
 import "./ProductDetailStyle.css";
+import NotFound from "../NotFound";
 
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,11 +33,7 @@ export const ProductDetailPage: React.FC = () => {
   if (!item) {
     return (
       <main className="catalog-container">
-        <Header />
-        <div style={{ textAlign: "center", padding: "3rem" }}>
-          <h2>Produto não encontrado</h2>
-        </div>
-        <Footer />
+        <NotFound />
       </main>
     );
   }

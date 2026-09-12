@@ -5,6 +5,7 @@ import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
 import Loader from "../components/Loader";
 import ContactPage from "../pages/Contact";
+import NotFound from "../pages/NotFound";
 
 const HomePage = lazy(() => import("../pages/Home"));
 const LoginPage = lazy(() => import("../pages/Login"));
@@ -21,6 +22,7 @@ const AppRoutes = () => {
         <Route path="/smartphones" element={<Product />} />
         <Route path="/contato" element={<ContactPage />} />
         <Route path="/como-funciona" element={<SmartPhoneSubscription />} />
+        <Route path="*" element={<NotFound />} />
 
         <Route element={<PrivateRoute />}>
           <Route path="/smartphones/:id" element={<ProductDetailPage />} />
