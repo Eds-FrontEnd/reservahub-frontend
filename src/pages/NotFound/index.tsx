@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom";
-
 import "./NotFoundStyle.css";
 
 import notFoundImage from "../../assets/images/not-found/not-found-404.png";
