@@ -7,7 +7,7 @@
   padding: 1rem;
   background-color: var(--color-white);
   border-radius: 12px;
-  padding: 2.5rem 1rem;
+  padding: 1rem;
 }
 
 .product-detail__figure {
@@ -145,12 +145,19 @@
 }
 
 .product-detail__select {
-  padding: 0.75rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0.75rem 2.5rem 0.75rem 0.75rem;
   border-radius: 6px;
   border: 1px solid var(--color-gray-light);
   font-size: 1rem;
   background-color: var(--color-white);
   cursor: pointer;
+  background-image: url("../../assets/images/icons/icon-arrow-down.svg");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 20px;
 }
 
 .product-detail__button {
