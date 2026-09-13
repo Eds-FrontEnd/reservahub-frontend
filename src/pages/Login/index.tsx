@@ -7,6 +7,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
 import Modal from "../../components/Modal";
+import { PasswordInput } from "../../components/PasswordInput";
 import { useAuth } from "../../contexts/AutContext";
 import { loginSchema } from "../../schemas/loginSchema";
 import { loginUser } from "../../services/AuthService";
@@ -129,23 +130,15 @@ const LoginPage = () => {
           <div className="login__field">
             <label htmlFor="password">Senha</label>
 
-            <input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               value={formData.password}
               autoComplete="current-password"
               required
-              aria-invalid={Boolean(errors.password)}
-              aria-describedby={errors.password ? "password-error" : undefined}
               onChange={handleChange}
+              error={errors.password}
             />
-
-            {errors.password && (
-              <span id="password-error" className="login__field-error">
-                {errors.password}
-              </span>
-            )}
 
             {loginError && (
               <div className="login__error" role="alert">

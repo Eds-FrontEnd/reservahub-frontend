@@ -7,6 +7,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
 import Modal from "../../components/Modal";
+import { PasswordInput } from "../../components/PasswordInput";
 import { resetPassword } from "../../services/AuthService";
 import { resetPasswordSchema } from "../../schemas/ResetSchema";
 
@@ -110,47 +111,29 @@ const ResetPasswordPage = () => {
           <div className="reset__field">
             <label htmlFor="password">Nova senha</label>
 
-            <input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               value={formData.password}
               autoComplete="new-password"
               required
-              aria-invalid={Boolean(errors.password)}
-              aria-describedby={errors.password ? "password-error" : undefined}
               onChange={handleChange}
+              error={errors.password}
             />
-
-            {errors.password && (
-              <span id="password-error" className="reset__field-error">
-                {errors.password}
-              </span>
-            )}
           </div>
 
           <div className="reset__field">
             <label htmlFor="confirmPassword">Confirmar nova senha</label>
 
-            <input
+            <PasswordInput
               id="confirmPassword"
               name="confirmPassword"
-              type="password"
               value={formData.confirmPassword}
               autoComplete="new-password"
               required
-              aria-invalid={Boolean(errors.confirmPassword)}
-              aria-describedby={
-                errors.confirmPassword ? "confirm-password-error" : undefined
-              }
               onChange={handleChange}
+              error={errors.confirmPassword}
             />
-
-            {errors.confirmPassword && (
-              <span id="confirm-password-error" className="reset__field-error">
-                {errors.confirmPassword}
-              </span>
-            )}
           </div>
 
           <Button
