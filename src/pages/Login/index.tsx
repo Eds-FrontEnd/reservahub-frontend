@@ -165,7 +165,11 @@ const LoginPage = () => {
 
         {loginError && (
           <div className="login__error" role="alert">
-            <Link className="login__forgot-password" to="/recuperar-senha">
+            <Link
+              className="login__forgot-password"
+              to="/recuperar-senha"
+              state={{ email: formData.email }}
+            >
               Esqueci minha senha
             </Link>
           </div>

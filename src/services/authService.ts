@@ -38,3 +38,26 @@ export const loginUser = (email: string, password: string): User | null => {
     null
   );
 };
+
+export const resetPassword = (email: string, password: string): boolean => {
+  const users = getUsers();
+
+  const userExists = users.some((user) => user.email === email);
+
+  if (!userExists) {
+    return false;
+  }
+
+  const updatedUsers = users.map((user) =>
+    user.email === email
+      ? {
+          ...user,
+          password,
+        }
+      : user,
+  );
+
+  localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
+
+  return true;
+};

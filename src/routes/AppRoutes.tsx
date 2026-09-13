@@ -6,6 +6,7 @@ import PublicRoute from "./PublicRoute";
 import Loader from "../components/Loader";
 import ContactPage from "../pages/Contact";
 import NotFound from "../pages/NotFound";
+import ResetPasswordPage from "../pages/Reset";
 
 const HomePage = lazy(() => import("../pages/Home"));
 const LoginPage = lazy(() => import("../pages/Login"));
@@ -22,6 +23,7 @@ const AppRoutes = () => {
         <Route path="/smartphones" element={<Product />} />
         <Route path="/contato" element={<ContactPage />} />
         <Route path="/como-funciona" element={<SmartPhoneSubscription />} />
+        <Route path="/recuperar-senha" element={<ResetPasswordPage />} />
         <Route path="*" element={<NotFound />} />
 
         <Route element={<PrivateRoute />}>

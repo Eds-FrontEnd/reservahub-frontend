@@ -65,3 +65,20 @@ export const useAuth = (): AuthContextData => {
 
   return context;
 };
+
+export const resetPassword = (password: string): void => {
+  const storedUser = localStorage.getItem("authenticatedUser");
+
+  if (!storedUser) {
+    return;
+  }
+
+  const user = JSON.parse(storedUser);
+
+  const updatedUser = {
+    ...user,
+    password,
+  };
+
+  localStorage.setItem("authenticatedUser", JSON.stringify(updatedUser));
+};
