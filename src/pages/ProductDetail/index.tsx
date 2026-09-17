@@ -27,6 +27,7 @@ export const ProductDetailPage: React.FC = () => {
 
   const [selectedPlanMonths, setSelectedPlanMonths] = useState<number>(12);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [imageLoading, setImageLoading] = useState<boolean>(true);
 
   const planSelectId = useId();
 
@@ -80,7 +81,15 @@ export const ProductDetailPage: React.FC = () => {
             src={item.image}
             alt={`Smartphone ${item.product} - Modelo ${item.model}`}
             className="product-detail__image"
+            onLoad={() => setImageLoading(false)}
           />
+
+          {imageLoading && (
+            <span
+              className="product-detail__image-loading"
+              aria-hidden="true"
+            />
+          )}
 
           <span
             className={`product-detail__badge-plan ${
@@ -98,15 +107,35 @@ export const ProductDetailPage: React.FC = () => {
 
         <div className="product-detail__content">
           <header className="product-detail__header">
-            <span className="product-detail__model">{item.model}</span>
+            <span
+              className={`product-detail__model ${
+                imageLoading ? "product-detail__shimmer" : ""
+              }`}
+            >
+              {item.model}
+            </span>
 
-            <h1 className="product-detail__title">{item.product}</h1>
+            <h1
+              className={`product-detail__title ${
+                imageLoading ? "product-detail__shimmer" : ""
+              }`}
+            >
+              {item.product}
+            </h1>
           </header>
 
-          <p className="product-detail__description">{item.description}</p>
+          <p
+            className={`product-detail__description ${
+              imageLoading ? "product-detail__shimmer" : ""
+            }`}
+          >
+            {item.description}
+          </p>
 
           <ul
-            className="product-detail__benefits"
+            className={`product-detail__benefits ${
+              imageLoading ? "product-detail__shimmer" : ""
+            }`}
             aria-label="Benefícios incluídos no plano"
           >
             {item.benefits.map((benefit: string, index: number) => (
@@ -119,7 +148,11 @@ export const ProductDetailPage: React.FC = () => {
             ))}
           </ul>
 
-          <div className="product-detail__pricing">
+          <div
+            className={`product-detail__pricing ${
+              imageLoading ? "product-detail__shimmer" : ""
+            }`}
+          >
             <span className="product-detail__price-value">
               {formattedPrice}
             </span>
@@ -171,7 +204,9 @@ export const ProductDetailPage: React.FC = () => {
               type="button"
               onClick={handleSubscribe}
               disabled={isOutOfStock || isStockLimitReached}
-              className="product-detail__button"
+              className={`product-detail__button ${
+                imageLoading ? "product-detail__button--shimmer" : ""
+              }`}
               backgroundColor="var(--color-secondary)"
               hoverBackgroundColor="var(--color-primary)"
             >
