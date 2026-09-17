@@ -10,6 +10,7 @@
   display: flex;
   flex-direction: column;
   width: 250px;
+  height: 390px;
   position: relative;
   padding-top: 0.8rem;
   border-radius: 16px;
@@ -34,6 +35,8 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
+  position: relative;
+  isolation: isolate;
 }
 
 .phone-card__image {
@@ -43,6 +46,38 @@
   object-fit: contain;
   margin: 0 auto;
   display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.phone-card__image-loading {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 230px;
+  height: 200px;
+  transform: translateX(-50%);
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: #f1f1f1;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.phone-card__image-loading::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    transparent 100%
+  );
+  animation: phone-card-shimmer 1.2s linear infinite;
 }
 
 .phone-card__badge-plan {
@@ -57,9 +92,9 @@
   color: var(--color-white);
   background-color: var(--color-primary);
   position: absolute;
-  top: 5px;
+  top: -10px;
   right: 5px;
-  z-index: 2;
+  z-index: 3;
 }
 
 .phone-card__badge-plan--monthly {
@@ -136,7 +171,73 @@
   color: var(--color-gray-light);
 }
 
+.phone-card__shimmer {
+  position: relative;
+  overflow: hidden;
+  color: transparent !important;
+  background-color: #f1f1f1;
+  border-radius: 6px;
+}
+
+.phone-card__shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    transparent 100%
+  );
+  animation: phone-card-shimmer 1.2s linear infinite;
+}
+
+.phone-card__model.phone-card__shimmer {
+  width: 80px;
+  height: 14px;
+}
+
+.phone-card__title.phone-card__shimmer {
+  width: 160px;
+  height: 20px;
+  margin: 0 auto;
+}
+
+.phone-card__pricing.phone-card__shimmer {
+  width: 110px;
+  height: 25px;
+  margin: 0.5rem auto;
+}
+
+.phone-card__button--shimmer {
+  position: relative;
+  overflow: hidden;
+  color: transparent !important;
+  pointer-events: none;
+  background-color: #d9d9d9 !important;
+}
+
+.phone-card__button--shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.65) 50%,
+    transparent 100%
+  );
+  animation: phone-card-shimmer 1.2s linear infinite;
+}
+
 /* Modificadores de Status */
+
 .phone-card__stock--in {
   color: var(--color-secondary);
   font-size: 0.8rem;
@@ -211,4 +312,22 @@
 .phone-card__button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@keyframes phone-card-shimmer {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(200%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone-card__image-loading::after,
+  .phone-card__shimmer::after,
+  .phone-card__button--shimmer::after {
+    animation: none;
+  }
 }

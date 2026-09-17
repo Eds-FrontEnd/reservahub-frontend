@@ -1,4 +1,4 @@
-import React, { useId, memo } from "react";
+import React, { memo, useId, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../contexts/AutContext";
@@ -25,6 +25,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ item }) => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const titleId = useId();
+  const [imageLoading, setImageLoading] = useState(true);
 
   if (!item) return null;
 
@@ -51,7 +52,13 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ item }) => {
           loading="lazy"
           decoding="async"
           className="phone-card__image"
+          onLoad={() => setImageLoading(false)}
         />
+
+        {imageLoading && (
+          <span className="phone-card__image-loading" aria-hidden="true" />
+        )}
+
         <span
           className={`phone-card__badge-plan ${
             item.planType === "Mensal Flex"
@@ -67,21 +74,40 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ item }) => {
       </figure>
 
       <header className="phone-card__header">
-        <span className="phone-card__model">{item.model}</span>
-        <h2 id={titleId} className="phone-card__title">
+        <span
+          className={`phone-card__model ${
+            imageLoading ? "phone-card__shimmer" : ""
+          }`}
+        >
+          {item.model}
+        </span>
+
+        <h2
+          id={titleId}
+          className={`phone-card__title ${
+            imageLoading ? "phone-card__shimmer" : ""
+          }`}
+        >
           {item.product}
         </h2>
       </header>
 
-      <div className="phone-card__pricing">
+      <div
+        className={`phone-card__pricing ${
+          imageLoading ? "phone-card__shimmer" : ""
+        }`}
+      >
         <span className="phone-card__price-value">{formattedPrice}</span>
+
         <span className="phone-card__price-period">/mês</span>
       </div>
 
       <footer className="phone-card__actions">
         <Button
           type="button"
-          className="phone-card__button"
+          className={`phone-card__button ${
+            imageLoading ? "phone-card__button--shimmer" : ""
+          }`}
           backgroundColor="var(--color-secondary)"
           hoverBackgroundColor="var(--color-primary)"
           onClick={handleLearnMoreClick}
