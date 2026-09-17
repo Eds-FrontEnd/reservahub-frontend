@@ -82,7 +82,18 @@ export const ProductDetailPage: React.FC = () => {
             className="product-detail__image"
           />
 
-          <span className="product-detail__badge-plan">{item.planType}</span>
+          <span
+            className={`product-detail__badge-plan ${
+              item.planType === "Mensal Flex"
+                ? "product-detail__badge-plan--monthly"
+                : item.planType === "Anual"
+                  ? "product-detail__badge-plan--annual"
+                  : ""
+            }`}
+            aria-label={`Plano: ${item.planType}`}
+          >
+            {item.planType}
+          </span>
         </figure>
 
         <div className="product-detail__content">
