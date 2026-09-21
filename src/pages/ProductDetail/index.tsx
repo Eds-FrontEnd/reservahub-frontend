@@ -28,6 +28,11 @@ export const ProductDetailPage: React.FC = () => {
   const [selectedPlanMonths, setSelectedPlanMonths] = useState<number>(12);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [imageLoading, setImageLoading] = useState<boolean>(true);
+  const [isZooming, setIsZooming] = useState<boolean>(false);
+  const [zoomPosition, setZoomPosition] = useState({
+    x: 50,
+    y: 50,
+  });
 
   const planSelectId = useId();
 
@@ -49,6 +54,28 @@ export const ProductDetailPage: React.FC = () => {
 
   const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedPlanMonths(Number(e.target.value));
+  };
+
+  const handleImageMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const { left, top, width, height } =
+      e.currentTarget.getBoundingClientRect();
+
+    setZoomPosition({
+      x: ((e.clientX - left) / width) * 100,
+      y: ((e.clientY - top) / height) * 100,
+    });
+  };
+
+  const handleImageMouseEnter = () => {
+    setIsZooming(true);
+  };
+
+  const handleImageMouseLeave = () => {
+    setIsZooming(false);
+    setZoomPosition({
+      x: 50,
+      y: 50,
+    });
   };
 
   const handleSubscribe = () => {
@@ -76,11 +103,27 @@ export const ProductDetailPage: React.FC = () => {
       <Header />
 
       <section className="product-detail">
-        <figure className="product-detail__figure">
+        <figure
+          className={`product-detail__figure ${
+            isZooming ? "product-detail__figure--zooming" : ""
+          }`}
+          onMouseMove={handleImageMouseMove}
+          onMouseEnter={handleImageMouseEnter}
+          onMouseLeave={handleImageMouseLeave}
+        >
           <img
             src={item.image}
             alt={`Smartphone ${item.product} - Modelo ${item.model}`}
-            className="product-detail__image"
+            className={`product-detail__image ${
+              isZooming ? "product-detail__image--zooming" : ""
+            }`}
+            style={
+              isZooming
+                ? {
+                    transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                  }
+                : undefined
+            }
             onLoad={() => setImageLoading(false)}
           />
 
