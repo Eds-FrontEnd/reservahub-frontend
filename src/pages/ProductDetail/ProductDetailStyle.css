@@ -18,11 +18,10 @@
   align-items: center;
   isolation: isolate;
   overflow: hidden;
-  cursor: zoom-in;
 }
 
 .product-detail__figure--zooming {
-  cursor: zoom-out;
+  cursor: zoom-in;
 }
 
 .product-detail__image {
