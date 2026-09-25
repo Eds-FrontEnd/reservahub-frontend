@@ -181,10 +181,12 @@ export const Cart: React.FC = () => {
                               <Tooltip
                                 title={
                                   isStockLimitReached
-                                    ? `Estoque máximo atingido. Há apenas ${item.stock} unidade${
-                                        item.stock === 1 ? "" : "s"
-                                      } disponível${
-                                        item.stock === 1 ? "" : "eis"
+                                    ? `Estoque máximo atingido. Há apenas ${
+                                        item.stock
+                                      } unidade${item.stock === 1 ? "" : "s"} ${
+                                        item.stock === 1
+                                          ? "disponível"
+                                          : "disponíveis"
                                       } para este smartphone.`
                                     : "Adicionar unidade"
                                 }
