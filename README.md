@@ -2,25 +2,13 @@
 
 ## 🚀 Sobre o projeto
 
-Bem-vindo ao **ReservaHub**, uma plataforma moderna e dinâmica de agendamentos e reservas desenvolvida com **React, TypeScript e css**.
+Bem-vindo ao **ReservaHub**, uma plataforma moderna de assinatura de smartphones desenvolvida com **React, TypeScript e CSS**.
 
 O projeto foi criado com foco em boas práticas de desenvolvimento Front-end, priorizando **performance, acessibilidade, semântica, organização do código, componentização e reutilização de componentes**.
 
-A aplicação foi projetada para atender diferentes segmentos de negócio, permitindo que empresas personalizem sua identidade visual com **logo, banner, cores e informações próprias**.
+A aplicação foi projetada exclusivamente para o mercado de **assinatura de smartphones**, permitindo que clientes consultem os aparelhos disponíveis, visualizem suas características, escolham planos de assinatura e realizem a contratação de forma simples e intuitiva.
 
-O sistema pode ser utilizado por diferentes tipos de negócios, como:
-
-- Consultórios médicos
-- Clínicas
-- Lavagens automotivas
-- Pizzarias e restaurantes
-- Salões de beleza
-- Barbearias
-- Academias
-- Prestadores de serviços
-- Outros segmentos que trabalham com reservas e agendamentos
-
-A plataforma permite que clientes selecionem serviços, escolham datas e horários disponíveis e realizem reservas de forma simples e intuitiva.
+A plataforma oferece uma experiência moderna para assinatura de dispositivos móveis, com catálogo de smartphones, detalhes dos produtos, seleção de planos, carrinho e autenticação.
 
 ---
 
@@ -102,7 +90,7 @@ npm run dev
 - TypeScript
 - Vite
 - React Router
-- css
+- CSS
 - CSS Variables
 - React Hook Form
 - Zod
@@ -135,162 +123,210 @@ O projeto foi desenvolvido utilizando diversos recursos modernos do ecossistema 
 - Boas práticas de acessibilidade
 - Navegação otimizada
 - Arquitetura escalável
+- Interface voltada para assinatura de smartphones
 
 ---
 
-# 📅 Funcionalidades
+# 📱 Funcionalidades
 
-- Cadastro de empresas
-- Personalização da identidade visual
-- Upload de logo
-- Upload de banner
-- Personalização de cores
-- Cadastro de serviços
-- Configuração de horários disponíveis
-- Seleção de serviços
-- Seleção de datas
-- Seleção de horários
-- Criação de reservas
-- Confirmação de agendamento
-- Gerenciamento de clientes
-- Dashboard administrativo
-- Visualização de agendamentos
+- Catálogo de smartphones disponíveis para assinatura
+- Visualização de detalhes dos smartphones
+- Informações técnicas dos aparelhos
+- Exibição de imagens dos smartphones
+- Efeito visual 3D opcional nas imagens
+- Seleção de planos de assinatura
+- Planos de diferentes períodos de contratação
+- Controle de disponibilidade e estoque
+- Adição de smartphones ao carrinho
+- Visualização do carrinho
+- Atualização de itens do carrinho
+- Remoção de smartphones do carrinho
+- Autenticação de usuários
+- Cadastro de usuários
+- Login
+- Logout
+- Formulários com validação
+- Persistência de dados no LocalStorage
+- Página de contato
 - Interface responsiva
 - Componentes reutilizáveis
 
 ---
 
-# 🏢 Sistema Multi-Segmento
+# 📦 Catálogo de Smartphones
 
-O **ReservaHub** foi desenvolvido para funcionar como uma plataforma genérica de reservas.
+O **ReservaHub** possui um catálogo dedicado exclusivamente a smartphones disponíveis para assinatura.
 
-O sistema possui uma estrutura flexível que permite atender diferentes tipos de negócios.
+Cada produto pode apresentar:
 
-Exemplo:
-
-```text
-RECURSO
-↓
-Pode ser:
-
-👨‍⚕️ Médico
-🚗 Box de lavagem
-🍕 Mesa
-💇 Profissional
-🏋️ Equipamento
-🏢 Sala
-```
-
-Os serviços também podem ser configurados de acordo com o segmento.
-
-```text
-SERVIÇO
-↓
-Pode ser:
-
-Consulta
-Lavagem
-Reserva de mesa
-Corte de cabelo
-Treino
-Aluguel de sala
-```
-
-Dessa forma, o mesmo sistema pode ser utilizado por diferentes empresas sem necessidade de alterar a estrutura principal da aplicação.
-
----
-
-# 🎨 Personalização
-
-Cada empresa poderá personalizar sua identidade visual.
-
-Recursos previstos:
-
-- Logo
-- Banner
-- Nome da empresa
-- Cor principal
-- Cor secundária
-- Informações de contato
-- Serviços disponíveis
-- Horários de funcionamento
+- Marca
+- Modelo
+- Imagem
+- Capacidade de armazenamento
+- Especificações
+- Disponibilidade
+- Estoque
+- Valor da assinatura
+- Período de contratação
 
 Exemplo:
 
 ```text
-Empresa
+Smartphone
+
 │
-├── Logo
-├── Banner
-├── Cor principal
-├── Cor secundária
-├── Serviços
-├── Profissionais
-└── Horários disponíveis
+├── Imagem
+├── Marca
+├── Modelo
+├── Armazenamento
+├── Especificações
+├── Estoque
+├── Disponibilidade
+└── Plano de assinatura
 ```
 
 ---
 
-# 📅 Fluxo de Agendamento
+# 📲 Fluxo de Assinatura
 
-O processo de reserva foi desenvolvido para ser simples e intuitivo.
+O processo de assinatura foi desenvolvido para ser simples e intuitivo.
 
 ```text
-① Serviço
+① Smartphone
+
     ↓
-② Data
+
+② Detalhes do aparelho
+
     ↓
-③ Horário
+
+③ Plano de assinatura
+
     ↓
-④ Confirmação
+
+④ Carrinho
+
+    ↓
+
+⑤ Dados do cliente
+
+    ↓
+
+⑥ Confirmação
 ```
 
 Fluxo completo:
 
 ```text
 Cliente
+
    ↓
-Seleciona um serviço
+
+Visualiza os smartphones disponíveis
+
    ↓
-Escolhe uma data disponível
+
+Seleciona um aparelho
+
    ↓
-Seleciona um horário
+
+Visualiza os detalhes do smartphone
+
    ↓
-Preenche seus dados
+
+Escolhe o período de assinatura
+
    ↓
-Confirma a reserva
+
+Adiciona o smartphone ao carrinho
+
+   ↓
+
+Confirma os dados
+
+   ↓
+
+Finaliza a assinatura
 ```
 
 ---
 
-# 🔐 Área Administrativa
+# 💳 Planos de Assinatura
 
-O sistema possui uma área administrativa para gerenciamento das reservas.
+Os smartphones podem ser associados a diferentes períodos de assinatura.
 
-Funcionalidades previstas:
+Exemplo:
 
-- Dashboard
-- Agenda
-- Serviços
-- Clientes
-- Profissionais
-- Horários
-- Relatórios
-- Configurações
-- Personalização
+```text
+Smartphone
+
+↓
+
+Plano de assinatura
+
+├── 1 mês
+├── 12 meses
+└── 24 meses
+```
+
+O usuário pode visualizar as opções disponíveis e selecionar o período desejado antes de adicionar o smartphone ao carrinho.
+
+---
+
+# 🛒 Carrinho
+
+O ReservaHub possui um carrinho para gerenciamento dos smartphones selecionados para assinatura.
+
+Principais recursos:
+
+- Adicionar smartphone
+- Alterar quantidade
+- Remover smartphone
+- Visualizar itens selecionados
+- Visualizar valores
+- Persistência do carrinho
+- Validação de disponibilidade
+- Acesso ao fluxo de contratação
 
 Estrutura:
 
 ```text
-Dashboard
+Carrinho
+
 │
-├── Agenda
-├── Serviços
-├── Clientes
-├── Profissionais
-├── Relatórios
-├── Configurações
-└── Personalização
+├── Smartphone
+├── Plano
+├── Quantidade
+├── Valor
+└── Total
+```
+
+---
+
+# 🔐 Autenticação
+
+A aplicação possui uma área de autenticação para controle do acesso às funcionalidades que exigem identificação do usuário.
+
+Recursos:
+
+- Login
+- Cadastro
+- Validação de formulários
+- Controle de autenticação
+- Persistência do estado de autenticação
+- Proteção de rotas
+- Logout
+
+Estrutura:
+
+```text
+Autenticação
+
+│
+├── Login
+├── Cadastro
+├── Usuário autenticado
+└── Logout
 ```
 
 ---
@@ -303,21 +339,21 @@ Principais componentes:
 
 - Header
 - Footer
-- Sidebar
 - Button
 - Input
 - Select
 - Card
-- ServiceCard
-- Calendar
-- TimeSlot
-- BookingStepper
+- Product
+- ProductCard
+- Image
 - Modal
 - Toast
-- Banner
-- DashboardCard
+- Loading
+- Skeleton
+- Cart
+- CartDrawer
 
-A componentização permite reutilizar os mesmos elementos em diferentes partes do sistema.
+A componentização permite reutilizar os mesmos elementos em diferentes partes da aplicação, facilitando a manutenção e evolução do projeto.
 
 ---
 
@@ -329,8 +365,8 @@ Entre elas:
 
 - HTML semântico
 - Labels associadas aos inputs
-- aria-label
-- aria-live
+- `aria-label`
+- `aria-live`
 - Navegação por teclado
 - Focus visível
 - Contraste adequado
@@ -338,6 +374,7 @@ Entre elas:
 - Botões acessíveis
 - Imagens com textos alternativos
 - Gerenciamento de foco em modais
+- Respeito à preferência `prefers-reduced-motion`
 
 ---
 
@@ -352,7 +389,7 @@ A aplicação será adaptada para:
 - Tablet
 - Smartphone
 
-O sistema também contará com uma experiência otimizada para dispositivos móveis, facilitando a realização de reservas diretamente pelo celular.
+O sistema também contará com uma experiência otimizada para dispositivos móveis, facilitando a consulta dos smartphones, seleção de planos e gerenciamento do carrinho diretamente pelo celular.
 
 ---
 
@@ -360,6 +397,7 @@ O sistema também contará com uma experiência otimizada para dispositivos móv
 
 ```text
 reserva-hub
+
 │
 ├── public
 │   └── favicon
@@ -369,9 +407,9 @@ reserva-hub
 │   ├── assets
 │   │   │
 │   │   ├── images
+│   │   │   ├── smartphones
 │   │   │   ├── banners
 │   │   │   ├── logos
-│   │   │   ├── illustrations
 │   │   │   └── references
 │   │   │
 │   │   └── icons
@@ -380,27 +418,26 @@ reserva-hub
 │   │   │
 │   │   ├── Button
 │   │   ├── Card
-│   │   ├── Calendar
-│   │   ├── Header
+│   │   ├── Cart
 │   │   ├── Footer
+│   │   ├── Header
+│   │   ├── Image
 │   │   ├── Input
 │   │   ├── Modal
-│   │   ├── ServiceCard
-│   │   ├── Sidebar
-│   │   ├── TimeSlot
-│   │   └── BookingStepper
+│   │   ├── Product
+│   │   └── ...
 │   │
 │   ├── pages
 │   │   │
 │   │   ├── Home
-│   │   ├── Booking
-│   │   ├── Confirmation
+│   │   ├── ProductDetail
+│   │   ├── Cart
 │   │   ├── Login
-│   │   └── Admin
+│   │   ├── Register
+│   │   └── Contact
 │   │
 │   ├── layouts
-│   │   ├── PublicLayout
-│   │   └── AdminLayout
+│   │   └── PublicLayout
 │   │
 │   ├── hooks
 │   │
@@ -445,26 +482,27 @@ Exemplo:
 
 ```text
 components
+
 │
 ├── Button
 │   ├── Button.tsx
-│   ├── Button.module.css
+│   ├── Button.css
 │   └── Button.test.tsx
 │
-├── Calendar
-│   ├── Calendar.tsx
-│   ├── Calendar.module.css
-│   └── Calendar.test.tsx
+├── Image
+│   ├── Image.tsx
+│   ├── ImageStyle.css
+│   └── Image.test.tsx
 │
-├── ServiceCard
-│   ├── ServiceCard.tsx
-│   ├── ServiceCard.module.css
-│   └── ServiceCard.test.tsx
+├── Product
+│   ├── Product.tsx
+│   ├── Product.css
+│   └── Product.test.tsx
 │
-└── TimeSlot
-    ├── TimeSlot.tsx
-    ├── TimeSlot.module.css
-    └── TimeSlot.test.tsx
+└── Modal
+    ├── Modal.tsx
+    ├── Modal.css
+    └── Modal.test.tsx
 ```
 
 ---
@@ -477,12 +515,12 @@ Exemplo de componentes testados:
 
 - Button
 - Input
-- ServiceCard
-- Calendar
-- TimeSlot
-- BookingStepper
+- Product
+- Image
+- Modal
+- Cart
 
-Os testes terão como objetivo garantir o funcionamento correto dos principais componentes da aplicação.
+Os testes terão como objetivo garantir o funcionamento correto dos principais componentes da aplicação e reduzir regressões durante a evolução do projeto.
 
 ---
 
@@ -496,53 +534,65 @@ Os testes terão como objetivo garantir o funcionamento correto dos principais c
 - Tipagem com TypeScript
 - Componentes funcionais
 - Hooks modernos
-- css organizado
+- CSS organizado
 - Arquitetura escalável
 - Boas práticas de acessibilidade
 - HTML semântico
 - Lazy Loading
+- Design responsivo
+- Performance
 
 ---
 
-# 🎯 Arquitetura do Sistema
+# 🎯 Arquitetura da Aplicação
 
-O conceito principal do ReservaHub é possuir um único motor de reservas.
+O conceito principal do ReservaHub é oferecer uma experiência completa para assinatura de smartphones.
 
 ```text
 ReservaHub
+
 │
-├── Empresa
+├── Catálogo
 │
-├── Serviços
+├── Smartphones
 │
-├── Recursos
+├── Detalhes do produto
 │
-├── Disponibilidade
+├── Planos de assinatura
 │
-├── Reservas
+├── Carrinho
 │
-└── Personalização
+├── Autenticação
+│
+├── Cliente
+│
+└── Contratação
 ```
 
-Cada empresa poderá configurar seus próprios recursos.
+O fluxo conecta a consulta dos smartphones ao processo de seleção do plano, carrinho e assinatura.
 
-Exemplo:
+---
+
+# 📱 Smartphones disponíveis
+
+Exemplos de smartphones utilizados no catálogo:
 
 ```text
-Clínica
-→ Médico
+iPhone 15 Pro Max
 
-Lavagem Automotiva
-→ Box de lavagem
-
-Pizzaria
-→ Mesa
-
-Salão
-→ Profissional
+├── Armazenamento: 256 GB
+├── Assinatura: R$ 289,90
+└── Estoque: 8 unidades
 ```
 
-A lógica principal de reservas permanece a mesma.
+```text
+Galaxy S24 Ultra
+
+├── Armazenamento: 512 GB
+└── Estoque: 5 unidades
+```
+
+Os produtos podem apresentar informações específicas de acordo com o modelo e a disponibilidade cadastrada.
 
 ---
 
@@ -554,10 +604,15 @@ Exemplo:
 
 ```gitignore
 node_modules/
+
 dist/
+
 .vscode/
+
 .env
+
 .env.local
+
 .DS_Store
 ```
 
@@ -567,7 +622,7 @@ dist/
 
 Abaixo está uma referência visual inicial do projeto.
 
-<img src="src/assets/images/references/reserva-hub-layout-reference.png" alt="Preview do sistema ReservaHub" />
+<img src="src/assets/images/references/reserva-hub-layout-reference.png" alt="Preview da plataforma ReservaHub para assinatura de smartphones" />
 
 ---
 
@@ -575,4 +630,4 @@ Abaixo está uma referência visual inicial do projeto.
 
 Projeto desenvolvido para fins de estudo e aprimoramento das habilidades em desenvolvimento Front-end utilizando **React**, **TypeScript** e **CSS**.
 
-O projeto aplica conceitos modernos de **componentização, arquitetura escalável, responsividade, acessibilidade, testes automatizados, reutilização de componentes e boas práticas de desenvolvimento**.
+O projeto aplica conceitos modernos de **componentização, arquitetura escalável, responsividade, acessibilidade, testes automatizados, reutilização de componentes, performance e boas práticas de desenvolvimento**, com foco em uma plataforma de **assinatura de smartphones**.
