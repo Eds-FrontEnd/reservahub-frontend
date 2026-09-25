@@ -43,6 +43,8 @@ const HomePage = () => {
               alt="Foto de um Iphone frente"
               width={204}
               height={420}
+              enable3D={true}
+              to="/smartphones"
               priority
             />
             <Image
@@ -50,6 +52,8 @@ const HomePage = () => {
               alt="Foto de um Iphone verso"
               width={204}
               height={420}
+              enable3D={true}
+              to="/smartphones"
               priority
             />
           </span>

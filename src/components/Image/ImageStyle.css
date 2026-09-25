@@ -1,6 +1,9 @@
 .image {
   --image-background: var(--color-white);
   --image-border-radius: 0.5rem;
+  --image-rotate-x: 0deg;
+  --image-rotate-y: 0deg;
+
   outline: none;
 }
 
@@ -11,7 +14,20 @@
 .image__element {
   display: block;
   border-radius: inherit;
-  transition: opacity 200ms ease;
+  transition:
+    opacity 200ms ease,
+    transform 100ms ease;
+}
+
+.image--3d {
+  perspective: 800px;
+}
+
+.image--3d .image__element {
+  transform: perspective(800px) rotateX(var(--image-rotate-x))
+    rotateY(var(--image-rotate-y)) scale(1.02);
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .image--loading .image__element {
@@ -59,6 +75,11 @@
 @media (prefers-reduced-motion: reduce) {
   .image__element {
     transition: none;
+  }
+
+  .image--3d .image__element {
+    transform: none;
+    will-change: auto;
   }
 
   .image__placeholder--skeleton {
