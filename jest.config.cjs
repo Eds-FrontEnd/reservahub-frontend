@@ -18,7 +18,7 @@ module.exports = {
 
   moduleNameMapper: {
     "\\.(css|scss|sass)$": "<rootDir>/src/tests/styleMock.cjs",
-    "\\.(png|jpg|jpeg|gif|svg|webp|avif)$": "<rootDir>/src/tests/fileMock.cjs",
+    "\\..webp|jpg|jpeg|gif|svg|webp|avif)$": "<rootDir>/src/tests/fileMock.cjs",
   },
 
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
