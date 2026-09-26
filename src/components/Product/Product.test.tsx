@@ -26,7 +26,7 @@ describe("ProductCard", () => {
     stock: 8,
     description: "Smartphone Apple com tecnologia avançada.",
     model: "256GB",
-    image: "/images/iphone-15-pro-max.png",
+    image: "/images/iphone-15-pro-max.webp",
     monthlyPrice: 289.9,
     planType: "Mensal Flex",
     benefits: ["Frete grátis", "Seguro incluso"],
@@ -82,7 +82,7 @@ describe("ProductCard", () => {
       screen.getByRole("img", {
         name: "Smartphone iPhone 15 Pro Max - Modelo 256GB",
       }),
-    ).toHaveAttribute("src", "/images/iphone-15-pro-max.png");
+    ).toHaveAttribute("src", "/images/iphone-15-pro-max.webp");
   });
 
   it("deve aplicar o atributo loading lazy à imagem", () => {
@@ -497,7 +497,7 @@ describe("ProductCard", () => {
       ...mockItem,
       product: "Galaxy S24 Ultra",
       model: "512GB",
-      image: "/images/galaxy-s24-ultra.png",
+      image: "/images/galaxy-s24-ultra.webp",
     });
 
     expect(
@@ -512,7 +512,7 @@ describe("ProductCard", () => {
       screen.getByRole("img", {
         name: "Smartphone Galaxy S24 Ultra - Modelo 512GB",
       }),
-    ).toHaveAttribute("src", "/images/galaxy-s24-ultra.png");
+    ).toHaveAttribute("src", "/images/galaxy-s24-ultra.webp");
   });
 
   it("deve retornar null quando item for nulo", () => {

@@ -14,7 +14,7 @@ const createProduct = (
   stock: 8,
   description: "Smartphone Apple com excelente desempenho.",
   model: "A3108",
-  image: "/images/iphone-15-pro-max.png",
+  image: "/images/iphone-15-pro-max.webp",
   monthlyPrice: 289.9,
   planType: "Mensal Flex",
   benefits: ["Seguro incluso", "Troca facilitada"],

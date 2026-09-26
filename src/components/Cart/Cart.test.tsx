@@ -68,7 +68,7 @@ const createProduct = (
   id: "iphone-15-pro-max",
   product: "iPhone 15 Pro Max",
   model: "256GB",
-  image: "/iphone-15-pro-max.png",
+  image: "/iphone-15-pro-max.webp",
   monthlyPrice: 289.9,
   stock: 8,
   description: "iPhone 15 Pro Max com 256GB de armazenamento.",
@@ -297,7 +297,7 @@ describe("Cart", () => {
         screen.getByRole("img", {
           name: "iPhone 15 Pro Max - 256GB",
         }),
-      ).toHaveAttribute("src", "/iphone-15-pro-max.png");
+      ).toHaveAttribute("src", "/iphone-15-pro-max.webp");
     });
 
     it("deve renderizar múltiplos produtos", () => {
@@ -311,7 +311,7 @@ describe("Cart", () => {
         id: "galaxy-s24-ultra",
         product: "Galaxy S24 Ultra",
         model: "512GB",
-        image: "/galaxy-s24-ultra.png",
+        image: "/galaxy-s24-ultra.webp",
         monthlyPrice: 319.9,
       });
 

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import LogoReservaHub from "../../assets/images/logo/reservahub_logo.png";
+import LogoReservaHub from "../../assets/images/logo/reservahub_logo.webp";
 
 export const Logo = () => {
   return (

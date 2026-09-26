@@ -268,6 +268,13 @@ describe("Header", () => {
   });
 
   it("deve renderizar o ícone de usuário quando não estiver autenticado", () => {
+    mockedUseAuth.mockReturnValue(
+      createAuthMock({
+        isAuthenticated: false,
+        user: null,
+      }),
+    );
+
     renderHeader();
 
     const loginLink = screen.getByRole("link", {

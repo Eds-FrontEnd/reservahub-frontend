@@ -1,5 +1,5 @@
-import SmartImageFront from "../../assets/images/products/smartphone_front.png";
-import SmartImageBack from "../../assets/images/products/smartphone_back.png";
+import SmartImageFront from "../../assets/images/products/smartphone_front.webp";
+import SmartImageBack from "../../assets/images/products/smartphone_back.webp";
 
 import { Image } from "../../components/Image";
 import { Title } from "../../components/Title";
@@ -45,7 +45,8 @@ const HomePage = () => {
               height={420}
               enable3D={true}
               to="/smartphones"
-              priority
+              fetchPriority="high"
+              decoding="async"
             />
             <Image
               src={SmartImageBack}
@@ -54,7 +55,8 @@ const HomePage = () => {
               height={420}
               enable3D={true}
               to="/smartphones"
-              priority
+              fetchPriority="high"
+              decoding="async"
             />
           </span>
         </span>

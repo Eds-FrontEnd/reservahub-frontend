@@ -6,7 +6,7 @@
     "stock": 8,
     "description": "Assinatura anual com seguro total contra roubo e quebra, celular reserva em 24h e upgrade garantido no próximo ano.",
     "model": "A3106 - Titânio Natural",
-    "image": "../../src/assets/images/products/01-sub-ph-15pro.png",
+    "image": "../../src/assets/images/products/01-sub-ph-15pro.webp",
     "monthlyPrice": 289.9,
     "planType": "Anual",
     "benefits": [
@@ -22,7 +22,7 @@
     "stock": 5,
     "description": "Plano flexível com Galaxy AI liberado, suporte técnico VIP 24/7 e proteção contra danos acidentais.",
     "model": "SM-S928B - Cinza Titânio",
-    "image": "../../src/assets/images/products/02-sub-ph-s24ultra.png",
+    "image": "../../src/assets/images/products/02-sub-ph-s24ultra.webp",
     "monthlyPrice": 269.9,
     "planType": "Mensal Flex",
     "benefits": [
@@ -38,7 +38,7 @@
     "stock": 12,
     "description": "Experiência Android pura com a melhor câmera computacional e recursos avançados de inteligência artificial.",
     "model": "GC3VE - Azul Baía",
-    "image": "../../src/assets/images/products/03-sub-ph-pixel8pro.png",
+    "image": "../../src/assets/images/products/03-sub-ph-pixel8pro.webp",
     "monthlyPrice": 229.9,
     "planType": "Anual",
     "benefits": [
@@ -54,7 +54,7 @@
     "stock": 15,
     "description": "Dynamic Island, câmera principal de 48 MP e conector USB-C no plano ideal para o seu dia a dia.",
     "model": "A3090 - Rosa",
-    "image": "../../src/assets/images/products/04-sub-ph-iphone15.png",
+    "image": "../../src/assets/images/products/04-sub-ph-iphone15.webp",
     "monthlyPrice": 199.9,
     "planType": "Anual",
     "benefits": [
@@ -70,7 +70,7 @@
     "stock": 3,
     "description": "Produtividade máxima com tela dobrável imersiva, suporte à S Pen e multitarefa avançada.",
     "model": "SM-F946B - Icy Blue",
-    "image": "../../src/assets/images/products/05-sub-ph-zfold5.png",
+    "image": "../../src/assets/images/products/05-sub-ph-zfold5.webp",
     "monthlyPrice": 349.9,
     "planType": "Anual",
     "benefits": [
@@ -86,7 +86,7 @@
     "stock": 7,
     "description": "Design compacto que cabe no bolso com Flex Window ampla para fotos e notificações rápidas.",
     "model": "SM-F731B - Menta",
-    "image": "../../src/assets/images/products/06-sub-ph-zflip5.png",
+    "image": "../../src/assets/images/products/06-sub-ph-zflip5.webp",
     "monthlyPrice": 219.9,
     "planType": "Anual",
     "benefits": [
@@ -102,7 +102,7 @@
     "stock": 0,
     "description": "Lentes profissionais Leica com sensor de 1 polegada e carregamento ultrarrápido de 90W.",
     "model": "24030PN60G - Preto",
-    "image": "../../src/assets/images/products/07-sub-ph-xiaomi14.png",
+    "image": "../../src/assets/images/products/07-sub-ph-xiaomi14.webp",
     "monthlyPrice": 259.9,
     "planType": "Mensal Flex",
     "benefits": [
@@ -118,7 +118,7 @@
     "stock": 10,
     "description": "Acabamento em silicone vegano, tela pOLED de 144Hz e carregamento TurboPower de 125W.",
     "model": "XT2403-2 - Lavender",
-    "image": "../../src/assets/images/products/08-sub-ph-edge50pro.png",
+    "image": "../../src/assets/images/products/08-sub-ph-edge50pro.webp",
     "monthlyPrice": 179.9,
     "planType": "Anual",
     "benefits": [
@@ -134,7 +134,7 @@
     "stock": 4,
     "description": "Performance gamer extrema com Snapdragon 8 Gen 3, gatilhos ultrassônicos e tela de 165Hz.",
     "model": "AI2401 - Rebel Grey",
-    "image": "../../src/assets/images/products/09-sub-ph-rog8.png",
+    "image": "../../src/assets/images/products/09-sub-ph-rog8.webp",
     "monthlyPrice": 299.9,
     "planType": "Anual",
     "benefits": [
@@ -150,7 +150,7 @@
     "stock": 20,
     "description": "Recursos premium da linha S com excelente custo-benefício, câmeras de nível profissional e IP68.",
     "model": "SM-S711B - Grafite",
-    "image": "../../src/assets/images/products/10-sub-ph-s23fe.png",
+    "image": "../../src/assets/images/products/10-sub-ph-s23fe.webp",
     "monthlyPrice": 139.9,
     "planType": "Anual",
     "benefits": ["Plano Econômico", "Seguro Contra Danos", "Suporte 24 Horas"]
@@ -162,7 +162,7 @@
     "stock": 9,
     "description": "Detecção de Acidentes, bateria para o dia todo e fotos impressionantes em pouca luz.",
     "model": "A2882 - Estelar",
-    "image": "../../src/assets/images/products/11-sub-ph-iphone14.png",
+    "image": "../../src/assets/images/products/11-sub-ph-iphone14.webp",
     "monthlyPrice": 169.9,
     "planType": "Anual",
     "benefits": ["Seguro Total Apple", "Aparelho Reserva", "Upgrade Garantido"]
@@ -174,7 +174,7 @@
     "stock": 14,
     "description": "Display AMOLED WQHD+ de 120Hz, processador flagship e carregamento HyperCharge de 120W.",
     "model": "24069PC21G - White",
-    "image": "../../src/assets/images/products/12-sub-ph-poco-f6.png",
+    "image": "../../src/assets/images/products/12-sub-ph-poco-f6.webp",
     "monthlyPrice": 149.9,
     "planType": "Mensal Flex",
     "benefits": [

@@ -1,6 +1,6 @@
 import "./NotFoundStyle.css";
 
-import notFoundImage from "../../assets/images/not-found/not-found-404.png";
+import notFoundImage from "../../assets/images/not-found/not-found-404.webp";
 import { Button } from "../../components/Button";
 
 const NotFound = () => {
