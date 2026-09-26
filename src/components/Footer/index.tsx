@@ -1,10 +1,8 @@
-import {
-  Facebook,
-  Instagram,
-  LinkedIn,
-  Twitter,
-  WhatsApp,
-} from "@mui/icons-material";
+import Facebook from "@mui/icons-material/Facebook";
+import Instagram from "@mui/icons-material/Instagram";
+import LinkedIn from "@mui/icons-material/LinkedIn";
+import Twitter from "@mui/icons-material/Twitter";
+import WhatsApp from "@mui/icons-material/WhatsApp";
 
 import "./FooterStyle.css";
 
