@@ -230,7 +230,7 @@
   gap: 12px;
   padding: 16px 20px;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(16px);
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.1);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(10px);
@@ -308,7 +308,7 @@
 .subscription-benefit {
   padding: 32px;
   border: 1px solid var(--color-blue);
-  border-radius: var(24px);
+  border-radius: 24px;
   background: var(--color-white);
   transition:
     transform 180ms ease,
@@ -317,7 +317,7 @@
 
 .subscription-benefit:hover {
   transform: translateY(-5px);
-  box-shadow: var(0 12px 35px rgba(0, 51, 153, 0.08));
+  box-shadow: 0 12px 35px rgba(0, 51, 153, 0.08);
 }
 
 .subscription-benefit__icon {
@@ -327,7 +327,7 @@
   width: 56px;
   height: 56px;
   margin-bottom: 24px;
-  border-radius: var(16px);
+  border-radius: 16px;
   background: var(--color-white);
   color: var(--color-primary);
 }
@@ -365,9 +365,9 @@
 .subscription-step {
   position: relative;
   padding: 32px 24px;
-  border-radius: var(24px);
+  border-radius: 24px;
   background: var(--color-white);
-  box-shadow: var(0 12px 35px rgba(0, 51, 153, 0.08));
+  box-shadow: 0 12px 35px rgba(0, 51, 153, 0.08);
   border-radius: 16px;
   text-align: center;
 }
