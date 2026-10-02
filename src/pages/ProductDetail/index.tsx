@@ -1,9 +1,9 @@
-import React, { useState, useId } from "react";
+import React, { useEffect, useState, useId } from "react";
 import { useParams } from "react-router-dom";
 import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
 import AccessAlarmIcon from "@mui/icons-material/AccessAlarm";
 
-import mockSmartphones from "../../data/mock-smartphones.json";
+import { SmartphoneService } from "../../services/SmartphoneService";
 
 import { type SmartphoneSubscriptionItem } from "../../components/Product";
 import { Button } from "../../components/Button";
@@ -21,9 +21,7 @@ export const ProductDetailPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const { addItem, items } = useCart();
 
-  const item = (mockSmartphones as SmartphoneSubscriptionItem[]).find(
-    (phone) => phone.id === id,
-  );
+  const [item, setItem] = useState<SmartphoneSubscriptionItem | null>(null);
 
   const [selectedPlanMonths, setSelectedPlanMonths] = useState<number>(12);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
@@ -35,6 +33,25 @@ export const ProductDetailPage: React.FC = () => {
   });
 
   const planSelectId = useId();
+
+  useEffect(() => {
+    const carregarSmartphone = async () => {
+      if (!id) {
+        setItem(null);
+        return;
+      }
+
+      try {
+        const data = await SmartphoneService.buscarPorId(id);
+
+        setItem(data);
+      } catch {
+        setItem(null);
+      }
+    };
+
+    carregarSmartphone();
+  }, [id]);
 
   if (!item) {
     return (

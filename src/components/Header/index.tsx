@@ -1,10 +1,13 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import IconSearch from "../../assets/images/icons/icon-search.svg";
 import IconCart from "../../assets/images/icons/icon-cart.svg";
 import IconUser from "../../assets/images/icons/icon-user.svg";
 import IconLogout from "../../assets/images/icons/icon-logout.svg";
+import IconSun from "../../assets/images/icons/icon-sun.svg";
+import IconMoon from "../../assets/images/icons/icon-moon.svg";
 
 import { Logo } from "../Logo";
 import Menu from "../Menu";
@@ -15,11 +18,32 @@ import { useCart } from "../../contexts/CartContext";
 
 import "./HeaderStyle.css";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { openCart, totalItems } = useCart();
+  const navigate = useNavigate();
 
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add("dark-theme");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.body.classList.remove("dark-theme");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => {
+    setIsDarkMode((prev) => !prev);
+  };
 
   const firstName = user?.name
     ?.trim()
@@ -33,6 +57,27 @@ const Header: React.FC = () => {
 
   const handleCloseSearch = () => {
     setIsSearchOpen(false);
+  };
+
+  const handleLogout = async () => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      try {
+        await axios.post(
+          `${API_URL}/api/auth/logout`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+      } catch {}
+    }
+
+    logout();
+    navigate("/");
   };
 
   return (
@@ -89,11 +134,11 @@ const Header: React.FC = () => {
                 Seja bem-vindo(a), {firstName}!
               </span>
 
-              <Link
+              <button
+                type="button"
                 className="header__action"
-                to="/"
                 aria-label="Sair da minha conta"
-                onClick={logout}
+                onClick={handleLogout}
               >
                 <img
                   src={IconLogout}
@@ -102,7 +147,7 @@ const Header: React.FC = () => {
                   height="24"
                   decoding="async"
                 />
-              </Link>
+              </button>
             </div>
           ) : (
             <Link
@@ -119,6 +164,21 @@ const Header: React.FC = () => {
               />
             </Link>
           )}
+
+          <button
+            type="button"
+            className="header__action"
+            onClick={toggleTheme}
+            aria-label="Alternar tema claro/escuro"
+          >
+            <img
+              src={isDarkMode ? IconMoon : IconSun}
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+            />
+          </button>
         </nav>
       </header>
 

@@ -2,24 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 
-import mockSmartphones from "../../data/mock-smartphones.json";
+import { SmartphoneService } from "../../services/SmartphoneService";
 
 import { useAuth } from "../../contexts/AutContext";
 
-import "./SearchStyle.css";
+import type { SmartphoneSubscriptionItem } from "../../components/Product";
 
-interface SmartphoneSubscriptionItem {
-  id: string;
-  product: string;
-  quantity: number;
-  stock: number;
-  description: string;
-  model: string;
-  image: string;
-  monthlyPrice: number;
-  planType: string;
-  benefits: string[];
-}
+import "./SearchStyle.css";
 
 interface SearchProps {
   open: boolean;
@@ -33,9 +22,58 @@ const Search: React.FC<SearchProps> = ({ open, onClose }) => {
 
   const [searchTerm, setSearchTerm] = useState<string>("");
 
+  const [smartphones, setSmartphones] = useState<SmartphoneSubscriptionItem[]>(
+    [],
+  );
+
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const smartphones = mockSmartphones as SmartphoneSubscriptionItem[];
+  useEffect(() => {
+    if (!open) {
+      setSearchTerm("");
+      setSmartphones([]);
+      return;
+    }
+
+    const carregarSmartphones = async () => {
+      try {
+        const normalizedSearch = searchTerm.trim();
+
+        if (!normalizedSearch) {
+          setSmartphones([]);
+          return;
+        }
+
+        const data = await SmartphoneService.buscarPorNome(normalizedSearch);
+
+        setSmartphones(data);
+      } catch {
+        setSmartphones([]);
+      }
+    };
+
+    const timer = window.setTimeout(() => {
+      carregarSmartphones();
+    }, 300);
+
+    const focusTimer = window.setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 0);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(focusTimer);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose, searchTerm]);
 
   const filteredSmartphones = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -60,30 +98,6 @@ const Search: React.FC<SearchProps> = ({ open, onClose }) => {
       })
       .slice(0, 5);
   }, [searchTerm, smartphones]);
-
-  useEffect(() => {
-    if (!open) {
-      setSearchTerm("");
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 0);
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.clearTimeout(timer);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open, onClose]);
 
   const handleSearch = () => {
     const normalizedSearch = searchTerm.trim();

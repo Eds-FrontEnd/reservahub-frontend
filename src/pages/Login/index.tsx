@@ -61,7 +61,7 @@ const LoginPage = () => {
     setLoginError(false);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const result = loginSchema.safeParse(formData);
@@ -87,7 +87,10 @@ const LoginPage = () => {
 
     setErrors({});
 
-    const authenticatedUser = loginUser(formData.email, formData.password);
+    const authenticatedUser = await loginUser(
+      formData.email,
+      formData.password,
+    );
 
     setLoginError(!authenticatedUser);
 

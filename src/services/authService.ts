@@ -1,4 +1,4 @@
-const USERS_KEY = "users";
+const API_URL = "http://localhost:8080/api";
 
 export interface User {
   name: string;
@@ -6,41 +6,92 @@ export interface User {
   password: string;
 }
 
-const getUsers = (): User[] => {
-  const users = localStorage.getItem(USERS_KEY);
+interface LoginResponse {
+  token: string;
+  nome: string;
+}
 
-  return users ? JSON.parse(users) : [];
-};
+export const registerUser = async (user: User): Promise<boolean> => {
+  const response = await fetch(`${API_URL}/usuarios`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      nome: user.name,
+      email: user.email,
+      senha: user.password,
+    }),
+  });
 
-export const registerUser = (user: User): boolean => {
-  const users = getUsers();
-
-  const userExists = users.some(
-    (currentUser) => currentUser.email === user.email,
-  );
-
-  if (userExists) {
+  if (!response.ok) {
     return false;
   }
-
-  users.push(user);
-
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
 
   return true;
 };
 
-export const loginUser = (email: string, password: string): User | null => {
-  const users = getUsers();
+export const loginUser = async (
+  email: string,
+  password: string,
+): Promise<User | null> => {
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      senha: password,
+    }),
+  });
 
-  return (
-    users.find((user) => user.email === email && user.password === password) ??
-    null
-  );
+  if (!response.ok) {
+    return null;
+  }
+
+  const data: LoginResponse = await response.json();
+
+  localStorage.setItem("token", data.token);
+
+  return {
+    name: data.nome,
+    email,
+    password: "",
+  };
+};
+
+export const logoutUser = async (): Promise<boolean> => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return true;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/auth/logout`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("authenticatedUser");
+
+    return response.ok;
+  } catch {
+    localStorage.removeItem("token");
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("authenticatedUser");
+
+    return false;
+  }
 };
 
 export const resetPassword = (email: string, password: string): boolean => {
-  const users = getUsers();
+  const users = JSON.parse(localStorage.getItem("users") ?? "[]") as User[];
 
   const userExists = users.some((user) => user.email === email);
 
@@ -57,7 +108,7 @@ export const resetPassword = (email: string, password: string): boolean => {
       : user,
   );
 
-  localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
+  localStorage.setItem("users", JSON.stringify(updatedUsers));
 
   return true;
 };

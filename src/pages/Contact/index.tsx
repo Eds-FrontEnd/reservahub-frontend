@@ -1,14 +1,14 @@
 import { useState } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  AccessTime,
-  ArrowForward,
-  Email,
-  LocationOn,
-  Phone,
-  WhatsApp,
-} from "@mui/icons-material";
+
+import AccessTime from "@mui/icons-material/AccessTime";
+import ArrowForward from "@mui/icons-material/ArrowForward";
+import Email from "@mui/icons-material/Email";
+import ErrorOutlined from "@mui/icons-material/ErrorOutlined";
+import LocationOn from "@mui/icons-material/LocationOn";
+import Phone from "@mui/icons-material/Phone";
+import WhatsApp from "@mui/icons-material/WhatsApp";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 import Footer from "../../components/Footer";
@@ -59,6 +59,7 @@ const contactChannels: ContactChannel[] = [
 const ContactPage = () => {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -88,10 +89,12 @@ const ContactPage = () => {
     validateField(name as keyof ContactFormData, value);
   };
 
-  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+
+    const formData = new FormData(form);
 
     const contact = {
       name: String(formData.get("name") ?? ""),
@@ -120,10 +123,20 @@ const ContactPage = () => {
 
     setErrors({});
 
-    saveContact(result.data);
+    try {
+      const response = await saveContact(result.data);
 
-    event.currentTarget.reset();
-    setModalOpen(true);
+      if (response.status !== 201) {
+        setErrorModalOpen(true);
+
+        return;
+      }
+
+      form.reset();
+      setModalOpen(true);
+    } catch {
+      setErrorModalOpen(true);
+    }
   };
 
   return (
@@ -347,6 +360,17 @@ const ContactPage = () => {
         titleColor="var(--color-secondary)"
         onNavigate={navigate}
         closeUrl="/login"
+      />
+
+      <Modal
+        open={errorModalOpen}
+        title="Erro ao enviar mensagem"
+        message="Não foi possível enviar sua mensagem. Tente novamente."
+        icon={<ErrorOutlined />}
+        iconColor="var(--color-red)"
+        titleColor="var(--color-red)"
+        onNavigate={() => setErrorModalOpen(false)}
+        closeUrl="/contato"
       />
     </main>
   );
