@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import IconSearch from "../../assets/images/icons/icon-search.svg";
+import IconSearchDark from "../../assets/images/icons/icon-search-dark.svg";
 import IconCart from "../../assets/images/icons/icon-cart.svg";
+import IconCartDark from "../../assets/images/icons/icon-cart-dark.svg";
 import IconUser from "../../assets/images/icons/icon-user.svg";
+import IconUserDark from "../../assets/images/icons/icon-user-dark.svg";
 import IconLogout from "../../assets/images/icons/icon-logout.svg";
+import IconLogoutDark from "../../assets/images/icons/icon-logout-dark.svg";
 import IconSun from "../../assets/images/icons/icon-sun.svg";
 import IconMoon from "../../assets/images/icons/icon-moon.svg";
 
@@ -15,6 +19,7 @@ import Search from "../Search";
 
 import { useAuth } from "../../contexts/AutContext";
 import { useCart } from "../../contexts/CartContext";
+import { useDarkTheme } from "../../contexts/DarkThemeContext";
 
 import "./HeaderStyle.css";
 
@@ -23,27 +28,10 @@ const API_URL = import.meta.env.VITE_API_URL;
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { openCart, totalItems } = useCart();
+  const { isDarkMode, toggleTheme } = useDarkTheme();
   const navigate = useNavigate();
 
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
-
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.add("dark-theme");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.body.classList.remove("dark-theme");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDarkMode]);
-
-  const toggleTheme = () => {
-    setIsDarkMode((prev) => !prev);
-  };
 
   const firstName = user?.name
     ?.trim()
@@ -97,7 +85,7 @@ const Header: React.FC = () => {
             aria-label="Pesquisar produtos"
           >
             <img
-              src={IconSearch}
+              src={isDarkMode ? IconSearchDark : IconSearch}
               alt=""
               width="24"
               height="24"
@@ -114,7 +102,7 @@ const Header: React.FC = () => {
             }`}
           >
             <img
-              src={IconCart}
+              src={isDarkMode ? IconCartDark : IconCart}
               alt=""
               width="24"
               height="24"
@@ -141,7 +129,7 @@ const Header: React.FC = () => {
                 onClick={handleLogout}
               >
                 <img
-                  src={IconLogout}
+                  src={isDarkMode ? IconLogoutDark : IconLogout}
                   alt=""
                   width="24"
                   height="24"
@@ -156,7 +144,7 @@ const Header: React.FC = () => {
               aria-label="Entrar na minha conta"
             >
               <img
-                src={IconUser}
+                src={isDarkMode ? IconUserDark : IconUser}
                 alt=""
                 width="24"
                 height="24"
@@ -169,7 +157,7 @@ const Header: React.FC = () => {
             type="button"
             className="header__action"
             onClick={toggleTheme}
-            aria-label="Alternar tema claro/escuro"
+            aria-label={isDarkMode ? "Ativar tema claro" : "Ativar tema escuro"}
           >
             <img
               src={isDarkMode ? IconMoon : IconSun}

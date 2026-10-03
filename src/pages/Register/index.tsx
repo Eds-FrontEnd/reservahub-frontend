@@ -64,7 +64,7 @@ const RegisterPage = () => {
     setRegisterError(false);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const result = registerSchema.safeParse(formData);
@@ -91,7 +91,7 @@ const RegisterPage = () => {
 
     setErrors({});
 
-    const registered = registerUser(formData);
+    const registered = await registerUser(formData);
 
     setRegisterError(!registered);
     setModalOpen(registered);
@@ -183,15 +183,13 @@ const RegisterPage = () => {
 
         <Modal
           open={modalOpen}
-          title={"Cadastro concluído!"}
-          message={
-            "Sua conta foi criada com sucesso. Você será redirecionado para o login."
-          }
-          redirectUrl={"/login"}
+          title="Cadastro concluído!"
+          message="Sua conta foi criada com sucesso. Você será redirecionado para o login."
+          redirectUrl="/login"
           redirectDelay={3000}
           icon={<CheckCircleIcon />}
-          iconColor={"var(--color-secondary)"}
-          titleColor={"var(--color-secondary)"}
+          iconColor="var(--color-secondary)"
+          titleColor="var(--color-secondary)"
           onNavigate={navigate}
           closeUrl="/login"
         />

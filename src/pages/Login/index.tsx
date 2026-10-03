@@ -106,6 +106,7 @@ const LoginPage = () => {
         <header className="login__header">
           <Logo />
         </header>
+
         <form className="login__form" onSubmit={handleSubmit} noValidate>
           <div className="login__field">
             <label htmlFor="email">E-mail</label>
