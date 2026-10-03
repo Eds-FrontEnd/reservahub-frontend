@@ -5,6 +5,7 @@ interface SmartphoneApiItem {
   nome: string;
   stock: number;
   modelo_produto: string;
+  description: string;
   image_url: string;
   id_plano: string;
   plano: string;
@@ -53,7 +54,7 @@ const mapSmartphone = (
   id: smartphone.id,
   product: smartphone.nome,
   stock: smartphone.stock,
-  description: "",
+  description: smartphone.description,
   model: smartphone.modelo_produto,
   image: smartphone.image_url,
   monthlyPrice: smartphone.preco_mensal,

@@ -76,7 +76,7 @@
   border-radius: 0 0 0 0.5rem;
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--color-white);
+  color: var(--color-primary);
   background-color: var(--color-white);
   position: absolute;
   top: 0;
@@ -85,12 +85,10 @@
 }
 
 .product-detail__badge-plan--monthly {
-  background-color: var(--color-white);
   color: var(--color-secondary);
 }
 
 .product-detail__badge-plan--annual {
-  background-color: var(--color-white);
   color: var(--color-primary);
 }
 
@@ -115,14 +113,14 @@
 }
 
 .product-detail__title {
-  font-size: 1.5rem;
+  font-size: 2.2rem;
   color: var(--color-black);
   line-height: 2.2rem;
   margin: 0;
 }
 
 .product-detail__description {
-  font-size: 0.8rem;
+  font-size: 1.3rem;
   line-height: 1.5;
   color: var(--color-gray-light);
   margin: 0;
