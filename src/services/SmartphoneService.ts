@@ -75,9 +75,6 @@ export const SmartphoneService = {
       `/api/smartphones?page=${page}&size=${size}`,
     );
 
-    console.log("Resposta /api/smartphones:", data);
-    console.log("Content:", data.content);
-
     return {
       produtos: data.content.map(mapSmartphone),
       totalPages: data.totalPages,

@@ -28,9 +28,6 @@ export const ProductsPage: React.FC = () => {
 
       const data = await SmartphoneService.listarPagina(page, ITEMS_PER_PAGE);
 
-      console.log("Dados recebidos:", data);
-      console.log("Produtos recebidos:", data.produtos);
-
       setSmartphones((prevSmartphones) =>
         page === 0 ? data.produtos : [...prevSmartphones, ...data.produtos],
       );
