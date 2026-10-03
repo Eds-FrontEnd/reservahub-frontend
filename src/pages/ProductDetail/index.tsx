@@ -1,20 +1,20 @@
-import React, { useEffect, useState, useId } from "react";
-import { useParams } from "react-router-dom";
-import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
 import AccessAlarmIcon from "@mui/icons-material/AccessAlarm";
+import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
+import React, { useEffect, useId, useState } from "react";
+import { useParams } from "react-router-dom";
 
 import { SmartphoneService } from "../../services/SmartphoneService";
 
-import { type SmartphoneSubscriptionItem } from "../../components/Product";
 import { Button } from "../../components/Button";
-import Modal from "../../components/Modal";
-import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import Header from "../../components/Header";
+import Modal from "../../components/Modal";
+import { type SmartphoneSubscriptionItem } from "../../components/Product";
 import { useAuth } from "../../contexts/AutContext";
 import { useCart } from "../../contexts/CartContext";
 
-import "./ProductDetailStyle.css";
 import NotFound from "../NotFound";
+import "./ProductDetailStyle.css";
 
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +22,7 @@ export const ProductDetailPage: React.FC = () => {
   const { addItem, items } = useCart();
 
   const [item, setItem] = useState<SmartphoneSubscriptionItem | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [selectedPlanMonths, setSelectedPlanMonths] = useState<number>(12);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
@@ -36,8 +37,11 @@ export const ProductDetailPage: React.FC = () => {
 
   useEffect(() => {
     const carregarSmartphone = async () => {
+      setIsLoading(true);
+
       if (!id) {
         setItem(null);
+        setIsLoading(false);
         return;
       }
 
@@ -47,18 +51,20 @@ export const ProductDetailPage: React.FC = () => {
         setItem(data);
       } catch {
         setItem(null);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     carregarSmartphone();
   }, [id]);
 
+  if (isLoading) {
+    return null;
+  }
+
   if (!item) {
-    return (
-      <main className="catalog-container">
-        <NotFound />
-      </main>
-    );
+    return <NotFound />;
   }
 
   const isOutOfStock = item.stock === 0;
