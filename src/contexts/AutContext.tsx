@@ -14,6 +14,7 @@ const AuthContext = createContext<AuthContextData | undefined>(undefined);
 
 const AUTH_KEY = "isAuthenticated";
 const USER_KEY = "authenticatedUser";
+const TOKEN_KEY = "token";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -35,6 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = () => {
+    localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(AUTH_KEY);
     localStorage.removeItem(USER_KEY);
 
@@ -67,7 +69,7 @@ export const useAuth = (): AuthContextData => {
 };
 
 export const resetPassword = (password: string): void => {
-  const storedUser = localStorage.getItem("authenticatedUser");
+  const storedUser = localStorage.getItem(USER_KEY);
 
   if (!storedUser) {
     return;
@@ -80,5 +82,5 @@ export const resetPassword = (password: string): void => {
     password,
   };
 
-  localStorage.setItem("authenticatedUser", JSON.stringify(updatedUser));
+  localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
 };
