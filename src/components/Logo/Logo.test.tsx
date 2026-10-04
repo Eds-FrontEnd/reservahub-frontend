@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
+import { DarkThemeProvider } from "../../contexts/DarkThemeContext";
 import { Logo } from "../Logo";
 
 import "@testing-library/jest-dom";
@@ -9,7 +10,9 @@ describe("Logo", () => {
   const renderLogo = () =>
     render(
       <MemoryRouter>
-        <Logo />
+        <DarkThemeProvider>
+          <Logo />
+        </DarkThemeProvider>
       </MemoryRouter>,
     );
 
