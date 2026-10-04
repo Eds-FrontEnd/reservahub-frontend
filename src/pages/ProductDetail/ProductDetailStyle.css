@@ -88,8 +88,8 @@
   color: var(--color-secondary);
 }
 
-.product-detail__badge-plan--annual {
-  color: var(--color-primary);
+.product-detail__badge-plan--anual {
+  color: var(--color-secondary);
 }
 
 .product-detail__content {

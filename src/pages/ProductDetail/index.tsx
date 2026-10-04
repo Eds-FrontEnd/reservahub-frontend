@@ -162,7 +162,7 @@ export const ProductDetailPage: React.FC = () => {
               item.planType === "Mensal Flex"
                 ? "product-detail__badge-plan--monthly"
                 : item.planType === "Anual"
-                  ? "product-detail__badge-plan--annual"
+                  ? "product-detail__badge-plan--anual"
                   : ""
             }`}
             aria-label={`Plano: ${item.planType}`}
