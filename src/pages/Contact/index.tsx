@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
-import { useNavigate } from "react-router-dom";
 
 import AccessTime from "@mui/icons-material/AccessTime";
 import ArrowForward from "@mui/icons-material/ArrowForward";
@@ -57,7 +56,6 @@ const contactChannels: ContactChannel[] = [
 ];
 
 const ContactPage = () => {
-  const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [errorModalOpen, setErrorModalOpen] = useState(false);
 
@@ -353,13 +351,10 @@ const ContactPage = () => {
         open={modalOpen}
         title="Mensagem enviada!"
         message="Sua mensagem foi enviada com sucesso. Você será redirecionado para a página inicial."
-        redirectUrl="/"
-        redirectDelay={3000}
         icon={<CheckCircleIcon />}
         iconColor="var(--color-secondary)"
         titleColor="var(--color-secondary)"
-        onNavigate={navigate}
-        closeUrl="/login"
+        onClose={() => setModalOpen(false)}
       />
 
       <Modal
@@ -369,8 +364,7 @@ const ContactPage = () => {
         icon={<ErrorOutlined />}
         iconColor="var(--color-red)"
         titleColor="var(--color-red)"
-        onNavigate={() => setErrorModalOpen(false)}
-        closeUrl="/contato"
+        onClose={() => setErrorModalOpen(false)}
       />
     </main>
   );
