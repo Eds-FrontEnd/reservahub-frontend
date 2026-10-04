@@ -29,3 +29,17 @@ body.dark-theme {
   background-color: var(--color-white);
   color: var(--color-black);
 }
+
+body.dark-theme .contact-form__field input,
+body.dark-theme .contact-form__field select,
+body.dark-theme .contact-form__field textarea {
+  background-color: #ffffff;
+  color: #003399;
+}
+
+body.dark-theme .contact-form__field input:focus,
+body.dark-theme .contact-form__field select:focus,
+body.dark-theme .contact-form__field textarea:focus {
+  background-color: #ffffff;
+  color: #003399;
+}
