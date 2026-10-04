@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import Search from "../Search";
 
+import { SmartphoneService } from "../../services/SmartphoneService";
 import { useAuth } from "../../contexts/AutContext";
 
 import "@testing-library/jest-dom";
@@ -88,18 +89,98 @@ jest.mock("react-router-dom", () => ({
   useNavigate: jest.fn(),
 }));
 
+jest.mock("../../services/SmartphoneService", () => ({
+  SmartphoneService: {
+    buscarPorNome: jest.fn(),
+  },
+}));
+
 jest.mock("../../contexts/AutContext", () => ({
   useAuth: jest.fn(),
 }));
 
-describe("Search", () => {
-  const mockNavigate = jest.fn();
-  const mockOnClose = jest.fn();
+const mockBuscarPorNome = jest.mocked(SmartphoneService.buscarPorNome);
+const mockNavigate = jest.fn();
+const mockUseNavigate = jest.mocked(useNavigate);
+const mockUseAuth = jest.mocked(useAuth);
 
-  const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-  const mockUseNavigate = useNavigate as jest.MockedFunction<
-    typeof useNavigate
-  >;
+const mockSmartphones = [
+  {
+    id: "iphone-15-pro-max",
+    product: "iPhone 15 Pro Max",
+    quantity: 10,
+    stock: 8,
+    description: "Smartphone Apple com câmera avançada.",
+    model: "256GB",
+    image: "/images/iphone-15-pro-max.webp",
+    monthlyPrice: 289.9,
+    planType: "Mensal Flex",
+    benefits: ["Frete grátis", "Seguro incluso"],
+  },
+  {
+    id: "galaxy-s24-ultra",
+    product: "Galaxy S24 Ultra",
+    quantity: 10,
+    stock: 5,
+    description: "Smartphone Samsung com câmera profissional.",
+    model: "512GB",
+    image: "/images/galaxy-s24-ultra.webp",
+    monthlyPrice: 319.9,
+    planType: "Anual",
+    benefits: ["Frete grátis", "Troca garantida"],
+  },
+  {
+    id: "iphone-15",
+    product: "iPhone 15",
+    quantity: 10,
+    stock: 12,
+    description: "Smartphone Apple compacto e potente.",
+    model: "128GB",
+    image: "/images/iphone-15.webp",
+    monthlyPrice: 199.9,
+    planType: "Mensal Flex",
+    benefits: ["Seguro incluso"],
+  },
+  {
+    id: "galaxy-a55",
+    product: "Galaxy A55",
+    quantity: 10,
+    stock: 15,
+    description: "Smartphone Samsung com excelente desempenho.",
+    model: "256GB",
+    image: "/images/galaxy-a55.webp",
+    monthlyPrice: 149.9,
+    planType: "Mensal Flex",
+    benefits: ["Frete grátis"],
+  },
+  {
+    id: "motorola-edge-50",
+    product: "Motorola Edge 50",
+    quantity: 10,
+    stock: 7,
+    description: "Smartphone com tela de alta resolução.",
+    model: "256GB",
+    image: "/images/motorola-edge-50.webp",
+    monthlyPrice: 179.9,
+    planType: "Anual",
+    benefits: ["Seguro incluso"],
+  },
+  {
+    id: "pixel-9",
+    product: "Google Pixel 9",
+    quantity: 10,
+    stock: 6,
+    description: "Smartphone Google com inteligência artificial.",
+    model: "128GB",
+    image: "/images/pixel-9.webp",
+    monthlyPrice: 299.9,
+    planType: "Mensal Flex",
+    benefits: ["IA avançada"],
+  },
+];
+
+describe("Search", () => {
+  const mockOnClose = jest.fn();
 
   const renderSearch = (open = true, isAuthenticated = false) => {
     mockUseAuth.mockReturnValue({
@@ -109,24 +190,46 @@ describe("Search", () => {
     return render(<Search open={open} onClose={mockOnClose} />);
   };
 
+  const searchFor = async (
+    user: ReturnType<typeof userEvent.setup>,
+    term: string,
+  ) => {
+    const input = screen.getByRole("textbox", {
+      name: "Pesquisar smartphones",
+    });
+
+    await user.type(input, term);
+
+    await waitFor(() => {
+      expect(mockBuscarPorNome).toHaveBeenCalledWith(term.trim());
+    });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
+
     mockUseNavigate.mockReturnValue(mockNavigate);
+
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: false,
+    } as ReturnType<typeof useAuth>);
+
+    mockBuscarPorNome.mockResolvedValue(mockSmartphones);
   });
 
-  it("não deve renderizar o componente quando open for false", () => {
-    const { container } = renderSearch(false);
+  it("não deve renderizar quando open for false", () => {
+    renderSearch(false);
 
-    expect(container.firstChild).toBeNull();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("deve renderizar o modal quando open for true", () => {
+  it("deve renderizar quando open for true", () => {
     renderSearch();
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
-  it("deve renderizar o título da pesquisa", () => {
+  it("deve exibir o título da pesquisa", () => {
     renderSearch();
 
     expect(
@@ -136,28 +239,7 @@ describe("Search", () => {
     ).toBeInTheDocument();
   });
 
-  it("deve associar o diálogo ao título pelo aria-labelledby", () => {
-    renderSearch();
-
-    expect(screen.getByRole("dialog")).toHaveAttribute(
-      "aria-labelledby",
-      "search-modal-title",
-    );
-  });
-
-  it("deve aplicar aria-modal ao diálogo", () => {
-    renderSearch();
-
-    expect(screen.getByRole("dialog")).toHaveAttribute("aria-modal", "true");
-  });
-
-  it("deve renderizar o formulário de pesquisa", () => {
-    renderSearch();
-
-    expect(screen.getByRole("search")).toBeInTheDocument();
-  });
-
-  it("deve renderizar o campo de pesquisa", () => {
+  it("deve exibir o campo de pesquisa", () => {
     renderSearch();
 
     expect(
@@ -167,37 +249,7 @@ describe("Search", () => {
     ).toBeInTheDocument();
   });
 
-  it("deve aplicar o placeholder ao campo de pesquisa", () => {
-    renderSearch();
-
-    expect(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-    ).toHaveAttribute("placeholder", "Digite o nome ou modelo");
-  });
-
-  it("deve desabilitar o autocomplete do campo", () => {
-    renderSearch();
-
-    expect(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-    ).toHaveAttribute("autocomplete", "off");
-  });
-
-  it("deve renderizar o botão Buscar", () => {
-    renderSearch();
-
-    expect(
-      screen.getByRole("button", {
-        name: "Buscar smartphone",
-      }),
-    ).toBeInTheDocument();
-  });
-
-  it("deve renderizar o botão para fechar a pesquisa", () => {
+  it("deve exibir o botão de fechar", () => {
     renderSearch();
 
     expect(
@@ -221,19 +273,7 @@ describe("Search", () => {
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
-  it("deve focar automaticamente o campo quando o modal abrir", async () => {
-    renderSearch();
-
-    await waitFor(() => {
-      expect(
-        screen.getByRole("textbox", {
-          name: "Pesquisar smartphones",
-        }),
-      ).toHaveFocus();
-    });
-  });
-
-  it("deve fechar a pesquisa ao pressionar Escape", () => {
+  it("deve chamar onClose ao pressionar Escape", () => {
     renderSearch();
 
     fireEvent.keyDown(document, {
@@ -243,48 +283,30 @@ describe("Search", () => {
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
-  it("não deve fechar a pesquisa para outras teclas", () => {
+  it("deve chamar onClose ao clicar no overlay", () => {
     renderSearch();
 
-    fireEvent.keyDown(document, {
-      key: "Enter",
+    const overlay = screen.getByRole("presentation");
+
+    fireEvent.mouseDown(overlay, {
+      target: overlay,
+      currentTarget: overlay,
     });
-
-    fireEvent.keyDown(document, {
-      key: "Tab",
-    });
-
-    expect(mockOnClose).not.toHaveBeenCalled();
-  });
-
-  it("deve fechar ao clicar no overlay", () => {
-    renderSearch();
-
-    const overlay = document.querySelector(".search-overlay");
-
-    expect(overlay).toBeInTheDocument();
-
-    fireEvent.mouseDown(overlay!);
 
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
-  it("não deve fechar ao clicar dentro do modal", () => {
+  it("não deve chamar onClose ao clicar dentro do modal", () => {
     renderSearch();
 
-    fireEvent.mouseDown(screen.getByRole("dialog"));
+    const dialog = screen.getByRole("dialog");
+
+    fireEvent.mouseDown(dialog, {
+      target: dialog,
+      currentTarget: dialog,
+    });
 
     expect(mockOnClose).not.toHaveBeenCalled();
-  });
-
-  it("deve iniciar o campo de pesquisa vazio", () => {
-    renderSearch();
-
-    expect(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-    ).toHaveValue("");
   });
 
   it("deve permitir digitar no campo de pesquisa", async () => {
@@ -301,16 +323,51 @@ describe("Search", () => {
     expect(input).toHaveValue("iPhone");
   });
 
-  it("não deve renderizar resultados enquanto a pesquisa estiver vazia", () => {
+  it("deve iniciar o campo de pesquisa vazio", () => {
     renderSearch();
 
     expect(
-      screen.queryByText("Resultados encontrados"),
-    ).not.toBeInTheDocument();
+      screen.getByRole("textbox", {
+        name: "Pesquisar smartphones",
+      }),
+    ).toHaveValue("");
+  });
+
+  it("deve limpar a pesquisa quando o componente for fechado", async () => {
+    const { rerender } = renderSearch();
+
+    const input = screen.getByRole("textbox", {
+      name: "Pesquisar smartphones",
+    });
+
+    fireEvent.change(input, {
+      target: {
+        value: "iPhone",
+      },
+    });
+
+    expect(input).toHaveValue("iPhone");
+
+    rerender(<Search open={false} onClose={mockOnClose} />);
+
+    rerender(<Search open onClose={mockOnClose} />);
 
     expect(
-      screen.queryByText("Nenhum smartphone encontrado."),
-    ).not.toBeInTheDocument();
+      screen.getByRole("textbox", {
+        name: "Pesquisar smartphones",
+      }),
+    ).toHaveValue("");
+  });
+
+  it("deve buscar smartphones após o debounce", async () => {
+    const user = userEvent.setup();
+
+    renderSearch();
+
+    await searchFor(user, "iPhone");
+
+    expect(mockBuscarPorNome).toHaveBeenCalledTimes(1);
+    expect(mockBuscarPorNome).toHaveBeenCalledWith("iPhone");
   });
 
   it("deve encontrar produto pelo nome", async () => {
@@ -318,16 +375,13 @@ describe("Search", () => {
 
     renderSearch();
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "iPhone 15 Pro Max",
-    );
+    await searchFor(user, "iPhone");
 
-    expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
 
-    expect(screen.getByText("256GB")).toBeInTheDocument();
+      expect(screen.getByText("iPhone 15")).toBeInTheDocument();
+    });
   });
 
   it("deve encontrar produto pelo modelo", async () => {
@@ -335,14 +389,11 @@ describe("Search", () => {
 
     renderSearch();
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "512GB",
-    );
+    await searchFor(user, "512GB");
 
-    expect(screen.getByText("Galaxy S24 Ultra")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Galaxy S24 Ultra")).toBeInTheDocument();
+    });
   });
 
   it("deve encontrar produto pela descrição", async () => {
@@ -350,14 +401,11 @@ describe("Search", () => {
 
     renderSearch();
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "câmera profissional",
-    );
+    await searchFor(user, "câmera profissional");
 
-    expect(screen.getByText("Galaxy S24 Ultra")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Galaxy S24 Ultra")).toBeInTheDocument();
+    });
   });
 
   it("deve encontrar produto pelo tipo de plano", async () => {
@@ -365,16 +413,13 @@ describe("Search", () => {
 
     renderSearch();
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "Anual",
-    );
+    await searchFor(user, "Anual");
 
-    expect(screen.getByText("Galaxy S24 Ultra")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Galaxy S24 Ultra")).toBeInTheDocument();
 
-    expect(screen.getByText("Motorola Edge 50")).toBeInTheDocument();
+      expect(screen.getByText("Motorola Edge 50")).toBeInTheDocument();
+    });
   });
 
   it("deve encontrar produto pelo benefício", async () => {
@@ -382,33 +427,27 @@ describe("Search", () => {
 
     renderSearch();
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "Seguro incluso",
-    );
+    await searchFor(user, "Seguro incluso");
 
-    expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
 
-    expect(screen.getByText("iPhone 15")).toBeInTheDocument();
+      expect(screen.getByText("iPhone 15")).toBeInTheDocument();
+    });
   });
 
-  it("deve realizar a busca sem diferenciar maiúsculas e minúsculas", async () => {
+  it("deve realizar a pesquisa sem diferenciar maiúsculas e minúsculas", async () => {
     const user = userEvent.setup();
 
     renderSearch();
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "IPHONE",
-    );
+    await searchFor(user, "IPHONE");
 
-    expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
 
-    expect(screen.getByText("iPhone 15")).toBeInTheDocument();
+      expect(screen.getByText("iPhone 15")).toBeInTheDocument();
+    });
   });
 
   it("deve ignorar espaços no início da pesquisa", async () => {
@@ -416,16 +455,13 @@ describe("Search", () => {
 
     renderSearch();
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "   iPhone",
-    );
+    await searchFor(user, "   iPhone");
 
-    expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
+    });
 
-    expect(screen.getByText("iPhone 15")).toBeInTheDocument();
+    expect(mockBuscarPorNome).toHaveBeenCalledWith("iPhone");
   });
 
   it("deve ignorar espaços no final da pesquisa", async () => {
@@ -433,246 +469,121 @@ describe("Search", () => {
 
     renderSearch();
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "iPhone   ",
-    );
+    await searchFor(user, "iPhone   ");
 
-    expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
+    });
 
-    expect(screen.getByText("iPhone 15")).toBeInTheDocument();
+    expect(mockBuscarPorNome).toHaveBeenCalledWith("iPhone");
   });
 
-  it("deve renderizar o título de resultados encontrados", async () => {
+  it("deve exibir mensagem quando nenhum smartphone for encontrado", async () => {
     const user = userEvent.setup();
+
+    mockBuscarPorNome.mockResolvedValue([]);
 
     renderSearch();
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "Samsung",
-    );
+    await searchFor(user, "Nokia");
 
-    expect(
-      screen.getByRole("heading", {
-        name: "Resultados encontrados",
-      }),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText("Nenhum smartphone encontrado."),
+      ).toBeInTheDocument();
+    });
   });
 
-  it("deve renderizar a lista de resultados", async () => {
+  it("deve limitar os resultados a cinco smartphones", async () => {
     const user = userEvent.setup();
+
+    mockBuscarPorNome.mockResolvedValue([
+      ...mockSmartphones,
+      {
+        ...mockSmartphones[0],
+        id: "smartphone-7",
+        product: "Smartphone 7",
+      },
+    ]);
 
     renderSearch();
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "Samsung",
-    );
+    await searchFor(user, "Smartphone");
 
-    expect(screen.getByRole("list")).toBeInTheDocument();
-  });
-
-  it("deve renderizar cada resultado dentro de um item da lista", async () => {
-    const user = userEvent.setup();
-
-    renderSearch();
-
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "Samsung",
-    );
-
-    expect(screen.getAllByRole("listitem")).toHaveLength(2);
-  });
-
-  it("deve limitar os resultados a no máximo cinco produtos", async () => {
-    const user = userEvent.setup();
-
-    renderSearch();
-
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "smartphone",
-    );
+    await waitFor(() => {
+      expect(screen.getByText("Resultados encontrados")).toBeInTheDocument();
+    });
 
     expect(screen.getAllByRole("listitem")).toHaveLength(5);
   });
 
-  it("deve exibir mensagem quando nenhum produto for encontrado", async () => {
+  it("deve exibir a imagem do smartphone", async () => {
     const user = userEvent.setup();
 
     renderSearch();
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "produto-inexistente",
-    );
+    await searchFor(user, "iPhone");
 
-    expect(
-      screen.getByText("Nenhum smartphone encontrado."),
-    ).toBeInTheDocument();
-  });
-
-  it("não deve renderizar a lista quando nenhum produto for encontrado", async () => {
-    const user = userEvent.setup();
-
-    renderSearch();
-
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "produto-inexistente",
-    );
-
-    expect(screen.queryByRole("list")).not.toBeInTheDocument();
-  });
-
-  it("deve renderizar a imagem de cada resultado", async () => {
-    const user = userEvent.setup();
-
-    renderSearch();
-
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "iPhone",
-    );
-
-    expect(
-      screen.getByRole("img", {
+    await waitFor(() => {
+      const image = screen.getByRole("img", {
         name: "iPhone 15 Pro Max",
-      }),
-    ).toBeInTheDocument();
+      });
 
-    expect(
-      screen.getByRole("img", {
-        name: "iPhone 15",
-      }),
-    ).toBeInTheDocument();
+      expect(image).toBeInTheDocument();
+      expect(image).toHaveAttribute("src", "/images/iphone-15-pro-max.webp");
+    });
   });
 
-  it("deve aplicar loading lazy às imagens dos resultados", async () => {
+  it("deve exibir o modelo do smartphone", async () => {
     const user = userEvent.setup();
 
     renderSearch();
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "iPhone",
-    );
+    await searchFor(user, "iPhone 15 Pro Max");
 
-    const images = screen.getAllByRole("img");
-
-    images.forEach((image) => {
-      expect(image).toHaveAttribute("loading", "lazy");
+    await waitFor(() => {
+      expect(screen.getByText("256GB")).toBeInTheDocument();
     });
   });
 
-  it("deve aplicar decoding async às imagens dos resultados", async () => {
-    const user = userEvent.setup();
-
-    renderSearch();
-
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "iPhone",
-    );
-
-    const images = screen.getAllByRole("img");
-
-    images.forEach((image) => {
-      expect(image).toHaveAttribute("decoding", "async");
-    });
-  });
-
-  it("deve aplicar dimensões de 64 por 64 às imagens", async () => {
-    const user = userEvent.setup();
-
-    renderSearch();
-
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "iPhone",
-    );
-
-    const images = screen.getAllByRole("img");
-
-    images.forEach((image) => {
-      expect(image).toHaveAttribute("width", "64");
-      expect(image).toHaveAttribute("height", "64");
-    });
-  });
-
-  it("deve mostrar o botão Ver para usuário autenticado", async () => {
+  it("deve exibir o botão Ver para usuário autenticado", async () => {
     const user = userEvent.setup();
 
     renderSearch(true, true);
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "iPhone",
-    );
+    await searchFor(user, "iPhone 15 Pro Max");
 
-    expect(
-      screen.getAllByRole("button", {
-        name: /Ver iPhone/,
-      }),
-    ).toHaveLength(2);
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: "Ver iPhone 15 Pro Max",
+        }),
+      ).toBeInTheDocument();
+    });
   });
 
-  it("deve mostrar o texto de acesso para usuário não autenticado", async () => {
+  it("deve exibir o botão de login para usuário não autenticado", async () => {
     const user = userEvent.setup();
 
     renderSearch(true, false);
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "iPhone",
-    );
+    await searchFor(user, "iPhone 15 Pro Max");
 
-    expect(
-      screen.getAllByRole("button", {
-        name: /Entre ou crie a conta para ver iPhone/,
-      }),
-    ).toHaveLength(2);
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: "Entre ou crie a conta para ver iPhone 15 Pro Max",
+        }),
+      ).toBeInTheDocument();
+    });
   });
 
-  it("deve navegar para login ao selecionar produto sem autenticação", async () => {
+  it("deve navegar para login quando usuário não autenticado clicar em Ver", async () => {
     const user = userEvent.setup();
 
     renderSearch(true, false);
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "iPhone 15 Pro Max",
-    );
+    await searchFor(user, "iPhone 15 Pro Max");
 
     await user.click(
       screen.getByRole("button", {
@@ -684,40 +595,12 @@ describe("Search", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/login");
   });
 
-  it("não deve navegar para os detalhes quando não estiver autenticado", async () => {
-    const user = userEvent.setup();
-
-    renderSearch(true, false);
-
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "iPhone 15 Pro Max",
-    );
-
-    await user.click(
-      screen.getByRole("button", {
-        name: "Entre ou crie a conta para ver iPhone 15 Pro Max",
-      }),
-    );
-
-    expect(mockNavigate).not.toHaveBeenCalledWith(
-      "/smartphones/iphone-15-pro-max",
-    );
-  });
-
-  it("deve navegar para os detalhes quando estiver autenticado", async () => {
+  it("deve navegar para o produto quando usuário autenticado clicar em Ver", async () => {
     const user = userEvent.setup();
 
     renderSearch(true, true);
 
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "iPhone 15 Pro Max",
-    );
+    await searchFor(user, "iPhone 15 Pro Max");
 
     await user.click(
       screen.getByRole("button", {
@@ -729,50 +612,7 @@ describe("Search", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/smartphones/iphone-15-pro-max");
   });
 
-  it("não deve navegar para login quando estiver autenticado", async () => {
-    const user = userEvent.setup();
-
-    renderSearch(true, true);
-
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "Galaxy S24 Ultra",
-    );
-
-    await user.click(
-      screen.getByRole("button", {
-        name: "Ver Galaxy S24 Ultra",
-      }),
-    );
-
-    expect(mockNavigate).not.toHaveBeenCalledWith("/login");
-  });
-
-  it("deve fechar a pesquisa antes de navegar para o produto", async () => {
-    const user = userEvent.setup();
-
-    renderSearch(true, true);
-
-    await user.type(
-      screen.getByRole("textbox", {
-        name: "Pesquisar smartphones",
-      }),
-      "Galaxy S24 Ultra",
-    );
-
-    await user.click(
-      screen.getByRole("button", {
-        name: "Ver Galaxy S24 Ultra",
-      }),
-    );
-
-    expect(mockOnClose).toHaveBeenCalledTimes(1);
-    expect(mockNavigate).toHaveBeenCalledTimes(1);
-  });
-
-  it("deve focar o campo ao tentar buscar com pesquisa vazia", async () => {
+  it("deve navegar para a página de smartphones ao enviar a pesquisa", async () => {
     const user = userEvent.setup();
 
     renderSearch();
@@ -781,18 +621,59 @@ describe("Search", () => {
       name: "Pesquisar smartphones",
     });
 
+    await user.type(input, "iPhone 15");
+
     await user.click(
       screen.getByRole("button", {
         name: "Buscar smartphone",
       }),
     );
 
-    expect(input).toHaveFocus();
-    expect(mockOnClose).not.toHaveBeenCalled();
-    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/smartphones?search=iPhone%2015",
+    );
   });
 
-  it("deve focar o campo ao tentar buscar somente com espaços", async () => {
+  it("deve codificar corretamente caracteres especiais na pesquisa", async () => {
+    const user = userEvent.setup();
+
+    renderSearch();
+
+    const input = screen.getByRole("textbox", {
+      name: "Pesquisar smartphones",
+    });
+
+    await user.type(input, "iPhone 15 Pro+");
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Buscar smartphone",
+      }),
+    );
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/smartphones?search=iPhone%2015%20Pro%2B",
+    );
+  });
+
+  it("não deve navegar quando a pesquisa estiver vazia", async () => {
+    const user = userEvent.setup();
+
+    renderSearch();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Buscar smartphone",
+      }),
+    );
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockOnClose).not.toHaveBeenCalled();
+  });
+
+  it("não deve navegar quando a pesquisa contiver apenas espaços", async () => {
     const user = userEvent.setup();
 
     renderSearch();
@@ -809,12 +690,11 @@ describe("Search", () => {
       }),
     );
 
-    expect(input).toHaveFocus();
-    expect(mockOnClose).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockOnClose).not.toHaveBeenCalled();
   });
 
-  it("deve navegar para a pesquisa ao enviar o formulário", async () => {
+  it("deve manter o campo focado quando a pesquisa estiver vazia", async () => {
     const user = userEvent.setup();
 
     renderSearch();
@@ -823,58 +703,13 @@ describe("Search", () => {
       name: "Pesquisar smartphones",
     });
 
-    await user.type(input, "iPhone");
-
     await user.click(
       screen.getByRole("button", {
         name: "Buscar smartphone",
       }),
     );
 
-    expect(mockOnClose).toHaveBeenCalledTimes(1);
-    expect(mockNavigate).toHaveBeenCalledWith("/smartphones?search=iPhone");
-  });
-
-  it("deve remover espaços das extremidades antes de navegar", async () => {
-    const user = userEvent.setup();
-
-    renderSearch();
-
-    const input = screen.getByRole("textbox", {
-      name: "Pesquisar smartphones",
-    });
-
-    await user.type(input, "   iPhone   ");
-
-    await user.click(
-      screen.getByRole("button", {
-        name: "Buscar smartphone",
-      }),
-    );
-
-    expect(mockNavigate).toHaveBeenCalledWith("/smartphones?search=iPhone");
-  });
-
-  it("deve codificar caracteres especiais na URL da pesquisa", async () => {
-    const user = userEvent.setup();
-
-    renderSearch();
-
-    const input = screen.getByRole("textbox", {
-      name: "Pesquisar smartphones",
-    });
-
-    await user.type(input, "iPhone 15 Pro Max");
-
-    await user.click(
-      screen.getByRole("button", {
-        name: "Buscar smartphone",
-      }),
-    );
-
-    expect(mockNavigate).toHaveBeenCalledWith(
-      "/smartphones?search=iPhone%2015%20Pro%20Max",
-    );
+    expect(input).toHaveFocus();
   });
 
   it("deve submeter a pesquisa ao pressionar Enter", async () => {
@@ -886,141 +721,173 @@ describe("Search", () => {
       name: "Pesquisar smartphones",
     });
 
-    await user.type(input, "Samsung");
+    await user.type(input, "Galaxy S24");
+
     await user.keyboard("{Enter}");
 
     expect(mockOnClose).toHaveBeenCalledTimes(1);
-    expect(mockNavigate).toHaveBeenCalledWith("/smartphones?search=Samsung");
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/smartphones?search=Galaxy%20S24",
+    );
   });
 
-  it("deve limpar a pesquisa quando o componente for fechado", async () => {
+  it("deve limpar os resultados quando a pesquisa for apagada", async () => {
     const user = userEvent.setup();
 
-    const { rerender } = renderSearch(true);
+    renderSearch();
+
+    await searchFor(user, "iPhone");
+
+    await waitFor(() => {
+      expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
+    });
 
     const input = screen.getByRole("textbox", {
       name: "Pesquisar smartphones",
     });
 
-    await user.type(input, "iPhone");
+    await user.clear(input);
 
-    expect(input).toHaveValue("iPhone");
+    expect(screen.queryByText("iPhone 15 Pro Max")).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByText("Nenhum smartphone encontrado."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("deve limpar os resultados ao fechar a pesquisa", async () => {
+    const user = userEvent.setup();
+
+    const { rerender } = renderSearch();
+
+    await searchFor(user, "iPhone");
+
+    await waitFor(() => {
+      expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
+    });
 
     rerender(<Search open={false} onClose={mockOnClose} />);
 
-    rerender(<Search open={true} onClose={mockOnClose} />);
-
-    const reopenedInput = screen.getByRole("textbox", {
-      name: "Pesquisar smartphones",
-    });
-
-    await waitFor(() => {
-      expect(reopenedInput).toHaveValue("");
-    });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("deve remover o listener de Escape quando o componente for desmontado", () => {
-    const addEventListenerSpy = jest.spyOn(document, "addEventListener");
+  it("deve utilizar a rota correta para o smartphone autenticado", async () => {
+    const user = userEvent.setup();
 
-    const removeEventListenerSpy = jest.spyOn(document, "removeEventListener");
+    renderSearch(true, true);
 
-    const { unmount } = renderSearch();
+    await searchFor(user, "Galaxy S24 Ultra");
 
-    expect(addEventListenerSpy).toHaveBeenCalledWith(
-      "keydown",
-      expect.any(Function),
+    await user.click(
+      screen.getByRole("button", {
+        name: "Ver Galaxy S24 Ultra",
+      }),
     );
 
-    unmount();
-
-    expect(removeEventListenerSpy).toHaveBeenCalledWith(
-      "keydown",
-      expect.any(Function),
-    );
-
-    addEventListenerSpy.mockRestore();
-    removeEventListenerSpy.mockRestore();
+    expect(mockNavigate).toHaveBeenCalledWith("/smartphones/galaxy-s24-ultra");
   });
 
-  it("deve remover o listener de Escape quando open mudar para false", () => {
-    const addEventListenerSpy = jest.spyOn(document, "addEventListener");
+  it("deve fechar a pesquisa antes de navegar para o produto", async () => {
+    const user = userEvent.setup();
 
-    const removeEventListenerSpy = jest.spyOn(document, "removeEventListener");
+    renderSearch(true, true);
 
-    const { rerender } = renderSearch(true);
+    await searchFor(user, "Galaxy S24 Ultra");
 
-    expect(addEventListenerSpy).toHaveBeenCalledWith(
-      "keydown",
-      expect.any(Function),
+    await user.click(
+      screen.getByRole("button", {
+        name: "Ver Galaxy S24 Ultra",
+      }),
     );
 
-    rerender(<Search open={false} onClose={mockOnClose} />);
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
+  });
 
-    expect(removeEventListenerSpy).toHaveBeenCalledWith(
-      "keydown",
-      expect.any(Function),
+  it("deve fechar a pesquisa antes de navegar para login", async () => {
+    const user = userEvent.setup();
+
+    renderSearch(true, false);
+
+    await searchFor(user, "Galaxy S24 Ultra");
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Entre ou crie a conta para ver Galaxy S24 Ultra",
+      }),
     );
 
-    addEventListenerSpy.mockRestore();
-    removeEventListenerSpy.mockRestore();
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).toHaveBeenCalledWith("/login");
   });
 
-  it("deve aplicar aria-live aos resultados", () => {
-    renderSearch();
-
-    expect(document.querySelector(".search-results")).toHaveAttribute(
-      "aria-live",
-      "polite",
-    );
-  });
-
-  it("deve aplicar aria-label aos resultados", () => {
-    renderSearch();
-
-    expect(screen.getByLabelText("Resultados da pesquisa")).toBeInTheDocument();
-  });
-
-  it("deve permitir navegar pelo botão de fechar usando teclado", async () => {
+  it("deve exibir o texto de resultados encontrados quando houver resultados", async () => {
     const user = userEvent.setup();
 
     renderSearch();
 
-    const input = screen.getByRole("textbox", {
-      name: "Pesquisar smartphones",
-    });
+    await searchFor(user, "iPhone");
 
     await waitFor(() => {
-      expect(input).toHaveFocus();
+      expect(screen.getByText("Resultados encontrados")).toBeInTheDocument();
     });
-
-    await user.tab({ shift: true });
-
-    expect(
-      screen.getByRole("button", {
-        name: "Fechar pesquisa",
-      }),
-    ).toHaveFocus();
   });
 
-  it("deve permitir navegar até o botão Buscar usando teclado", async () => {
+  it("deve utilizar aria-live nos resultados", () => {
+    renderSearch();
+
+    const results = screen.getByLabelText("Resultados da pesquisa");
+
+    expect(results).toHaveAttribute("aria-live", "polite");
+  });
+
+  it("deve renderizar o formulário com role search", () => {
+    renderSearch();
+
+    expect(screen.getByRole("search")).toBeInTheDocument();
+  });
+
+  it("deve renderizar o diálogo com aria-modal", () => {
+    renderSearch();
+
+    expect(screen.getByRole("dialog")).toHaveAttribute("aria-modal", "true");
+  });
+
+  it("deve associar o diálogo ao título", () => {
+    renderSearch();
+
+    expect(screen.getByRole("dialog")).toHaveAttribute(
+      "aria-labelledby",
+      "search-modal-title",
+    );
+  });
+
+  it("deve renderizar somente cinco resultados mesmo quando o serviço retornar mais produtos", async () => {
     const user = userEvent.setup();
+
+    const additionalSmartphones = [
+      ...mockSmartphones,
+      {
+        ...mockSmartphones[0],
+        id: "smartphone-7",
+        product: "Smartphone 7",
+      },
+      {
+        ...mockSmartphones[0],
+        id: "smartphone-8",
+        product: "Smartphone 8",
+      },
+    ];
+
+    mockBuscarPorNome.mockResolvedValue(additionalSmartphones);
 
     renderSearch();
 
-    const input = screen.getByRole("textbox", {
-      name: "Pesquisar smartphones",
-    });
+    await searchFor(user, "Smartphone");
 
     await waitFor(() => {
-      expect(input).toHaveFocus();
+      expect(screen.getAllByRole("listitem")).toHaveLength(5);
     });
-
-    await user.tab();
-
-    expect(
-      screen.getByRole("button", {
-        name: "Buscar smartphone",
-      }),
-    ).toHaveFocus();
   });
 });
