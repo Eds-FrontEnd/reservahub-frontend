@@ -24,6 +24,8 @@ export const ProductDetailPage: React.FC = () => {
   const [item, setItem] = useState<SmartphoneSubscriptionItem | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [modalMessage, setModalMessage] = useState<string>("");
   const [selectedPlanMonths, setSelectedPlanMonths] = useState<number>(12);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [imageLoading, setImageLoading] = useState<boolean>(true);
@@ -51,6 +53,11 @@ export const ProductDetailPage: React.FC = () => {
         setItem(data);
       } catch {
         setItem(null);
+        setModalMessage(
+          "Tivemos um problema ao carregar os smartphones. Tente novamente mais tarde ou entre em contato com a nossa equipe para mais informações.",
+        );
+
+        setModalOpen(true);
       } finally {
         setIsLoading(false);
       }
@@ -301,6 +308,13 @@ export const ProductDetailPage: React.FC = () => {
       <div className="product-detail__footer">
         <Footer />
       </div>
+
+      <Modal
+        open={modalOpen}
+        title="Não foi possível carregar o smartphone"
+        message={modalMessage}
+        onClose={() => setModalOpen(false)}
+      />
     </main>
   );
 };

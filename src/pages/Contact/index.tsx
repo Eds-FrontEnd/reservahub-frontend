@@ -360,7 +360,7 @@ const ContactPage = () => {
       <Modal
         open={errorModalOpen}
         title="Erro ao enviar mensagem"
-        message="Não foi possível enviar sua mensagem. Tente novamente."
+        message="Tivemos um problema ao enviar sua mensagem. Tente novamente mais tarde ou entre em contato com a nossa equipe para mais informações."
         icon={<ErrorOutlined />}
         iconColor="var(--color-red)"
         titleColor="var(--color-red)"

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorOutlined from "@mui/icons-material/ErrorOutlined";
 
 import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
@@ -30,6 +31,7 @@ const RegisterPage = () => {
 
   const [registerError, setRegisterError] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
 
   const validateField = (
     field: "name" | "email" | "password",
@@ -91,10 +93,16 @@ const RegisterPage = () => {
 
     setErrors({});
 
-    const registered = await registerUser(formData);
+    try {
+      const registered = await registerUser(formData);
 
-    setRegisterError(!registered);
-    setModalOpen(registered);
+      setRegisterError(!registered);
+      setModalOpen(registered);
+    } catch (error) {
+      console.error("Erro ao realizar cadastro:", error);
+
+      setErrorModalOpen(true);
+    }
   };
 
   const isError = registerError;
@@ -192,6 +200,16 @@ const RegisterPage = () => {
           titleColor="var(--color-secondary)"
           onNavigate={navigate}
           closeUrl="/login"
+        />
+
+        <Modal
+          open={errorModalOpen}
+          title="Não foi possível criar sua conta"
+          message="Tivemos um problema ao criar sua conta. Tente novamente mais tarde ou entre em contato com a nossa equipe para mais informações."
+          icon={<ErrorOutlined />}
+          iconColor="var(--color-red)"
+          titleColor="var(--color-red)"
+          onClose={() => setErrorModalOpen(false)}
         />
 
         <footer className="register__footer">

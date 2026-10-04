@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorOutlined from "@mui/icons-material/ErrorOutlined";
 
 import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
@@ -30,6 +31,7 @@ const LoginPage = () => {
 
   const [loginError, setLoginError] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
 
   const validateField = (field: "email" | "password", value: string) => {
     const result = loginSchema.shape[field].safeParse(value);
@@ -87,16 +89,22 @@ const LoginPage = () => {
 
     setErrors({});
 
-    const authenticatedUser = await loginUser(
-      formData.email,
-      formData.password,
-    );
+    try {
+      const authenticatedUser = await loginUser(
+        formData.email,
+        formData.password,
+      );
 
-    setLoginError(!authenticatedUser);
+      setLoginError(!authenticatedUser);
 
-    if (authenticatedUser) {
-      login(authenticatedUser);
-      setModalOpen(true);
+      if (authenticatedUser) {
+        login(authenticatedUser);
+        setModalOpen(true);
+      }
+    } catch (error) {
+      console.error("Erro ao realizar login:", error);
+
+      setErrorModalOpen(true);
     }
   };
 
@@ -183,6 +191,16 @@ const LoginPage = () => {
           titleColor="var(--color-secondary)"
           onNavigate={navigate}
           closeUrl="/"
+        />
+
+        <Modal
+          open={errorModalOpen}
+          title="Não foi possível realizar o login"
+          message="Tivemos um problema ao realizar seu login. Tente novamente mais tarde ou entre em contato com a nossa equipe para mais informações."
+          icon={<ErrorOutlined />}
+          iconColor="var(--color-red)"
+          titleColor="var(--color-red)"
+          onClose={() => setErrorModalOpen(false)}
         />
 
         <footer className="login__footer">
