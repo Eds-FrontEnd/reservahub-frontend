@@ -4,15 +4,56 @@ import userEvent from "@testing-library/user-event";
 
 import Menu from "../Menu";
 
+import { useDarkTheme } from "../../contexts/DarkThemeContext";
+
 import "@testing-library/jest-dom";
 
+jest.mock("../../contexts/DarkThemeContext", () => ({
+  useDarkTheme: jest.fn(),
+}));
+
+jest.mock(
+  "../../assets/images/icons/icon-menu-mobile.svg",
+  () => "icon-menu-mobile.svg",
+  { virtual: true },
+);
+
+jest.mock(
+  "../../assets/images/icons/icon-menu-mobile-dark.svg",
+  () => "icon-menu-mobile-dark.svg",
+  { virtual: true },
+);
+
+jest.mock(
+  "../../assets/images/icons/icon-close-button.svg",
+  () => "icon-close-button.svg",
+  { virtual: true },
+);
+
+jest.mock(
+  "../../assets/images/icons/icon-close-button-dark.svg",
+  () => "icon-close-button-dark.svg",
+  { virtual: true },
+);
+
+const mockedUseDarkTheme = jest.mocked(useDarkTheme);
+
+const renderMenu = (initialEntries = ["/"]) =>
+  render(
+    <MemoryRouter initialEntries={initialEntries}>
+      <Menu />
+    </MemoryRouter>,
+  );
+
 describe("Menu", () => {
-  const renderMenu = (initialEntries = ["/"]) =>
-    render(
-      <MemoryRouter initialEntries={initialEntries}>
-        <Menu />
-      </MemoryRouter>,
-    );
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    mockedUseDarkTheme.mockReturnValue({
+      isDarkMode: false,
+      toggleTheme: jest.fn(),
+    });
+  });
 
   it("deve renderizar a navegação principal", () => {
     renderMenu();
@@ -35,11 +76,11 @@ describe("Menu", () => {
   it("deve renderizar o botão para abrir o menu", () => {
     renderMenu();
 
-    const button = screen.getByRole("button", {
-      name: "Abrir menu",
-    });
-
-    expect(button).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Abrir menu",
+      }),
+    ).toBeInTheDocument();
   });
 
   it("deve renderizar o botão com o atributo aria-expanded como false inicialmente", () => {
@@ -84,12 +125,15 @@ describe("Menu", () => {
     renderMenu();
 
     expect(screen.getByRole("link", { name: "Início" })).toBeInTheDocument();
+
     expect(
       screen.getByRole("link", { name: "Como funciona?" }),
     ).toBeInTheDocument();
+
     expect(
       screen.getByRole("link", { name: "Assine Agora!" }),
     ).toBeInTheDocument();
+
     expect(screen.getByRole("link", { name: "Contato" })).toBeInTheDocument();
   });
 
@@ -105,6 +149,7 @@ describe("Menu", () => {
     const items = screen.getAllByRole("listitem");
 
     expect(items).toHaveLength(4);
+
     items.forEach((item) => {
       expect(item).toHaveClass("menu__item");
     });
@@ -169,6 +214,46 @@ describe("Menu", () => {
     expect(list).not.toHaveClass("menu__list--open");
   });
 
+  it("deve utilizar o ícone claro para abrir o menu no modo claro", () => {
+    mockedUseDarkTheme.mockReturnValue({
+      isDarkMode: false,
+      toggleTheme: jest.fn(),
+    });
+
+    renderMenu();
+
+    const button = screen.getByRole("button", {
+      name: "Abrir menu",
+    });
+
+    const icon = button.querySelector("img");
+
+    expect(icon).toHaveAttribute("src", "icon-menu-mobile.svg");
+    expect(icon).toHaveClass("menu__icon-menu-mobile");
+    expect(icon).toHaveAttribute("alt", "");
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("deve utilizar o ícone dark para abrir o menu no modo escuro", () => {
+    mockedUseDarkTheme.mockReturnValue({
+      isDarkMode: true,
+      toggleTheme: jest.fn(),
+    });
+
+    renderMenu();
+
+    const button = screen.getByRole("button", {
+      name: "Abrir menu",
+    });
+
+    const icon = button.querySelector("img");
+
+    expect(icon).toHaveAttribute("src", "icon-menu-mobile-dark.svg");
+    expect(icon).toHaveClass("menu__icon-menu-mobile");
+    expect(icon).toHaveAttribute("alt", "");
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+  });
+
   it("deve abrir o menu ao clicar no botão", async () => {
     const user = userEvent.setup();
 
@@ -180,18 +265,71 @@ describe("Menu", () => {
 
     await user.click(button);
 
-    expect(
-      screen.getByRole("button", { name: "Fechar menu" }),
-    ).toBeInTheDocument();
+    const openedButton = screen.getByRole("button", {
+      name: "Fechar menu",
+    });
 
-    expect(screen.getByRole("button", { name: "Fechar menu" })).toHaveAttribute(
-      "aria-expanded",
-      "true",
-    );
-
-    expect(button).toHaveClass("menu__mobile-button--open");
+    expect(openedButton).toBeInTheDocument();
+    expect(openedButton).toHaveAttribute("aria-expanded", "true");
+    expect(openedButton).toHaveClass("menu__mobile-button--open");
 
     expect(screen.getByRole("list")).toHaveClass("menu__list--open");
+  });
+
+  it("deve trocar para o ícone de fechar claro ao abrir o menu no modo claro", async () => {
+    const user = userEvent.setup();
+
+    mockedUseDarkTheme.mockReturnValue({
+      isDarkMode: false,
+      toggleTheme: jest.fn(),
+    });
+
+    renderMenu();
+
+    const button = screen.getByRole("button", {
+      name: "Abrir menu",
+    });
+
+    await user.click(button);
+
+    const openedButton = screen.getByRole("button", {
+      name: "Fechar menu",
+    });
+
+    const icon = openedButton.querySelector("img");
+
+    expect(icon).toHaveAttribute("src", "icon-close-button.svg");
+    expect(icon).toHaveClass("menu__icon-close-button");
+    expect(icon).toHaveAttribute("alt", "");
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("deve trocar para o ícone de fechar dark ao abrir o menu no modo escuro", async () => {
+    const user = userEvent.setup();
+
+    mockedUseDarkTheme.mockReturnValue({
+      isDarkMode: true,
+      toggleTheme: jest.fn(),
+    });
+
+    renderMenu();
+
+    const button = screen.getByRole("button", {
+      name: "Abrir menu",
+    });
+
+    await user.click(button);
+
+    const openedButton = screen.getByRole("button", {
+      name: "Fechar menu",
+    });
+
+    const icon = openedButton.querySelector("img");
+
+    expect(icon).toHaveAttribute("src", "icon-close-button-dark.svg");
+    expect(icon).toHaveClass("menu__icon-close-button");
+    expect(icon).toHaveAttribute("alt", "");
+    expect(icon).toHaveAttribute("aria-hidden", "true");
   });
 
   it("deve trocar o ícone do menu ao abrir", async () => {
@@ -239,10 +377,11 @@ describe("Menu", () => {
 
     await user.click(openedButton);
 
-    expect(screen.getByRole("button", { name: "Abrir menu" })).toHaveAttribute(
-      "aria-expanded",
-      "false",
-    );
+    expect(
+      screen.getByRole("button", {
+        name: "Abrir menu",
+      }),
+    ).toHaveAttribute("aria-expanded", "false");
 
     expect(screen.getByRole("list")).not.toHaveClass("menu__list--open");
   });
@@ -262,10 +401,11 @@ describe("Menu", () => {
 
     await user.click(screen.getByRole("link", { name: "Contato" }));
 
-    expect(screen.getByRole("button", { name: "Abrir menu" })).toHaveAttribute(
-      "aria-expanded",
-      "false",
-    );
+    expect(
+      screen.getByRole("button", {
+        name: "Abrir menu",
+      }),
+    ).toHaveAttribute("aria-expanded", "false");
 
     expect(screen.getByRole("list")).not.toHaveClass("menu__list--open");
   });
@@ -273,41 +413,57 @@ describe("Menu", () => {
   it("deve marcar o link da rota atual como ativo", () => {
     renderMenu(["/contato"]);
 
-    expect(screen.getByRole("link", { name: "Contato" })).toHaveClass("active");
+    expect(
+      screen.getByRole("link", {
+        name: "Contato",
+      }),
+    ).toHaveClass("active");
 
-    expect(screen.getByRole("link", { name: "Início" })).not.toHaveClass(
-      "active",
-    );
+    expect(
+      screen.getByRole("link", {
+        name: "Início",
+      }),
+    ).not.toHaveClass("active");
   });
 
   it("deve marcar Como funciona? como ativo quando a rota atual corresponder", () => {
     renderMenu(["/como-funciona"]);
 
-    expect(screen.getByRole("link", { name: "Como funciona?" })).toHaveClass(
-      "active",
-    );
+    expect(
+      screen.getByRole("link", {
+        name: "Como funciona?",
+      }),
+    ).toHaveClass("active");
   });
 
   it("deve marcar Assine Agora! como ativo quando a rota atual corresponder", () => {
     renderMenu(["/smartphones"]);
 
-    expect(screen.getByRole("link", { name: "Assine Agora!" })).toHaveClass(
-      "active",
-    );
+    expect(
+      screen.getByRole("link", {
+        name: "Assine Agora!",
+      }),
+    ).toHaveClass("active");
   });
 
   it("deve marcar Início como ativo somente na rota inicial", () => {
     renderMenu(["/"]);
 
-    expect(screen.getByRole("link", { name: "Início" })).toHaveClass("active");
+    expect(
+      screen.getByRole("link", {
+        name: "Início",
+      }),
+    ).toHaveClass("active");
   });
 
   it("não deve marcar Início como ativo em uma rota diferente", () => {
     renderMenu(["/smartphones/detalhes"]);
 
-    expect(screen.getByRole("link", { name: "Início" })).not.toHaveClass(
-      "active",
-    );
+    expect(
+      screen.getByRole("link", {
+        name: "Início",
+      }),
+    ).not.toHaveClass("active");
   });
 
   it("deve manter os links acessíveis pelo teclado", async () => {

@@ -4,7 +4,10 @@ import { NavLink } from "react-router-dom";
 import "./MenuStyle.css";
 
 import IconMenuMobile from "../../assets/images/icons/icon-menu-mobile.svg";
+import IconMenuMobileDark from "../../assets/images/icons/icon-menu-mobile-dark.svg";
 import IconCloseButton from "../../assets/images/icons/icon-close-button.svg";
+import IconCloseButtonDark from "../../assets/images/icons/icon-close-button-dark.svg";
+import { useDarkTheme } from "../../contexts/DarkThemeContext";
 
 interface MenuItem {
   href: string;
@@ -20,6 +23,7 @@ const menuItems: MenuItem[] = [
 
 const Menu = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isDarkMode } = useDarkTheme();
 
   const toggleMenu = () => {
     setIsMenuOpen((isOpen) => !isOpen);
@@ -28,6 +32,9 @@ const Menu = () => {
   const closeMenu = () => {
     setIsMenuOpen(false);
   };
+
+  const menuIcon = isDarkMode ? IconMenuMobileDark : IconMenuMobile;
+  const closeIcon = isDarkMode ? IconCloseButtonDark : IconCloseButton;
 
   return (
     <nav className="menu" aria-label="Navegação principal">
@@ -45,9 +52,12 @@ const Menu = () => {
           className={
             isMenuOpen ? "menu__icon-close-button" : "menu__icon-menu-mobile"
           }
-          src={isMenuOpen ? IconCloseButton : IconMenuMobile}
+          src={isMenuOpen ? closeIcon : menuIcon}
           alt=""
           aria-hidden="true"
+          width="24"
+          height="24"
+          decoding="async"
         />
       </button>
 
