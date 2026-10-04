@@ -13,6 +13,7 @@ import IconLogoutDark from "../../assets/images/icons/icon-logout-dark.svg";
 import IconSun from "../../assets/images/icons/icon-sun.svg";
 import IconMoon from "../../assets/images/icons/icon-moon.svg";
 
+const API_URL = import.meta.env.VITE_API_URL;
 import { Logo } from "../Logo";
 import Menu from "../Menu";
 import Search from "../Search";
@@ -22,8 +23,6 @@ import { useCart } from "../../contexts/CartContext";
 import { useDarkTheme } from "../../contexts/DarkThemeContext";
 
 import "./HeaderStyle.css";
-
-const API_URL = import.meta.env.VITE_API_URL;
 
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();

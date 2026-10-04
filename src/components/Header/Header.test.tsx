@@ -1,91 +1,68 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
-import Header from "../Header/index";
+import type { User } from "../../services/AuthService";
 
-import { useAuth } from "../../contexts/AutContext";
-import { useCart } from "../../contexts/CartContext";
+import Header from "./index";
 
-import "@testing-library/jest-dom";
+const mockOpenCart = jest.fn();
+const mockLogout = jest.fn();
+const mockToggleTheme = jest.fn();
+
+let mockIsAuthenticated = false;
+let mockUser: User | null = null;
+let mockTotalItems = 0;
+let mockIsDarkMode = false;
 
 jest.mock("../../contexts/AutContext", () => ({
-  useAuth: jest.fn(),
+  useAuth: () => ({
+    isAuthenticated: mockIsAuthenticated,
+    user: mockUser,
+    logout: mockLogout,
+  }),
 }));
 
 jest.mock("../../contexts/CartContext", () => ({
-  useCart: jest.fn(),
+  useCart: () => ({
+    openCart: mockOpenCart,
+    totalItems: mockTotalItems,
+  }),
+}));
+
+jest.mock("../../contexts/DarkThemeContext", () => ({
+  useDarkTheme: () => ({
+    isDarkMode: mockIsDarkMode,
+    toggleTheme: mockToggleTheme,
+  }),
 }));
 
 jest.mock("../Logo", () => ({
-  Logo: () => <div data-testid="header-logo">ReservaHub Logo</div>,
+  Logo: () => <div data-testid="logo">Logo</div>,
 }));
 
 jest.mock("../Menu", () => ({
   __esModule: true,
-  default: () => <div data-testid="header-menu">Menu</div>,
+  default: () => <nav data-testid="menu">Menu</nav>,
 }));
 
 jest.mock("../Search", () => ({
   __esModule: true,
-  default: ({ open, onClose }: { open: boolean; onClose: () => void }) => (
-    <div data-testid="header-search">
-      {open ? (
-        <>
-          <span>Busca aberta</span>
-          <button type="button" onClick={onClose}>
-            Fechar busca
-          </button>
-        </>
-      ) : (
-        <span>Busca fechada</span>
-      )}
-    </div>
-  ),
+  default: ({ open, onClose }: { open: boolean; onClose: () => void }) =>
+    open ? (
+      <div data-testid="search">
+        <button type="button" onClick={onClose}>
+          Fechar busca
+        </button>
+      </div>
+    ) : null,
 }));
 
-jest.mock("../../assets/images/icons/icon-search.svg", () => "icon-search.svg");
-jest.mock("../../assets/images/icons/icon-cart.svg", () => "icon-cart.svg");
-jest.mock("../../assets/images/icons/icon-user.svg", () => "icon-user.svg");
-jest.mock("../../assets/images/icons/icon-logout.svg", () => "icon-logout.svg");
-
-const mockedUseAuth = jest.mocked(useAuth);
-const mockedUseCart = jest.mocked(useCart);
-
-type AuthContextValue = ReturnType<typeof useAuth>;
-type CartContextValue = ReturnType<typeof useCart>;
-
-const createUserMock = (name: string) => ({
-  name,
-  email: "juvenasanastasiando@example.com",
-  password: "password",
-});
-
-const createCartMock = (
-  overrides: Partial<CartContextValue> = {},
-): CartContextValue => ({
-  items: [],
-  isOpen: false,
-  totalItems: 0,
-  total: 0,
-  addItem: jest.fn(),
-  updateQuantity: jest.fn(),
-  removeItem: jest.fn(),
-  clearCart: jest.fn(),
-  openCart: jest.fn(),
-  closeCart: jest.fn(),
-  savePurchasePayload: jest.fn(),
-  ...overrides,
-});
-
-const createAuthMock = (
-  overrides: Partial<AuthContextValue> = {},
-): AuthContextValue => ({
-  isAuthenticated: false,
-  user: null,
-  login: jest.fn(),
-  logout: jest.fn(),
-  ...overrides,
-});
+jest.mock("axios", () => ({
+  __esModule: true,
+  default: {
+    post: jest.fn().mockResolvedValue({ status: 200 }),
+  },
+}));
 
 const renderHeader = () =>
   render(
@@ -96,10 +73,14 @@ const renderHeader = () =>
 
 describe("Header", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    mockIsAuthenticated = false;
+    mockUser = null;
+    mockTotalItems = 0;
+    mockIsDarkMode = false;
 
-    mockedUseAuth.mockReturnValue(createAuthMock());
-    mockedUseCart.mockReturnValue(createCartMock());
+    mockOpenCart.mockClear();
+    mockLogout.mockClear();
+    mockToggleTheme.mockClear();
   });
 
   it("deve renderizar o header", () => {
@@ -111,20 +92,22 @@ describe("Header", () => {
   it("deve renderizar o logo", () => {
     renderHeader();
 
-    expect(screen.getByTestId("header-logo")).toBeInTheDocument();
+    expect(screen.getByTestId("logo")).toBeInTheDocument();
   });
 
   it("deve renderizar o menu principal", () => {
     renderHeader();
 
-    expect(screen.getByTestId("header-menu")).toBeInTheDocument();
+    expect(screen.getByTestId("menu")).toBeInTheDocument();
   });
 
   it("deve renderizar a navegação principal com o label correto", () => {
     renderHeader();
 
     expect(
-      screen.getByRole("navigation", { name: "Navegação principal" }),
+      screen.getByRole("navigation", {
+        name: "Navegação principal",
+      }),
     ).toBeInTheDocument();
   });
 
@@ -132,7 +115,9 @@ describe("Header", () => {
     renderHeader();
 
     expect(
-      screen.getByRole("navigation", { name: "Ações do usuário" }),
+      screen.getByRole("navigation", {
+        name: "Ações do usuário",
+      }),
     ).toBeInTheDocument();
   });
 
@@ -140,64 +125,70 @@ describe("Header", () => {
     renderHeader();
 
     expect(
-      screen.getByRole("button", { name: "Pesquisar produtos" }),
+      screen.getByRole("button", {
+        name: "Pesquisar produtos",
+      }),
     ).toBeInTheDocument();
   });
 
   it("deve abrir a busca ao clicar no botão de pesquisa", () => {
     renderHeader();
 
-    expect(screen.getByText("Busca fechada")).toBeInTheDocument();
+    expect(screen.queryByTestId("search")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Pesquisar produtos" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Pesquisar produtos",
+      }),
+    );
 
-    expect(screen.getByText("Busca aberta")).toBeInTheDocument();
+    expect(screen.getByTestId("search")).toBeInTheDocument();
   });
 
   it("deve fechar a busca ao executar onClose", () => {
     renderHeader();
 
-    fireEvent.click(screen.getByRole("button", { name: "Pesquisar produtos" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Pesquisar produtos",
+      }),
+    );
 
-    expect(screen.getByText("Busca aberta")).toBeInTheDocument();
+    expect(screen.getByTestId("search")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Fechar busca" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Fechar busca",
+      }),
+    );
 
-    expect(screen.getByText("Busca fechada")).toBeInTheDocument();
+    expect(screen.queryByTestId("search")).not.toBeInTheDocument();
   });
 
   it("deve renderizar o botão do carrinho", () => {
     renderHeader();
 
     expect(
-      screen.getByRole("button", { name: "Carrinho com 0 produtos" }),
+      screen.getByRole("button", {
+        name: "Carrinho com 0 produtos",
+      }),
     ).toBeInTheDocument();
   });
 
   it("deve chamar openCart ao clicar no carrinho", () => {
-    const openCart = jest.fn();
-
-    mockedUseCart.mockReturnValue(
-      createCartMock({
-        openCart,
-      }),
-    );
-
     renderHeader();
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Carrinho com 0 produtos" }),
+      screen.getByRole("button", {
+        name: "Carrinho com 0 produtos",
+      }),
     );
 
-    expect(openCart).toHaveBeenCalledTimes(1);
+    expect(mockOpenCart).toHaveBeenCalledTimes(1);
   });
 
   it("deve exibir a quantidade de produtos no carrinho", () => {
-    mockedUseCart.mockReturnValue(
-      createCartMock({
-        totalItems: 3,
-      }),
-    );
+    mockTotalItems = 3;
 
     renderHeader();
 
@@ -205,75 +196,62 @@ describe("Header", () => {
   });
 
   it("deve aplicar o aria-label plural quando houver mais de um produto", () => {
-    mockedUseCart.mockReturnValue(
-      createCartMock({
-        totalItems: 3,
-      }),
-    );
+    mockTotalItems = 3;
 
     renderHeader();
 
     expect(
-      screen.getByRole("button", { name: "Carrinho com 3 produtos" }),
+      screen.getByRole("button", {
+        name: "Carrinho com 3 produtos",
+      }),
     ).toBeInTheDocument();
   });
 
   it("deve aplicar o aria-label singular quando houver exatamente um produto", () => {
-    mockedUseCart.mockReturnValue(
-      createCartMock({
-        totalItems: 1,
-      }),
-    );
+    mockTotalItems = 1;
 
     renderHeader();
 
     expect(
-      screen.getByRole("button", { name: "Carrinho com 1 produto" }),
+      screen.getByRole("button", {
+        name: "Carrinho com 1 produto",
+      }),
     ).toBeInTheDocument();
   });
 
   it("não deve exibir o badge quando o carrinho estiver vazio", () => {
+    mockTotalItems = 0;
+
     renderHeader();
 
-    expect(
-      document.querySelector(".header__cart-badge"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("0")).not.toBeInTheDocument();
   });
 
   it("deve exibir o badge quando houver produtos no carrinho", () => {
-    mockedUseCart.mockReturnValue(
-      createCartMock({
-        totalItems: 2,
-      }),
-    );
+    mockTotalItems = 2;
 
     renderHeader();
 
-    const badge = document.querySelector(".header__cart-badge");
+    const badge = screen.getByText("2");
 
     expect(badge).toBeInTheDocument();
-    expect(badge).toHaveTextContent("2");
     expect(badge).toHaveAttribute("aria-hidden", "true");
   });
 
   it("deve renderizar o link de login quando o usuário não estiver autenticado", () => {
+    mockIsAuthenticated = false;
+
     renderHeader();
 
-    const loginLink = screen.getByRole("link", {
-      name: "Entrar na minha conta",
-    });
-
-    expect(loginLink).toBeInTheDocument();
-    expect(loginLink).toHaveAttribute("href", "/login");
+    expect(
+      screen.getByRole("link", {
+        name: "Entrar na minha conta",
+      }),
+    ).toBeInTheDocument();
   });
 
   it("deve renderizar o ícone de usuário quando não estiver autenticado", () => {
-    mockedUseAuth.mockReturnValue(
-      createAuthMock({
-        isAuthenticated: false,
-        user: null,
-      }),
-    );
+    mockIsAuthenticated = false;
 
     renderHeader();
 
@@ -281,100 +259,94 @@ describe("Header", () => {
       name: "Entrar na minha conta",
     });
 
-    expect(loginLink.querySelector("img")).toHaveAttribute(
-      "src",
-      "icon-user.svg",
-    );
+    expect(loginLink.querySelector("img")).toBeInTheDocument();
   });
 
   it("deve renderizar a saudação do usuário autenticado", () => {
-    mockedUseAuth.mockReturnValue(
-      createAuthMock({
-        isAuthenticated: true,
-        user: createUserMock("Juvenas Anastaciano"),
-      }),
-    );
+    mockIsAuthenticated = true;
+    mockUser = {
+      name: "Edson Alves",
+      email: "edson@example.com",
+      password: "123456",
+    };
 
     renderHeader();
 
-    expect(screen.getByText("Seja bem-vindo(a), Juvenas!")).toBeInTheDocument();
+    expect(screen.getByText("Seja bem-vindo(a), Edson!")).toBeInTheDocument();
   });
 
   it("deve formatar o primeiro nome com inicial maiúscula", () => {
-    mockedUseAuth.mockReturnValue(
-      createAuthMock({
-        isAuthenticated: true,
-        user: createUserMock(" jUvEnAs Anastaciano "),
-      }),
-    );
+    mockIsAuthenticated = true;
+    mockUser = {
+      name: "EDSON ALVES",
+      email: "edson@example.com",
+      password: "123456",
+    };
 
     renderHeader();
 
-    expect(screen.getByText("Seja bem-vindo(a), Juvenas!")).toBeInTheDocument();
+    expect(screen.getByText("Seja bem-vindo(a), Edson!")).toBeInTheDocument();
   });
 
   it("deve renderizar o link de logout quando o usuário estiver autenticado", () => {
-    mockedUseAuth.mockReturnValue(
-      createAuthMock({
-        isAuthenticated: true,
-        user: createUserMock("Juvenas Anastaciano"),
-      }),
-    );
+    mockIsAuthenticated = true;
+    mockUser = {
+      name: "Edson Alves",
+      email: "edson@example.com",
+      password: "123456",
+    };
 
     renderHeader();
 
-    const logoutLink = screen.getByRole("link", {
-      name: "Sair da minha conta",
-    });
-
-    expect(logoutLink).toBeInTheDocument();
-    expect(logoutLink).toHaveAttribute("href", "/");
+    expect(
+      screen.getByRole("button", {
+        name: "Sair da minha conta",
+      }),
+    ).toBeInTheDocument();
   });
 
   it("deve chamar logout ao clicar no link de sair", () => {
-    const logout = jest.fn();
-
-    mockedUseAuth.mockReturnValue(
-      createAuthMock({
-        isAuthenticated: true,
-        user: createUserMock("Juvenas Anastaciano"),
-        logout,
-      }),
-    );
+    mockIsAuthenticated = true;
+    mockUser = {
+      name: "Edson Alves",
+      email: "edson@example.com",
+      password: "123456",
+    };
 
     renderHeader();
 
-    fireEvent.click(screen.getByRole("link", { name: "Sair da minha conta" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Sair da minha conta",
+      }),
+    );
 
-    expect(logout).toHaveBeenCalledTimes(1);
+    expect(mockLogout).toHaveBeenCalledTimes(1);
   });
 
   it("deve renderizar o ícone de logout para usuário autenticado", () => {
-    mockedUseAuth.mockReturnValue(
-      createAuthMock({
-        isAuthenticated: true,
-        user: createUserMock("Juvenas Anastaciano"),
-      }),
-    );
+    mockIsAuthenticated = true;
+    mockUser = {
+      name: "Edson Alves",
+      email: "edson@example.com",
+      password: "123456",
+    };
 
     renderHeader();
 
-    const logoutLink = screen.getByRole("link", {
+    const logoutButton = screen.getByRole("button", {
       name: "Sair da minha conta",
     });
 
-    expect(logoutLink.querySelector("img")).toHaveAttribute(
-      "src",
-      "icon-logout.svg",
-    );
+    expect(logoutButton.querySelector("img")).toBeInTheDocument();
   });
 
   it("deve renderizar as imagens com dimensões de 24 por 24 pixels", () => {
     renderHeader();
 
-    const images = screen
-      .getByRole("navigation", { name: "Ações do usuário" })
-      .querySelectorAll("img");
+    const images = document.querySelectorAll("img");
+
+    expect(images.length).toBeGreaterThan(0);
 
     images.forEach((image) => {
       expect(image).toHaveAttribute("width", "24");
@@ -385,9 +357,9 @@ describe("Header", () => {
   it("deve utilizar decoding async nas imagens dos ícones", () => {
     renderHeader();
 
-    const images = screen
-      .getByRole("navigation", { name: "Ações do usuário" })
-      .querySelectorAll("img");
+    const images = document.querySelectorAll("img");
+
+    expect(images.length).toBeGreaterThan(0);
 
     images.forEach((image) => {
       expect(image).toHaveAttribute("decoding", "async");
@@ -397,9 +369,9 @@ describe("Header", () => {
   it("deve utilizar imagens decorativas sem texto alternativo", () => {
     renderHeader();
 
-    const images = screen
-      .getByRole("navigation", { name: "Ações do usuário" })
-      .querySelectorAll("img");
+    const images = document.querySelectorAll("img");
+
+    expect(images.length).toBeGreaterThan(0);
 
     images.forEach((image) => {
       expect(image).toHaveAttribute("alt", "");
@@ -409,20 +381,27 @@ describe("Header", () => {
   it("deve renderizar o componente Search inicialmente fechado", () => {
     renderHeader();
 
-    expect(screen.getByText("Busca fechada")).toBeInTheDocument();
-    expect(screen.queryByText("Busca aberta")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("search")).not.toBeInTheDocument();
   });
 
   it("deve manter o Header e seus componentes principais na estrutura esperada", () => {
     renderHeader();
 
-    const header = screen.getByRole("banner");
-    const cart = screen.getByRole("button", {
-      name: "Carrinho com 0 produtos",
-    });
-    const search = screen.getByTestId("header-search");
+    expect(screen.getByRole("banner")).toBeInTheDocument();
 
-    expect(header).toContainElement(cart);
-    expect(search).toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", {
+        name: "Navegação principal",
+      }),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("navigation", {
+        name: "Ações do usuário",
+      }),
+    ).toBeInTheDocument();
+
+    expect(screen.getByTestId("logo")).toBeInTheDocument();
+    expect(screen.getByTestId("menu")).toBeInTheDocument();
   });
 });

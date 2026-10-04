@@ -1,25 +1,13 @@
 import "@testing-library/jest-dom";
 
-// Garante o suporte ao TextEncoder e TextDecoder sem depender do módulo util do Node no TS
-const globalAny: any = globalThis;
+import { TextDecoder, TextEncoder } from "node:util";
 
-if (typeof globalAny.TextEncoder === "undefined") {
-  globalAny.TextEncoder = class {
-    encode(input: string = "") {
-      const buf = new Uint8Array(input.length);
-      for (let i = 0; i < input.length; i++) {
-        buf[i] = input.charCodeAt(i);
-      }
-      return buf;
-    }
-  };
-}
+Object.defineProperty(globalThis, "TextEncoder", {
+  configurable: true,
+  value: TextEncoder,
+});
 
-if (typeof globalAny.TextDecoder === "undefined") {
-  globalAny.TextDecoder = class {
-    decode(bytes?: Uint8Array) {
-      if (!bytes) return "";
-      return String.fromCharCode.apply(null, Array.from(bytes));
-    }
-  };
-}
+Object.defineProperty(globalThis, "TextDecoder", {
+  configurable: true,
+  value: TextDecoder,
+});
