@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import Modal from "../Modal/index";
@@ -334,11 +334,15 @@ describe("Modal", () => {
 
     expect(onNavigate).not.toHaveBeenCalled();
 
-    jest.advanceTimersByTime(2999);
+    act(() => {
+      jest.advanceTimersByTime(2999);
+    });
 
     expect(onNavigate).not.toHaveBeenCalled();
 
-    jest.advanceTimersByTime(1);
+    act(() => {
+      jest.advanceTimersByTime(1);
+    });
 
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(onNavigate).toHaveBeenCalledTimes(1);
@@ -355,7 +359,9 @@ describe("Modal", () => {
       onNavigate,
     });
 
-    jest.advanceTimersByTime(5000);
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
 
     expect(onNavigate).not.toHaveBeenCalled();
   });
@@ -370,7 +376,9 @@ describe("Modal", () => {
       onNavigate,
     });
 
-    jest.advanceTimersByTime(5000);
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
 
     expect(onNavigate).not.toHaveBeenCalled();
   });
@@ -386,7 +394,9 @@ describe("Modal", () => {
       onNavigate,
     });
 
-    jest.advanceTimersByTime(5000);
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
 
     expect(onNavigate).not.toHaveBeenCalled();
   });
@@ -403,7 +413,9 @@ describe("Modal", () => {
       onNavigate,
     });
 
-    jest.advanceTimersByTime(5000);
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
 
     expect(onNavigate).not.toHaveBeenCalled();
   });
@@ -421,7 +433,9 @@ describe("Modal", () => {
 
     unmount();
 
-    jest.advanceTimersByTime(5000);
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
 
     expect(onNavigate).not.toHaveBeenCalled();
   });
@@ -497,11 +511,15 @@ describe("Modal", () => {
       />,
     );
 
-    jest.advanceTimersByTime(2999);
+    act(() => {
+      jest.advanceTimersByTime(2999);
+    });
 
     expect(onNavigate).not.toHaveBeenCalled();
 
-    jest.advanceTimersByTime(1);
+    act(() => {
+      jest.advanceTimersByTime(1);
+    });
 
     await waitFor(() => {
       expect(onNavigate).toHaveBeenCalledTimes(1);
