@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./ProductsStyle.css";
 
 import AddIcon from "@mui/icons-material/Add";
+import Warning from "@mui/icons-material/Warning";
 import Tooltip from "@mui/material/Tooltip";
 
 import Header from "../../components/Header";
@@ -10,7 +11,7 @@ import ProductCard, {
   type SmartphoneSubscriptionItem,
 } from "../../components/Product/index";
 import { Button } from "../../components/Button";
-import Modal from "../../components/Modal";
+
 import { SmartphoneService } from "../../services/SmartphoneService";
 
 const ITEMS_PER_PAGE = 4;
@@ -22,8 +23,6 @@ export const ProductsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [modalMessage, setModalMessage] = useState<string>("");
 
   const carregarSmartphones = async (page: number) => {
     try {
@@ -45,12 +44,6 @@ export const ProductsPage: React.FC = () => {
         setCurrentPage(0);
         setTotalPages(0);
       }
-
-      setModalMessage(
-        "Tivemos um problema ao carregar os smartphones. Tente novamente mais tarde ou entre em contato com a nossa equipe para mais informações.",
-      );
-
-      setModalOpen(true);
     } finally {
       setIsLoading(false);
     }
@@ -79,9 +72,28 @@ export const ProductsPage: React.FC = () => {
       </header>
 
       <section className="catalog-grid" aria-label="Lista de Smartphones">
-        {smartphones.map((smartphone) => (
-          <ProductCard key={smartphone.id} item={smartphone} />
-        ))}
+        {smartphones.length === 0 ? (
+          <div className="catalog-error" role="alert">
+            <div className="catalog-error__icon" aria-hidden="true">
+              <Warning />
+            </div>
+
+            <div className="catalog-error__content">
+              <h2>Não foi possível carregar os smartphones</h2>
+
+              <p>
+                Tivemos um problema ao carregar os smartphones. Aguarde alguns
+                instantes e tente novamente. Se o problema continuar, saia da
+                sua conta e entre novamente. Persistindo o problema, entre em
+                contato com a nossa equipe.
+              </p>
+            </div>
+          </div>
+        ) : (
+          smartphones.map((smartphone) => (
+            <ProductCard key={smartphone.id} item={smartphone} />
+          ))
+        )}
 
         {hasMore && (
           <span className="catalog-button">
@@ -101,14 +113,6 @@ export const ProductsPage: React.FC = () => {
       </section>
 
       <Footer />
-
-      <Modal
-        open={modalOpen}
-        title="Não foi possível carregar os smartphones"
-        message={modalMessage}
-        closeUrl="/smartphones"
-        onNavigate={() => setModalOpen(false)}
-      />
     </main>
   );
 };
