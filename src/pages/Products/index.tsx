@@ -23,10 +23,12 @@ export const ProductsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasError, setHasError] = useState<boolean>(false);
 
   const carregarSmartphones = async (page: number) => {
     try {
       setIsLoading(true);
+      setHasError(false);
 
       const data = await SmartphoneService.listarPagina(page, ITEMS_PER_PAGE);
 
@@ -43,6 +45,7 @@ export const ProductsPage: React.FC = () => {
         setSmartphones([]);
         setCurrentPage(0);
         setTotalPages(0);
+        setHasError(true);
       }
     } finally {
       setIsLoading(false);
@@ -63,6 +66,8 @@ export const ProductsPage: React.FC = () => {
     carregarSmartphones(currentPage + 1);
   };
 
+  const showError = !isLoading && hasError && smartphones.length === 0;
+
   return (
     <main className="catalog-container">
       <Header />
@@ -72,7 +77,7 @@ export const ProductsPage: React.FC = () => {
       </header>
 
       <section className="catalog-grid" aria-label="Lista de Smartphones">
-        {smartphones.length === 0 ? (
+        {showError ? (
           <div className="catalog-error" role="alert">
             <div className="catalog-error__icon" aria-hidden="true">
               <Warning />
