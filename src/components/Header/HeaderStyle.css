@@ -1,6 +1,6 @@
 .header {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1280px;
   height: auto;
   display: flex;
   justify-content: space-around;
@@ -77,4 +77,11 @@
 
 .header__welcome {
   white-space: nowrap;
+}
+
+@media (max-width: 428px) {
+  .header .logo img {
+    width: 110px;
+    height: auto;
+  }
 }
