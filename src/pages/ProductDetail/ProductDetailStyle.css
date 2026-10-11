@@ -205,7 +205,7 @@
   border-radius: 6px;
   border: 1px solid var(--color-gray-light);
   font-size: 1rem;
-  background-color: var(--color-white);
+  background-color: #fff;
   cursor: pointer;
   background-image: url("../../assets/images/icons/icon-arrow-down.svg");
   background-repeat: no-repeat;
