@@ -622,7 +622,7 @@ dist/
 
 Abaixo está uma referência visual inicial do projeto.
 
-<img src="src/assets/images/references/reserva-hub-layout-reference.webp" alt="Preview da plataforma ReservaHub para assinatura de smartphones" />
+<img src="src/assets/images/references/reserva-hub-layout-reference.png" alt="Preview da plataforma ReservaHub para assinatura de smartphones" />
 
 ---
 
