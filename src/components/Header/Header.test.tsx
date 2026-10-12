@@ -268,6 +268,7 @@ describe("Header", () => {
       name: "Edson Alves",
       email: "edson@example.com",
       password: "123456",
+      perfil: "USER",
     };
 
     renderHeader();
@@ -281,6 +282,7 @@ describe("Header", () => {
       name: "EDSON ALVES",
       email: "edson@example.com",
       password: "123456",
+      perfil: "USER",
     };
 
     renderHeader();
@@ -294,6 +296,7 @@ describe("Header", () => {
       name: "Edson Alves",
       email: "edson@example.com",
       password: "123456",
+      perfil: "USER",
     };
 
     renderHeader();
@@ -311,6 +314,7 @@ describe("Header", () => {
       name: "Edson Alves",
       email: "edson@example.com",
       password: "123456",
+      perfil: "USER",
     };
 
     renderHeader();
@@ -330,6 +334,7 @@ describe("Header", () => {
       name: "Edson Alves",
       email: "edson@example.com",
       password: "123456",
+      perfil: "USER",
     };
 
     renderHeader();
@@ -339,6 +344,26 @@ describe("Header", () => {
     });
 
     expect(logoutButton.querySelector("img")).toBeInTheDocument();
+  });
+
+  it("deve renderizar o Header para um usuário administrador", () => {
+    mockIsAuthenticated = true;
+    mockUser = {
+      name: "Edson Alves",
+      email: "edson@example.com",
+      password: "123456",
+      perfil: "ADMIN",
+    };
+
+    renderHeader();
+
+    expect(screen.getByRole("banner")).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("button", {
+        name: "Sair da minha conta",
+      }),
+    ).toBeInTheDocument();
   });
 
   it("deve renderizar as imagens com dimensões de 24 por 24 pixels", () => {

@@ -4,6 +4,7 @@ import { Route, Routes } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
 import Loader from "../components/Loader";
+import AdminLoginPage from "../pages/AdminLogin";
 
 const HomePage = lazy(() => import("../pages/Home"));
 const LoginPage = lazy(() => import("../pages/Login"));
@@ -24,6 +25,7 @@ const AppRoutes = () => {
         <Route path="/contato" element={<ContactPage />} />
         <Route path="/como-funciona" element={<SmartPhoneSubscription />} />
         <Route path="/recuperar-senha" element={<ResetPasswordPage />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="*" element={<NotFound />} />
 
         <Route element={<PrivateRoute />}>

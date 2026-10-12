@@ -1,7 +1,7 @@
 import type React from "react";
 import { createContext, useContext, useState } from "react";
 
-import type { User } from "../services/AuthService";
+import type { User } from "../services/AuthService.ts";
 
 interface AuthContextData {
   isAuthenticated: boolean;

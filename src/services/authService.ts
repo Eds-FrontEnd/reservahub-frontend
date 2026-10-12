@@ -4,11 +4,13 @@ export interface User {
   name: string;
   email: string;
   password: string;
+  perfil: "USER" | "ADMIN";
 }
 
 interface LoginResponse {
   token: string;
   nome: string;
+  perfil: "USER" | "ADMIN";
 }
 
 export const registerUser = async (user: User): Promise<boolean> => {
@@ -58,6 +60,7 @@ export const loginUser = async (
     name: data.nome,
     email,
     password: "",
+    perfil: data.perfil,
   };
 };
 
