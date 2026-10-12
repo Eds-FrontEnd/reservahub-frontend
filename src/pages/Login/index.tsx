@@ -11,7 +11,7 @@ import Modal from "../../components/Modal";
 import { PasswordInput } from "../../components/PasswordInput";
 import { useAuth } from "../../contexts/AutContext";
 import { loginSchema } from "../../schemas/loginSchema";
-import { loginUser } from "../../services/AuthService";
+import { loginUser, requestPasswordReset } from "../../services/AuthService";
 
 import "./LoginStyle.css";
 
@@ -30,8 +30,11 @@ const LoginPage = () => {
   }>({});
 
   const [loginError, setLoginError] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [resetSubmitting, setResetSubmitting] = useState(false);
+  const [resetRequestError, setResetRequestError] = useState("");
 
   const validateField = (field: "email" | "password", value: string) => {
     const result = loginSchema.shape[field].safeParse(value);
@@ -53,14 +56,65 @@ const LoginPage = () => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
 
+    if (name !== "email" && name !== "password") {
+      return;
+    }
+
     setFormData((currentData) => ({
       ...currentData,
       [name]: value,
     }));
 
-    validateField(name as "email" | "password", value);
+    validateField(name, value);
 
     setLoginError(false);
+    setAccessDenied(false);
+    setResetRequestError("");
+  };
+
+  const handleForgotPassword = async (
+    event: React.MouseEvent<HTMLAnchorElement>,
+  ) => {
+    event.preventDefault();
+
+    if (resetSubmitting) {
+      return;
+    }
+
+    const emailResult = loginSchema.shape.email.safeParse(formData.email);
+
+    if (!emailResult.success) {
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        email:
+          emailResult.error.issues[0]?.message ?? "Informe um e-mail válido.",
+      }));
+
+      return;
+    }
+
+    setResetSubmitting(true);
+    setResetRequestError("");
+
+    try {
+      const solicitacao = await requestPasswordReset(formData.email);
+
+      navigate(`/aguardando-resposta?solicitacaoId=${solicitacao.id}`, {
+        state: {
+          solicitacaoId: solicitacao.id,
+          email: formData.email.trim(),
+          status: solicitacao.status,
+        },
+      });
+    } catch (error: unknown) {
+      setResetRequestError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível solicitar a recuperação da senha. Tente novamente.",
+      );
+    } finally {
+      setResetSubmitting(false);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -88,6 +142,8 @@ const LoginPage = () => {
     }
 
     setErrors({});
+    setLoginError(false);
+    setAccessDenied(false);
 
     try {
       const authenticatedUser = await loginUser(
@@ -95,12 +151,21 @@ const LoginPage = () => {
         formData.password,
       );
 
-      setLoginError(!authenticatedUser);
-
-      if (authenticatedUser) {
-        login(authenticatedUser);
-        setModalOpen(true);
+      if (!authenticatedUser) {
+        setLoginError(true);
+        return;
       }
+
+      if (authenticatedUser.perfil !== "USER") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("isAuthenticated");
+        localStorage.removeItem("authenticatedUser");
+        setAccessDenied(true);
+        return;
+      }
+
+      login(authenticatedUser);
+      setModalOpen(true);
     } catch (error) {
       console.error("Erro ao realizar login:", error);
 
@@ -168,15 +233,27 @@ const LoginPage = () => {
           </Button>
         </form>
 
-        {loginError && (
+        {accessDenied && (
           <div className="login__error" role="alert">
+            <p>E-mail ou senha incorretos.</p>
+          </div>
+        )}
+
+        {loginError && (
+          <div className="login__error">
             <Link
               className="login__forgot-password"
-              to="/recuperar-senha"
+              to="/aguardando-resposta"
               state={{ email: formData.email }}
+              onClick={handleForgotPassword}
+              aria-disabled={resetSubmitting}
             >
-              Esqueci minha senha
+              {resetSubmitting
+                ? "Enviando solicitação..."
+                : "Esqueci minha senha"}
             </Link>
+
+            {resetRequestError && <p role="alert">{resetRequestError}</p>}
           </div>
         )}
 

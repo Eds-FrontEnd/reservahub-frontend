@@ -32,6 +32,8 @@ const Header: React.FC = () => {
 
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
 
+  const isAdmin = user?.perfil === "ADMIN";
+
   const firstName = user?.name
     ?.trim()
     .split(" ")[0]
@@ -72,48 +74,54 @@ const Header: React.FC = () => {
       <header className="header">
         <Logo />
 
-        <nav className="header__navigation" aria-label="Navegação principal">
-          <Menu />
-        </nav>
+        {!isAdmin && (
+          <nav className="header__navigation" aria-label="Navegação principal">
+            <Menu />
+          </nav>
+        )}
 
         <nav className="header__actions" aria-label="Ações do usuário">
-          <button
-            type="button"
-            className="header__action"
-            onClick={handleOpenSearch}
-            aria-label="Pesquisar produtos"
-          >
-            <img
-              src={isDarkMode ? IconSearchDark : IconSearch}
-              alt=""
-              width="24"
-              height="24"
-              decoding="async"
-            />
-          </button>
+          {!isAdmin && (
+            <>
+              <button
+                type="button"
+                className="header__action"
+                onClick={handleOpenSearch}
+                aria-label="Pesquisar produtos"
+              >
+                <img
+                  src={isDarkMode ? IconSearchDark : IconSearch}
+                  alt=""
+                  width="24"
+                  height="24"
+                  decoding="async"
+                />
+              </button>
 
-          <button
-            type="button"
-            className="header__action header__cart"
-            onClick={openCart}
-            aria-label={`Carrinho com ${totalItems} ${
-              totalItems === 1 ? "produto" : "produtos"
-            }`}
-          >
-            <img
-              src={isDarkMode ? IconCartDark : IconCart}
-              alt=""
-              width="24"
-              height="24"
-              decoding="async"
-            />
+              <button
+                type="button"
+                className="header__action header__cart"
+                onClick={openCart}
+                aria-label={`Carrinho com ${totalItems} ${
+                  totalItems === 1 ? "produto" : "produtos"
+                }`}
+              >
+                <img
+                  src={isDarkMode ? IconCartDark : IconCart}
+                  alt=""
+                  width="24"
+                  height="24"
+                  decoding="async"
+                />
 
-            {totalItems > 0 && (
-              <span className="header__cart-badge" aria-hidden="true">
-                {totalItems}
-              </span>
-            )}
-          </button>
+                {totalItems > 0 && (
+                  <span className="header__cart-badge" aria-hidden="true">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+            </>
+          )}
 
           {isAuthenticated ? (
             <div className="header__account">
@@ -169,7 +177,7 @@ const Header: React.FC = () => {
         </nav>
       </header>
 
-      <Search open={isSearchOpen} onClose={handleCloseSearch} />
+      {!isAdmin && <Search open={isSearchOpen} onClose={handleCloseSearch} />}
     </>
   );
 };

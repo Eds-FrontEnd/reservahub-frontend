@@ -1,6 +1,6 @@
 import type React from "react";
-import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
@@ -8,16 +8,26 @@ import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
 import Modal from "../../components/Modal";
 import { PasswordInput } from "../../components/PasswordInput";
-import { resetPassword } from "../../services/AuthService";
+import {
+  getPasswordResetStatus,
+  resetPassword,
+} from "../../services/AuthService";
 import { resetPasswordSchema } from "../../schemas/ResetSchema";
 
 import "./ResetStyle.css";
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
-  const email = location.state?.email ?? "";
+  const solicitacaoIdParam = searchParams.get("solicitacaoId");
+  const solicitacaoId =
+    solicitacaoIdParam && /^\d+$/.test(solicitacaoIdParam)
+      ? Number(solicitacaoIdParam)
+      : NaN;
+
+  const [approvalVerified, setApprovalVerified] = useState(false);
+  const [checkingApproval, setCheckingApproval] = useState(true);
 
   const [formData, setFormData] = useState({
     password: "",
@@ -30,6 +40,53 @@ const ResetPasswordPage = () => {
   }>({});
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    const verificarAprovacao = async () => {
+      if (!Number.isSafeInteger(solicitacaoId) || solicitacaoId <= 0) {
+        navigate("/login", { replace: true });
+        setCheckingApproval(false);
+        return;
+      }
+
+      try {
+        const solicitacao = await getPasswordResetStatus(solicitacaoId);
+
+        if (!active) {
+          return;
+        }
+
+        if (solicitacao.status.trim().toUpperCase() !== "APROVADA") {
+          navigate(`/aguardando-resposta?solicitacaoId=${solicitacaoId}`, {
+            replace: true,
+          });
+          return;
+        }
+
+        setApprovalVerified(true);
+      } catch {
+        if (active) {
+          navigate(`/aguardando-resposta?solicitacaoId=${solicitacaoId}`, {
+            replace: true,
+          });
+        }
+      } finally {
+        if (active) {
+          setCheckingApproval(false);
+        }
+      }
+    };
+
+    void verificarAprovacao();
+
+    return () => {
+      active = false;
+    };
+  }, [solicitacaoId, navigate]);
 
   const validateField = (
     field: "password" | "confirmPassword",
@@ -54,48 +111,106 @@ const ResetPasswordPage = () => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
 
+    if (name !== "password" && name !== "confirmPassword") {
+      return;
+    }
+
     setFormData((currentData) => ({
       ...currentData,
       [name]: value,
     }));
 
-    validateField(name as "password" | "confirmPassword", value);
+    validateField(name, value);
+    setSubmitError("");
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (submitting) {
+      return;
+    }
+
+    if (!approvalVerified) {
+      setSubmitError(
+        "A redefinição só pode continuar após a aprovação da administração.",
+      );
+      return;
+    }
+
+    if (!Number.isSafeInteger(solicitacaoId) || solicitacaoId <= 0) {
+      setSubmitError(
+        "Solicitação de redefinição inválida. Acesse o link correto para redefinir sua senha.",
+      );
+      return;
+    }
 
     const result = resetPasswordSchema.safeParse(formData);
 
     if (!result.success) {
-      const fieldErrors: {
+      const nextErrors: {
         password?: string;
         confirmPassword?: string;
       } = {};
 
       result.error.issues.forEach((issue) => {
-        const field = issue.path[0] as "password" | "confirmPassword";
+        const field = issue.path[0];
 
-        if (!fieldErrors[field]) {
-          fieldErrors[field] = issue.message;
+        if (
+          (field === "password" || field === "confirmPassword") &&
+          !nextErrors[field]
+        ) {
+          nextErrors[field] = issue.message;
         }
       });
 
-      setErrors(fieldErrors);
-
-      return;
-    }
-
-    if (!email) {
+      setErrors(nextErrors);
       return;
     }
 
     setErrors({});
+    setSubmitError("");
+    setSubmitting(true);
 
-    resetPassword(email, formData.password);
+    try {
+      await resetPassword({
+        solicitacaoId,
+        novaSenha: formData.password,
+      });
 
-    setModalOpen(true);
+      setModalOpen(true);
+    } catch (error: unknown) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível redefinir a senha. Tente novamente.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (checkingApproval) {
+    return (
+      <main className="reset">
+        <section className="reset__container" aria-live="polite">
+          <header className="reset__header">
+            <Logo />
+          </header>
+
+          <h1 id="reset-password-title">Verificando aprovação</h1>
+
+          <p className="reset__description">
+            Estamos verificando o status da sua solicitação.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  if (!approvalVerified) {
+    return null;
+  }
 
   return (
     <main className="reset">
@@ -106,6 +221,13 @@ const ResetPasswordPage = () => {
         <header className="reset__header">
           <Logo />
         </header>
+
+        <h1 id="reset-password-title">Redefinir senha</h1>
+
+        <p className="reset__description">
+          Sua solicitação foi aprovada pela administração. Cadastre sua nova
+          senha para concluir a redefinição.
+        </p>
 
         <form className="reset__form" onSubmit={handleSubmit} noValidate>
           <div className="reset__field">
@@ -136,12 +258,19 @@ const ResetPasswordPage = () => {
             />
           </div>
 
+          {submitError && (
+            <p role="alert" className="reset__error">
+              {submitError}
+            </p>
+          )}
+
           <Button
             type="submit"
             backgroundColor="var(--color-primary)"
             hoverBackgroundColor="var(--color-secondary)"
+            disabled={submitting}
           >
-            Redefinir senha
+            {submitting ? "Redefinindo..." : "Redefinir senha"}
           </Button>
         </form>
 

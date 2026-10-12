@@ -47,11 +47,11 @@ const hasAdminRole = (user: unknown): boolean => {
     return roles.some((role) => {
       if (typeof role === "string") {
         return [
-          "ADMIN",
           "ROLE_ADMIN",
-          "ADMINISTRADOR",
+          "ADMIN",
           "ROLE_ADMINISTRADOR",
-        ].includes(role.trim().toUpperCase());
+          "ADMINISTRADOR",
+        ].includes(role.toUpperCase());
       }
 
       if (
@@ -61,11 +61,11 @@ const hasAdminRole = (user: unknown): boolean => {
         typeof role.authority === "string"
       ) {
         return [
-          "ADMIN",
           "ROLE_ADMIN",
-          "ADMINISTRADOR",
+          "ADMIN",
           "ROLE_ADMINISTRADOR",
-        ].includes(role.authority.trim().toUpperCase());
+          "ADMINISTRADOR",
+        ].includes(role.authority.toUpperCase());
       }
 
       return false;
@@ -94,6 +94,7 @@ const AdminLoginPage = () => {
     setErrors((currentErrors) => {
       if (result.success) {
         const { [field]: _, ...remainingErrors } = currentErrors;
+
         return remainingErrors;
       }
 
@@ -140,6 +141,7 @@ const AdminLoginPage = () => {
       });
 
       setErrors(fieldErrors);
+
       return;
     }
 
@@ -159,6 +161,9 @@ const AdminLoginPage = () => {
       }
 
       if (!hasAdminRole(authenticatedUser)) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("isAuthenticated");
+        localStorage.removeItem("authenticatedUser");
         setAccessDenied(true);
         return;
       }
