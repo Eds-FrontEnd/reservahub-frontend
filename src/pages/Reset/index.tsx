@@ -222,13 +222,6 @@ const ResetPasswordPage = () => {
           <Logo />
         </header>
 
-        <h1 id="reset-password-title">Redefinir senha</h1>
-
-        <p className="reset__description">
-          Sua solicitação foi aprovada pela administração. Cadastre sua nova
-          senha para concluir a redefinição.
-        </p>
-
         <form className="reset__form" onSubmit={handleSubmit} noValidate>
           <div className="reset__field">
             <label htmlFor="password">Nova senha</label>
