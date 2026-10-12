@@ -5,6 +5,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutlined";
 import HourglassTopIcon from "@mui/icons-material/HourglassTop";
 
+import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
 import { subscribePasswordResetStatus } from "../../services/AuthService";
 
@@ -195,21 +196,22 @@ const WaitingResetPasswordPage = () => {
         )}
 
         {aprovado && solicitacao && (
-          <Link
-            className="waiting-reset__submit"
+          <Button
             to={`/recuperar-senha?solicitacaoId=${solicitacao.id}`}
+            fullWidth
+            hoverBackgroundColor="var(--color-secondary)"
           >
             Redefinir minha senha
-          </Link>
+          </Button>
         )}
 
         {(statusAtual === "REJEITADA" ||
           statusAtual === "RECUSADA" ||
           statusAtual === "CANCELADA" ||
           statusAtual === "FINALIZADA") && (
-          <Link className="waiting-reset__forgot-password" to="/login">
+          <Button to="/login" fullWidth>
             Voltar para o login
-          </Link>
+          </Button>
         )}
 
         <footer className="waiting-reset__footer">
