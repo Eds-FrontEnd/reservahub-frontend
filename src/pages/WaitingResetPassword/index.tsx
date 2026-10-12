@@ -186,16 +186,10 @@ const WaitingResetPasswordPage = () => {
               {statusIcone}
             </span>
 
-            <p className="waiting-reset__status-label">Status atual:</p>
-
             <p className="waiting-reset__status-value">{solicitacao.status}</p>
 
             <p className="waiting-reset__status-message">
               {obterMensagemStatus(solicitacao.status)}
-            </p>
-
-            <p className="waiting-reset__request-id">
-              Solicitação nº {solicitacao.id}
             </p>
           </div>
         )}
