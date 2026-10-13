@@ -2,14 +2,12 @@ import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 import "./SmartphoneStyles.css";
 
-import {
-  ChevronRight,
-  KeyboardArrowDown,
-  PhoneAndroid,
-  ShoppingCart,
-  Smartphone,
-  Tune,
-} from "@mui/icons-material";
+import ChevronRight from "@mui/icons-material/ChevronRight";
+import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
+import PhoneAndroid from "@mui/icons-material/PhoneAndroid";
+import ShoppingCart from "@mui/icons-material/ShoppingCart";
+import Smartphone from "@mui/icons-material/Smartphone";
+import Tune from "@mui/icons-material/Tune";
 
 interface Step {
   number: string;
