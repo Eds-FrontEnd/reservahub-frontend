@@ -255,8 +255,8 @@ function Popup() {
                 className="exit-discount__description"
                 id="exit-discount-description"
               >
-                Consulte seu CEP e descubra um cupom de desconto demonstrativo
-                para sua região.
+                Consulte seu CEP e descubra um cupom de desconto especial para
+                sua região.
               </p>
             </header>
 
