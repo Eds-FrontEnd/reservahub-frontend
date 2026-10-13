@@ -4,6 +4,7 @@ import "./SmartphoneStyles.css";
 
 import {
   ChevronRight,
+  KeyboardArrowDown,
   PhoneAndroid,
   ShoppingCart,
   Smartphone,
@@ -22,28 +23,28 @@ const steps: Step[] = [
     number: "01",
     title: "Escolha seu smartphone",
     description:
-      "Selecione o modelo que combina com você e encontre a assinatura ideal para o seu momento.",
+      "Encontre o smartphone ideal entre os modelos disponíveis, com planos de assinatura mais acessíveis e sem precisar comprar o aparelho integralmente.",
     icon: <Smartphone aria-hidden="true" />,
   },
   {
     number: "02",
     title: "Escolha seu plano",
     description:
-      "Defina o período de assinatura e as condições disponíveis para o aparelho escolhido.",
+      "Escolha o período de assinatura e confira os benefícios disponíveis, que podem incluir seguro contra roubo, garantia e assistência técnica.",
     icon: <Tune aria-hidden="true" />,
   },
   {
     number: "03",
     title: "Receba em casa",
     description:
-      "Finalize sua assinatura e aguarde a entrega do smartphone no endereço informado.",
+      "Finalize sua assinatura e aguarde a entrega do smartphone no endereço informado, com praticidade e comodidade.",
     icon: <ShoppingCart aria-hidden="true" />,
   },
   {
     number: "04",
     title: "Use e aproveite",
     description:
-      "Tenha acesso ao seu smartphone durante o período contratado, com praticidade e segurança.",
+      "Aproveite seu smartphone com mais tranquilidade, contando com atendimento personalizado e manutenção profissional, conforme as condições do plano.",
     icon: <PhoneAndroid aria-hidden="true" />,
   },
 ];
@@ -52,17 +53,22 @@ const faqs = [
   {
     question: "O que é a assinatura de smartphone?",
     answer:
-      "É uma forma de ter acesso a um smartphone por meio de um plano de assinatura, sem a necessidade de comprar o aparelho integralmente no início.",
+      "É uma alternativa à compra tradicional que permite utilizar um smartphone por meio de um plano de assinatura, com menor investimento, mais praticidade e vários benefícios.",
   },
   {
     question: "Posso escolher o modelo do smartphone?",
     answer:
-      "Sim. Os modelos disponíveis podem variar conforme o plano e as condições da assinatura.",
+      "Sim. Você pode escolher entre os modelos disponíveis e consultar as opções de planos e benefícios para encontrar a alternativa mais adequada às suas necessidades.",
   },
   {
     question: "Como funciona o pagamento?",
     answer:
       "O pagamento segue as condições apresentadas no momento da contratação, incluindo valor, periodicidade e prazo.",
+  },
+  {
+    question: "Quais são os benefícios?",
+    answer:
+      "Você terá cobertura total de garantia, seguro contra roubo, asssitência técnica e manutenção profissional à sua disposição, atendimento personalizado, e o melhor de tudo, smartphones de última geração por um preço acessível!",
   },
 ];
 
@@ -86,8 +92,10 @@ const SmartphoneSubscription = () => {
             </h2>
 
             <p>
-              Em poucos passos, você escolhe seu smartphone e começa a
-              aproveitar.
+              Tenha acesso a smartphones de última geração por planos
+              acessíveis, com praticidade, atendimento personalizado e
+              benefícios que podem incluir seguro, garantia e assistência
+              técnica.
             </p>
           </div>
 
@@ -128,7 +136,11 @@ const SmartphoneSubscription = () => {
               <span> frequentes</span>
             </h2>
 
-            <p>Confira algumas informações importantes sobre a assinatura.</p>
+            <p>
+              Conheça as opções de assinatura e os benefícios disponíveis, como
+              seguro contra roubo, garantia, assistência técnica e manutenção
+              profissional, conforme as condições de cada plano.
+            </p>
           </div>
 
           <div className="subscription-faq__list">
@@ -136,6 +148,7 @@ const SmartphoneSubscription = () => {
               <details className="subscription-faq__item" key={faq.question}>
                 <summary>
                   <span>{faq.question}</span>
+                  <KeyboardArrowDown aria-hidden="true" />
                 </summary>
 
                 <p>{faq.answer}</p>

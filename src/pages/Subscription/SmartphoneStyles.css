@@ -510,6 +510,16 @@
   line-height: 1.7;
 }
 
+.subscription-faq__item summary svg {
+  flex-shrink: 0;
+  color: var(--color-secondary);
+  transition: transform 180ms ease;
+}
+
+.subscription-faq__item[open] summary svg {
+  transform: rotate(180deg);
+}
+
 @media (max-width: 1024px) {
   .subscription-hero__content {
     gap: 32px;
