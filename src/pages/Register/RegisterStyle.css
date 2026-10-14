@@ -5,13 +5,14 @@
   justify-content: center;
   align-items: center;
   margin: 0 auto;
-  background-color: var(--color-gray-border);
+  padding: 1.5rem 1rem;
+  box-sizing: border-box;
   background-color: var(--color-blue);
 }
 
 .register__container {
   width: 100%;
-  max-width: 280px;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -20,6 +21,7 @@
   background-color: var(--color-white);
   border-radius: 15px;
   padding: 2rem 1.5rem 1rem;
+  box-sizing: border-box;
   gap: 0.85rem;
 }
 
@@ -47,14 +49,20 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
   gap: 0.35rem;
   background-color: var(--color-white);
 }
 
+.register__account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 0.75rem;
+}
+
 .register__field {
   width: 100%;
-  min-width: 220px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   margin-bottom: 0.5rem;
@@ -67,6 +75,7 @@
 
 .register__field input {
   width: 100%;
+  min-width: 0;
   box-sizing: border-box;
   font-size: 1rem;
   padding: 0.5rem;
@@ -77,6 +86,66 @@
 
 .register__field input:focus-visible {
   box-shadow: 0 0 0 3px rgb(0 0 0 / 15%);
+}
+
+.register__field input[aria-invalid="true"] {
+  border-color: var(--color-red);
+}
+
+.register__address {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--color-gray-border);
+  border-radius: 10px;
+}
+
+.register__address legend {
+  padding: 0 0.4rem;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.register__address-grid {
+  display: grid;
+  grid-template-columns: 2fr 3fr 1fr;
+  gap: 0 0.75rem;
+}
+
+.register__field--cep {
+  grid-column: span 1;
+}
+
+.register__field--street {
+  grid-column: span 2;
+}
+
+.register__field-help {
+  margin-top: 0.25rem;
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.register__field-error {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--color-red);
+  overflow-wrap: anywhere;
+}
+
+.register__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .register__submit {
@@ -123,12 +192,52 @@
   color: var(--color-primary);
 }
 
-.register__field-error {
-  margin-top: 0.25rem;
-  font-size: 0.75rem;
-  color: var(--color-red);
+@media (max-width: 640px) {
+  .register {
+    align-items: flex-start;
+  }
+
+  .register__container {
+    padding: 1.5rem 1rem 1rem;
+  }
+
+  .register__address-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 0.75rem;
+  }
+
+  .register__field--cep {
+    grid-column: 1 / -1;
+  }
+
+  .register__field--street {
+    grid-column: 1 / -1;
+  }
 }
 
-.register__field input[aria-invalid="true"] {
-  border-color: var(--color-red);
+@media (max-width: 480px) {
+  .register {
+    padding: 1rem 0.75rem;
+  }
+
+  .register__account-grid {
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+  }
+
+  .register__address-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .register__field--cep,
+  .register__field--street {
+    grid-column: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .register__submit {
+    transition: none;
+  }
 }

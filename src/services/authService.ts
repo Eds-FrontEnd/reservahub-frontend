@@ -7,6 +7,11 @@ export interface User {
   email: string;
   password: string;
   perfil: "USER" | "ADMIN";
+  cep?: string;
+  street?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
 }
 
 interface LoginResponse {
@@ -73,6 +78,11 @@ export const registerUser = async (user: User): Promise<boolean> => {
         nome: user.name,
         email: user.email.trim(),
         senha: user.password,
+        cep: user.cep,
+        street: user.street,
+        neighborhood: user.neighborhood,
+        city: user.city,
+        state: user.state,
       }),
     });
 
