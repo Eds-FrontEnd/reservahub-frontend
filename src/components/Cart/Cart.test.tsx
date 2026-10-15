@@ -5,10 +5,7 @@ import "@testing-library/jest-dom";
 import { Cart } from "../Cart/index";
 import { useCart } from "../../contexts/CartContext";
 import { CompraService } from "../../services/CompraService";
-import type {
-  CompraResponse,
-  DescontoCompra,
-} from "../../services/CompraService";
+import type { CompraResponse } from "../../services/CompraService";
 
 jest.mock("../../contexts/CartContext", () => ({
   useCart: jest.fn(),
@@ -298,7 +295,7 @@ describe("Cart", () => {
       expect(screen.getByText("R$ 579,80")).toBeInTheDocument();
     });
 
-    it("deve enviar o cupom e os valores com desconto para o serviço", async () => {
+    it("deve enviar os itens da assinatura e o cupom aplicado para o serviço", async () => {
       render(<Cart />);
 
       fireEvent.change(
@@ -314,13 +311,6 @@ describe("Cart", () => {
         screen.getByRole("button", { name: "Concluir assinatura" }),
       );
 
-      const expectedDiscount: DescontoCompra = {
-        coupon: "DESC10%",
-        discountPercent: 10,
-        discountAmount: 57.98,
-        totalWithDiscount: 521.82,
-      };
-
       await waitFor(() => {
         expect(mockedConcluirCompra).toHaveBeenCalledWith(
           [
@@ -330,7 +320,7 @@ describe("Cart", () => {
               planMonths: 12,
             },
           ],
-          expectedDiscount,
+          "DESC10%",
         );
       });
     });
@@ -485,13 +475,16 @@ describe("Cart", () => {
       );
 
       await waitFor(() => {
-        expect(mockedConcluirCompra).toHaveBeenCalledWith([
-          {
-            productId: "smartphone-1",
-            quantity: 2,
-            planMonths: 12,
-          },
-        ]);
+        expect(mockedConcluirCompra).toHaveBeenCalledWith(
+          [
+            {
+              productId: "smartphone-1",
+              quantity: 2,
+              planMonths: 12,
+            },
+          ],
+          undefined,
+        );
       });
     });
 

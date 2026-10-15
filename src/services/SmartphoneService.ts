@@ -20,7 +20,9 @@ interface SmartphonePageResponse {
   size: number;
 }
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (
+  import.meta.env.VITE_API_URL ?? "http://localhost:8080"
+).replace(/\/+$/, "");
 
 const getAuthorizationHeaders = (): HeadersInit => {
   const token = localStorage.getItem("token");
@@ -140,6 +142,10 @@ export const SmartphoneService = {
         }
       },
     );
+
+    source.onerror = () => {
+      source.close();
+    };
 
     return () => {
       source.close();

@@ -62,12 +62,17 @@ export const Cart: React.FC = () => {
   const [appliedCoupon, setAppliedCoupon] = useState<string>("");
   const [couponError, setCouponError] = useState<string>("");
 
+  const totalRounded = roundPrice(total);
+
   const discountPercent = appliedCoupon
     ? (getDiscountPercent(appliedCoupon) ?? 0)
     : 0;
 
-  const discountAmount = roundPrice((total * discountPercent) / 100);
-  const totalWithDiscount = roundPrice(Math.max(0, total - discountAmount));
+  const discountAmount = roundPrice((totalRounded * discountPercent) / 100);
+
+  const totalWithDiscount = roundPrice(
+    Math.max(0, totalRounded - discountAmount),
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -91,6 +96,7 @@ export const Cart: React.FC = () => {
     if (!normalizedCoupon) {
       setAppliedCoupon("");
       setCouponError("");
+      setCheckoutError("");
       return;
     }
 
@@ -112,6 +118,7 @@ export const Cart: React.FC = () => {
     setCouponInput("");
     setAppliedCoupon("");
     setCouponError("");
+    setCheckoutError("");
   };
 
   const handleCheckout = async () => {
@@ -127,16 +134,10 @@ export const Cart: React.FC = () => {
         planMonths: item.planMonths,
       }));
 
-      if (appliedCoupon) {
-        await CompraService.concluirCompra(purchaseItems, {
-          coupon: appliedCoupon,
-          discountPercent,
-          discountAmount,
-          totalWithDiscount,
-        });
-      } else {
-        await CompraService.concluirCompra(purchaseItems);
-      }
+      await CompraService.concluirCompra(
+        purchaseItems,
+        appliedCoupon || undefined,
+      );
 
       clearCart();
       setCouponInput("");
@@ -309,6 +310,7 @@ export const Cart: React.FC = () => {
                       onChange={(event) => {
                         setCouponInput(event.target.value.toUpperCase());
                         setCouponError("");
+                        setCheckoutError("");
                       }}
                       placeholder="Ex.: DESC10%"
                       autoComplete="off"
@@ -359,7 +361,7 @@ export const Cart: React.FC = () => {
 
                 <div className="cart-drawer__summary">
                   <span>Total mensal</span>
-                  <strong>{formatPrice(total)}</strong>
+                  <strong>{formatPrice(totalRounded)}</strong>
                 </div>
 
                 {appliedCoupon && (
