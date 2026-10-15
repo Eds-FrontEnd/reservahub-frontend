@@ -1,3 +1,5 @@
+import { clearAuthenticationStorage } from "../utils/AuthStorage";
+
 const API_URL = (
   import.meta.env.VITE_API_URL ?? "http://localhost:8080"
 ).replace(/\/+$/, "");
@@ -150,9 +152,7 @@ export const logoutUser = async (): Promise<boolean> => {
   } catch {
     return false;
   } finally {
-    localStorage.removeItem("token");
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("authenticatedUser");
+    clearAuthenticationStorage();
   }
 };
 

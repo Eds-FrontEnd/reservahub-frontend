@@ -1,7 +1,11 @@
 import type React from "react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-import type { User } from "../services/AuthService.ts";
+import type { User } from "../services/AuthService";
+import {
+  AUTH_STORAGE_CHANGED_EVENT,
+  clearAuthenticationStorage,
+} from "../utils/AuthStorage";
 
 interface AuthContextData {
   isAuthenticated: boolean;
@@ -14,7 +18,6 @@ const AuthContext = createContext<AuthContextData | undefined>(undefined);
 
 const AUTH_KEY = "isAuthenticated";
 const USER_KEY = "authenticatedUser";
-const TOKEN_KEY = "token";
 const DISCOUNT_TRIGGER_KEY = "reservahub-show-discount-after-login";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -25,8 +28,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(() => {
     const storedUser = localStorage.getItem(USER_KEY);
 
-    return storedUser ? JSON.parse(storedUser) : null;
+    if (!storedUser) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(storedUser) as User;
+    } catch {
+      return null;
+    }
   });
+
+  useEffect(() => {
+    const synchronizeLogout = () => {
+      if (localStorage.getItem("token")) {
+        return;
+      }
+
+      localStorage.removeItem(AUTH_KEY);
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(DISCOUNT_TRIGGER_KEY);
+
+      setIsAuthenticated(false);
+      setUser(null);
+    };
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (
+        (event.key === "token" && event.newValue === null) ||
+        event.key === null
+      ) {
+        synchronizeLogout();
+      }
+    };
+
+    window.addEventListener(AUTH_STORAGE_CHANGED_EVENT, synchronizeLogout);
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener(AUTH_STORAGE_CHANGED_EVENT, synchronizeLogout);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   const login = (authenticatedUser: User) => {
     localStorage.setItem(AUTH_KEY, "true");
@@ -40,10 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(AUTH_KEY);
-    localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(DISCOUNT_TRIGGER_KEY);
+    clearAuthenticationStorage();
 
     setIsAuthenticated(false);
     setUser(null);
@@ -80,12 +120,17 @@ export const resetPassword = (password: string): void => {
     return;
   }
 
-  const user = JSON.parse(storedUser);
+  try {
+    const user = JSON.parse(storedUser) as User;
 
-  const updatedUser = {
-    ...user,
-    password,
-  };
-
-  localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+    localStorage.setItem(
+      USER_KEY,
+      JSON.stringify({
+        ...user,
+        password,
+      }),
+    );
+  } catch {
+    return;
+  }
 };
