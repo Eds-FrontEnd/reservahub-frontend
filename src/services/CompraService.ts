@@ -8,18 +8,30 @@ export interface ItemCompra {
   planMonths: number;
 }
 
+export interface DescontoCompra {
+  coupon: string;
+  discountPercent: number;
+  discountAmount: number;
+  totalWithDiscount: number;
+}
+
 export interface CompraResponse {
   mensagem: string;
   totalItens: number;
 }
 
 export const CompraService = {
-  async concluirCompra(items: ItemCompra[]): Promise<CompraResponse> {
+  async concluirCompra(
+    items: ItemCompra[],
+    discount?: DescontoCompra,
+  ): Promise<CompraResponse> {
     const token = localStorage.getItem("token");
 
     if (!token) {
       throw new Error("Sua sessão expirou. Faça login novamente.");
     }
+
+    const payload = discount ? { items, ...discount } : { items };
 
     const response = await fetch(`${API_URL}/api/compras`, {
       method: "POST",
@@ -27,7 +39,7 @@ export const CompraService = {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ items }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {

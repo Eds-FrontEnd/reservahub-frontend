@@ -5,7 +5,10 @@ import "@testing-library/jest-dom";
 import { Cart } from "../Cart/index";
 import { useCart } from "../../contexts/CartContext";
 import { CompraService } from "../../services/CompraService";
-import type { CompraResponse } from "../../services/CompraService";
+import type {
+  CompraResponse,
+  DescontoCompra,
+} from "../../services/CompraService";
 
 jest.mock("../../contexts/CartContext", () => ({
   useCart: jest.fn(),
@@ -155,6 +158,18 @@ describe("Cart", () => {
       expect(screen.getByText("/mês")).toBeInTheDocument();
     });
 
+    it("deve exibir o campo para informar o cupom", () => {
+      render(<Cart />);
+
+      expect(
+        screen.getByRole("textbox", { name: "Cupom de desconto" }),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByRole("button", { name: "Aplicar" }),
+      ).toBeInTheDocument();
+    });
+
     it("deve exibir os botões de checkout e limpeza do carrinho", () => {
       render(<Cart />);
 
@@ -199,6 +214,125 @@ describe("Cart", () => {
       expect(
         screen.queryByRole("button", { name: "Concluir assinatura" }),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Cupom de desconto", () => {
+    it("deve aplicar um cupom válido e calcular o desconto", () => {
+      render(<Cart />);
+
+      fireEvent.change(
+        screen.getByRole("textbox", { name: "Cupom de desconto" }),
+        {
+          target: { value: "DESC10%" },
+        },
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+
+      expect(
+        screen.getByText("Cupom DESC10% aplicado (10%)"),
+      ).toBeInTheDocument();
+      expect(screen.getByText("Desconto (10%)")).toBeInTheDocument();
+      expect(screen.getByText("- R$ 57,98")).toBeInTheDocument();
+      expect(screen.getByText("Total mensal com desconto")).toBeInTheDocument();
+      expect(screen.getByText("R$ 521,82")).toBeInTheDocument();
+    });
+
+    it("deve aceitar o cupom informado em letras minúsculas", () => {
+      render(<Cart />);
+
+      fireEvent.change(
+        screen.getByRole("textbox", { name: "Cupom de desconto" }),
+        {
+          target: { value: "desc10%" },
+        },
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+
+      expect(
+        screen.getByText("Cupom DESC10% aplicado (10%)"),
+      ).toBeInTheDocument();
+      expect(screen.getByText("- R$ 57,98")).toBeInTheDocument();
+    });
+
+    it("deve exibir uma mensagem para um cupom inválido", () => {
+      render(<Cart />);
+
+      fireEvent.change(
+        screen.getByRole("textbox", { name: "Cupom de desconto" }),
+        {
+          target: { value: "PROMOCAO" },
+        },
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Cupom inválido. Confira o código e tente novamente.",
+      );
+
+      expect(
+        screen.queryByText("Total mensal com desconto"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("deve remover o cupom aplicado", () => {
+      render(<Cart />);
+
+      fireEvent.change(
+        screen.getByRole("textbox", { name: "Cupom de desconto" }),
+        {
+          target: { value: "DESC10%" },
+        },
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+      fireEvent.click(screen.getByRole("button", { name: "Remover cupom" }));
+
+      expect(
+        screen.queryByText("Total mensal com desconto"),
+      ).not.toBeInTheDocument();
+
+      expect(screen.getByText("R$ 579,80")).toBeInTheDocument();
+    });
+
+    it("deve enviar o cupom e os valores com desconto para o serviço", async () => {
+      render(<Cart />);
+
+      fireEvent.change(
+        screen.getByRole("textbox", { name: "Cupom de desconto" }),
+        {
+          target: { value: "DESC10%" },
+        },
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Concluir assinatura" }),
+      );
+
+      const expectedDiscount: DescontoCompra = {
+        coupon: "DESC10%",
+        discountPercent: 10,
+        discountAmount: 57.98,
+        totalWithDiscount: 521.82,
+      };
+
+      await waitFor(() => {
+        expect(mockedConcluirCompra).toHaveBeenCalledWith(
+          [
+            {
+              productId: "smartphone-1",
+              quantity: 2,
+              planMonths: 12,
+            },
+          ],
+          expectedDiscount,
+        );
+      });
     });
   });
 

@@ -29,6 +29,20 @@ const getPlanName = (planMonths: number): string => {
   }
 };
 
+const getDiscountPercent = (coupon: string): number | null => {
+  const match = coupon
+    .trim()
+    .toUpperCase()
+    .match(/^DESC(100|[1-9]\d?)%$/);
+
+  if (!match) return null;
+
+  return Number(match[1]);
+};
+
+const roundPrice = (value: number): number =>
+  Math.round((value + Number.EPSILON) * 100) / 100;
+
 export const Cart: React.FC = () => {
   const {
     items,
@@ -44,6 +58,16 @@ export const Cart: React.FC = () => {
     useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [checkoutError, setCheckoutError] = useState<string>("");
+  const [couponInput, setCouponInput] = useState<string>("");
+  const [appliedCoupon, setAppliedCoupon] = useState<string>("");
+  const [couponError, setCouponError] = useState<string>("");
+
+  const discountPercent = appliedCoupon
+    ? (getDiscountPercent(appliedCoupon) ?? 0)
+    : 0;
+
+  const discountAmount = roundPrice((total * discountPercent) / 100);
+  const totalWithDiscount = roundPrice(Math.max(0, total - discountAmount));
 
   useEffect(() => {
     if (!isOpen) return;
@@ -61,6 +85,35 @@ export const Cart: React.FC = () => {
     };
   }, [isOpen, closeCart]);
 
+  const handleApplyCoupon = () => {
+    const normalizedCoupon = couponInput.trim().toUpperCase();
+
+    if (!normalizedCoupon) {
+      setAppliedCoupon("");
+      setCouponError("");
+      return;
+    }
+
+    const percentage = getDiscountPercent(normalizedCoupon);
+
+    if (percentage === null) {
+      setAppliedCoupon("");
+      setCouponError("Cupom inválido. Confira o código e tente novamente.");
+      return;
+    }
+
+    setAppliedCoupon(normalizedCoupon);
+    setCouponInput(normalizedCoupon);
+    setCouponError("");
+    setCheckoutError("");
+  };
+
+  const handleRemoveCoupon = () => {
+    setCouponInput("");
+    setAppliedCoupon("");
+    setCouponError("");
+  };
+
   const handleCheckout = async () => {
     if (items.length === 0 || isSubmitting) return;
 
@@ -74,9 +127,21 @@ export const Cart: React.FC = () => {
         planMonths: item.planMonths,
       }));
 
-      await CompraService.concluirCompra(purchaseItems);
+      if (appliedCoupon) {
+        await CompraService.concluirCompra(purchaseItems, {
+          coupon: appliedCoupon,
+          discountPercent,
+          discountAmount,
+          totalWithDiscount,
+        });
+      } else {
+        await CompraService.concluirCompra(purchaseItems);
+      }
 
       clearCart();
+      setCouponInput("");
+      setAppliedCoupon("");
+      setCouponError("");
       setIsPurchaseModalOpen(true);
     } catch (error: unknown) {
       setCheckoutError(
@@ -232,10 +297,84 @@ export const Cart: React.FC = () => {
 
             {items.length > 0 && (
               <footer className="cart-drawer__footer">
+                <div className="cart-drawer__coupon">
+                  <label htmlFor="cart-coupon">Cupom de desconto</label>
+
+                  <div className="cart-drawer__coupon-controls">
+                    <input
+                      id="cart-coupon"
+                      name="coupon"
+                      type="text"
+                      value={couponInput}
+                      onChange={(event) => {
+                        setCouponInput(event.target.value.toUpperCase());
+                        setCouponError("");
+                      }}
+                      placeholder="Ex.: DESC10%"
+                      autoComplete="off"
+                      aria-invalid={Boolean(couponError)}
+                      aria-describedby={
+                        couponError ? "cart-coupon-error" : undefined
+                      }
+                      disabled={isSubmitting}
+                    />
+
+                    <button
+                      type="button"
+                      className="cart-drawer__coupon-apply"
+                      onClick={handleApplyCoupon}
+                      disabled={isSubmitting}
+                    >
+                      Aplicar
+                    </button>
+                  </div>
+
+                  {couponError && (
+                    <p
+                      id="cart-coupon-error"
+                      className="cart-drawer__error"
+                      role="alert"
+                    >
+                      {couponError}
+                    </p>
+                  )}
+
+                  {appliedCoupon && (
+                    <div className="cart-drawer__coupon-applied">
+                      <span>
+                        Cupom {appliedCoupon} aplicado ({discountPercent}%)
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        disabled={isSubmitting}
+                        aria-label="Remover cupom"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="cart-drawer__summary">
                   <span>Total mensal</span>
                   <strong>{formatPrice(total)}</strong>
                 </div>
+
+                {appliedCoupon && (
+                  <>
+                    <div className="cart-drawer__summary">
+                      <span>Desconto ({discountPercent}%)</span>
+                      <strong>- {formatPrice(discountAmount)}</strong>
+                    </div>
+
+                    <div className="cart-drawer__summary">
+                      <span>Total mensal com desconto</span>
+                      <strong>{formatPrice(totalWithDiscount)}</strong>
+                    </div>
+                  </>
+                )}
 
                 {checkoutError && (
                   <p className="cart-drawer__error" role="alert">
