@@ -15,6 +15,7 @@ const AuthContext = createContext<AuthContextData | undefined>(undefined);
 const AUTH_KEY = "isAuthenticated";
 const USER_KEY = "authenticatedUser";
 const TOKEN_KEY = "token";
+const DISCOUNT_TRIGGER_KEY = "reservahub-show-discount-after-login";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -30,15 +31,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (authenticatedUser: User) => {
     localStorage.setItem(AUTH_KEY, "true");
     localStorage.setItem(USER_KEY, JSON.stringify(authenticatedUser));
+    localStorage.setItem(DISCOUNT_TRIGGER_KEY, "true");
 
     setIsAuthenticated(true);
     setUser(authenticatedUser);
+
+    window.dispatchEvent(new Event("reservahub:login"));
   };
 
   const logout = () => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(AUTH_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(DISCOUNT_TRIGGER_KEY);
 
     setIsAuthenticated(false);
     setUser(null);

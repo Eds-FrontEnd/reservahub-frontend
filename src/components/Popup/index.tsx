@@ -1,10 +1,6 @@
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { Loyalty } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-
 import axios from "axios";
-
-import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -15,9 +11,6 @@ import { fetchCepData } from "../../services/ViaCepService";
 
 import "./PopupStyle.css";
 
-import { Loyalty } from "@mui/icons-material";
-import { Button } from "../Button";
-
 interface DiscountResult {
   cep: string;
   city: string;
@@ -27,8 +20,17 @@ interface DiscountResult {
   coupon: string;
 }
 
-const STORAGE_KEY = "reservahub-exit-discount-shown";
-const POPUP_DELAY = 2500;
+interface CepResponse {
+  cep: string;
+  mensagem?: string;
+}
+
+const API_URL = (
+  import.meta.env.VITE_API_URL ?? "http://localhost:8080"
+).replace(/\/+$/, "");
+
+const LOGIN_EVENT = "reservahub:login";
+const TRIGGER_KEY = "reservahub-show-discount-after-login";
 
 const formatCep = (value: string): string => {
   const digits = value.replace(/\D/g, "").slice(0, 8);
@@ -43,41 +45,121 @@ const formatCep = (value: string): string => {
 function Popup() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const requestControllerRef = useRef<AbortController | null>(null);
+  const requestInProgressRef = useRef(false);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [cep, setCep] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const [result, setResult] = useState<DiscountResult | null>(null);
   const [copyMessage, setCopyMessage] = useState("");
-  const [showResult, setShowResult] = useState(false);
 
   useEffect(() => {
-    let alreadyShown = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-    try {
-      alreadyShown = window.localStorage.getItem(STORAGE_KEY) === "true";
-    } catch {
-      alreadyShown = false;
-    }
-
-    if (alreadyShown) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      try {
-        window.localStorage.setItem(STORAGE_KEY, "true");
-      } catch {
-        setIsOpen(true);
+    const loadDiscount = async () => {
+      if (requestInProgressRef.current) {
         return;
       }
 
-      setIsOpen(true);
-    }, POPUP_DELAY);
+      requestInProgressRef.current = true;
+
+      const controller = new AbortController();
+      requestControllerRef.current = controller;
+
+      setIsLoading(true);
+
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/api/auth/cep`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as CepResponse;
+        const normalizedCep = data.cep?.replace(/\D/g, "");
+
+        if (!normalizedCep || !/^\d{8}$/.test(normalizedCep)) {
+          return;
+        }
+
+        const cepData = await fetchCepData(normalizedCep, controller.signal);
+
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        if (cepData.erro || !cepData.localidade || !cepData.uf) {
+          return;
+        }
+
+        const discount = getDiscountByState(cepData.uf);
+
+        setResult({
+          cep: formatCep(cepData.cep || normalizedCep),
+          city: cepData.localidade,
+          state: cepData.uf,
+          region: cepData.regiao || "Brasil",
+          discount,
+          coupon: generateCoupon(discount),
+        });
+
+        setCopyMessage("");
+        setIsOpen(true);
+      } catch (error: unknown) {
+        if (controller.signal.aborted || axios.isCancel(error)) {
+          return;
+        }
+      } finally {
+        if (requestControllerRef.current === controller) {
+          requestControllerRef.current = null;
+          requestInProgressRef.current = false;
+          setIsLoading(false);
+        }
+      }
+    };
+
+    const handleLogin = () => {
+      if (localStorage.getItem(TRIGGER_KEY) !== "true") {
+        return;
+      }
+
+      localStorage.removeItem(TRIGGER_KEY);
+
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+
+      timeoutId = setTimeout(() => {
+        timeoutId = null;
+        void loadDiscount();
+      }, 3000);
+    };
+
+    window.addEventListener(LOGIN_EVENT, handleLogin);
+    handleLogin();
 
     return () => {
-      window.clearTimeout(timer);
+      window.removeEventListener(LOGIN_EVENT, handleLogin);
+
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+
+      requestControllerRef.current?.abort();
+      requestControllerRef.current = null;
+      requestInProgressRef.current = false;
     };
   }, []);
 
@@ -97,35 +179,12 @@ function Popup() {
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    return () => {
-      requestControllerRef.current?.abort();
-      requestControllerRef.current = null;
-    };
-  }, []);
-
   const handleClose = () => {
-    requestControllerRef.current?.abort();
-    requestControllerRef.current = null;
-
-    setIsLoading(false);
     setIsOpen(false);
   };
 
   const handleDialogClose = () => {
-    requestControllerRef.current?.abort();
-    requestControllerRef.current = null;
-
-    setIsLoading(false);
     setIsOpen(false);
-  };
-
-  const handleCepChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setCep(formatCep(event.target.value));
-    setError("");
-    setResult(null);
-    setCopyMessage("");
-    setShowResult(false);
   };
 
   const handleCopyCoupon = async () => {
@@ -138,215 +197,48 @@ function Popup() {
       setCopyMessage("Cupom copiado com sucesso!");
     } catch {
       setCopyMessage(
-        "Não foi possível copiar automaticamente. Tente novamente pelo navegador.",
+        "Não foi possível copiar automaticamente. Tente copiar o cupom manualmente.",
       );
     }
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const normalizedCep = cep.replace(/\D/g, "");
-
-    if (!/^\d{8}$/.test(normalizedCep)) {
-      setError("Informe um CEP válido com 8 dígitos.");
-      setResult(null);
-      setShowResult(false);
-      setCopyMessage("");
-      return;
-    }
-
-    requestControllerRef.current?.abort();
-
-    const controller = new AbortController();
-    requestControllerRef.current = controller;
-
-    setIsLoading(true);
-    setError("");
-    setResult(null);
-    setCopyMessage("");
-    setShowResult(false);
-
-    try {
-      const data = await fetchCepData(normalizedCep, controller.signal);
-
-      if (controller.signal.aborted) {
-        return;
-      }
-
-      if (data.erro || !data.localidade || !data.uf) {
-        setError("CEP não encontrado. Confira os números e tente novamente.");
-        return;
-      }
-
-      const discount = getDiscountByState(data.uf);
-
-      setResult({
-        cep: formatCep(data.cep || normalizedCep),
-        city: data.localidade,
-        state: data.uf,
-        region: data.regiao || "Brasil",
-        discount,
-        coupon: generateCoupon(discount),
-      });
-
-      setShowResult(true);
-    } catch (caughtError: unknown) {
-      if (controller.signal.aborted || axios.isCancel(caughtError)) {
-        return;
-      }
-
-      setError(
-        axios.isAxiosError(caughtError) && caughtError.code === "ECONNABORTED"
-          ? "A consulta demorou demais. Tente novamente."
-          : "Não foi possível consultar o CEP. Verifique sua conexão e tente novamente.",
-      );
-    } finally {
-      if (!controller.signal.aborted) {
-        if (requestControllerRef.current === controller) {
-          requestControllerRef.current = null;
-        }
-
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const handleNewSearch = () => {
-    requestControllerRef.current?.abort();
-    requestControllerRef.current = null;
-
-    setIsLoading(false);
-    setShowResult(false);
-    setResult(null);
-    setCopyMessage("");
-    setError("");
   };
 
   return (
     <dialog
       ref={dialogRef}
       className="exit-discount__dialog"
-      aria-labelledby={
-        showResult ? "exit-discount-result-title" : "exit-discount-title"
-      }
-      aria-describedby={showResult ? undefined : "exit-discount-description"}
+      aria-labelledby="exit-discount-result-title"
       onClose={handleDialogClose}
     >
-      <section className="exit-discount__container">
-        <button
-          className="exit-discount__close"
-          type="button"
-          onClick={handleClose}
-          aria-label="Fechar e continuar navegando"
-          autoFocus
-        >
-          <CloseIcon aria-hidden="true" />
-        </button>
+      {result && (
+        <section className="exit-discount__container">
+          <button
+            className="exit-discount__close"
+            type="button"
+            onClick={handleClose}
+            aria-label="Fechar e continuar navegando"
+            autoFocus
+          >
+            <CloseIcon aria-hidden="true" />
+          </button>
 
-        {!showResult && (
-          <>
-            <header className="exit-discount__header">
-              <div className="exit-discount__icon">
-                <Loyalty aria-hidden="true" sx={{ fontSize: 72 }} />
-              </div>
-              <h1 className="exit-discount__eyebrow">UMA SURPRESA PARA VOCÊ</h1>
-              <p
-                className="exit-discount__description"
-                id="exit-discount-description"
-              >
-                Consulte seu CEP e descubra um cupom de desconto especial para
-                sua região.
-              </p>
-            </header>
-
-            <form
-              className="exit-discount__form"
-              onSubmit={handleSubmit}
-              aria-busy={isLoading}
-            >
-              <div className="exit-discount__field">
-                <label htmlFor="exit-discount-cep">Digite seu CEP</label>
-
-                <input
-                  id="exit-discount-cep"
-                  className="exit-discount__input"
-                  name="cep"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="postal-code"
-                  placeholder="00000-000"
-                  value={cep}
-                  onChange={handleCepChange}
-                  maxLength={9}
-                  required
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={error ? "exit-discount-error" : undefined}
-                />
-              </div>
-
-              {error && (
-                <p
-                  className="exit-discount__error"
-                  id="exit-discount-error"
-                  role="alert"
-                >
-                  {error}
-                </p>
-              )}
-
-              <Button
-                className="exit-discount__submit"
-                type="submit"
-                disabled={isLoading}
-                loading={isLoading}
-                loadingText="Consultando CEP..."
-                hoverBackgroundColor="var(--color-secondary)"
-                fullWidth
-              >
-                Buscar desconto
-              </Button>
-            </form>
-          </>
-        )}
-
-        {showResult && result && (
           <section
             className="exit-discount__result"
             aria-labelledby="exit-discount-result-title"
+            aria-busy={isLoading}
           >
-            <button
-              className="exit-discount__back"
-              type="button"
-              onClick={handleNewSearch}
-              aria-label="Voltar para consultar outro CEP"
-            >
-              <ArrowBackIcon
-                className="exit-discount__back-icon"
-                aria-hidden="true"
-              />
-              <span>Nova consulta</span>
-            </button>
+            <div className="exit-discount__icon">
+              <Loyalty aria-hidden="true" sx={{ fontSize: 72 }} />
+            </div>
 
-            <h2
+            <h1
               className="exit-discount__result-title"
               id="exit-discount-result-title"
             >
-              Seu resultado
-            </h2>
+              Parabéns!
+            </h1>
 
-            <p className="exit-discount__location">
-              <LocationOnIcon
-                className="exit-discount__location-icon"
-                aria-hidden="true"
-              />
-              {result.city} - {result.state}
-            </p>
-
-            <p className="exit-discount__region">Região: {result.region}</p>
-
-            <p className="exit-discount__result-description">
-              Cupom de desconto para o CEP {result.cep}:
+            <p className="exit-discount__result-title">
+              Você ganhou um cupom de desconto!
             </p>
 
             <button
@@ -367,10 +259,6 @@ function Popup() {
               {copyMessage}
             </p>
 
-            <p className="exit-discount__discount">
-              Parabéns!! Você ganhou {result.discount}% de desconto!
-            </p>
-
             <footer className="exit-discount__footer">
               <p className="exit-discount__disclaimer">
                 Use esse cupom no carrinho e obtenha desconto no plano da sua
@@ -378,8 +266,8 @@ function Popup() {
               </p>
             </footer>
           </section>
-        )}
-      </section>
+        </section>
+      )}
     </dialog>
   );
 }
