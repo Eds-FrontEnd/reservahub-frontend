@@ -23,21 +23,19 @@ export const ProductDetailPage: React.FC = () => {
 
   const [item, setItem] = useState<SmartphoneSubscriptionItem | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalMessage, setModalMessage] = useState<string>("");
   const [selectedPlanMonths, setSelectedPlanMonths] = useState<number>(12);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [imageLoading, setImageLoading] = useState<boolean>(true);
   const [isZooming, setIsZooming] = useState<boolean>(false);
-  const [zoomPosition, setZoomPosition] = useState({
-    x: 50,
-    y: 50,
-  });
+  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
 
   const planSelectId = useId();
 
   useEffect(() => {
+    let active = true;
+
     const carregarSmartphone = async () => {
       setIsLoading(true);
 
@@ -50,20 +48,58 @@ export const ProductDetailPage: React.FC = () => {
       try {
         const data = await SmartphoneService.buscarPorId(id);
 
+        if (!active) return;
+
         setItem(data);
+        setSelectedPlanMonths(
+          data.planType.toLowerCase().includes("mensal") ? 1 : 12,
+        );
+        setImageLoading(true);
       } catch {
+        if (!active) return;
+
         setItem(null);
         setModalMessage(
           "Tivemos um problema ao carregar os smartphones. Tente novamente mais tarde ou entre em contato com a nossa equipe para mais informações.",
         );
-
         setModalOpen(true);
       } finally {
-        setIsLoading(false);
+        if (active) setIsLoading(false);
       }
     };
 
-    carregarSmartphone();
+    void carregarSmartphone();
+
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    let active = true;
+
+    const cancelarEscuta = SmartphoneService.escutarAtualizacoesEstoque(
+      (idsProdutos) => {
+        if (!active || !idsProdutos.includes(id)) return;
+
+        void SmartphoneService.buscarPorId(id)
+          .then((data) => {
+            if (active) {
+              setItem(data);
+            }
+          })
+          .catch(() => {
+            return;
+          });
+      },
+    );
+
+    return () => {
+      active = false;
+      cancelarEscuta();
+    };
   }, [id]);
 
   if (isLoading) {
@@ -74,25 +110,25 @@ export const ProductDetailPage: React.FC = () => {
     return <NotFound />;
   }
 
-  const isOutOfStock = item.stock === 0;
+  const isOutOfStock = item.stock <= 0;
 
-  const cartItem = items.find((cartItem) => cartItem.id === item.id);
-
-  const cartQuantity = cartItem?.quantity ?? 0;
+  const cartQuantity = items
+    .filter((cartItem) => cartItem.id === item.id)
+    .reduce((total, cartItem) => total + cartItem.quantity, 0);
 
   const isStockLimitReached = cartQuantity >= item.stock;
 
-  const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedPlanMonths(Number(e.target.value));
+  const handlePlanChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedPlanMonths(Number(event.target.value));
   };
 
-  const handleImageMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+  const handleImageMouseMove = (event: React.MouseEvent<HTMLElement>) => {
     const { left, top, width, height } =
-      e.currentTarget.getBoundingClientRect();
+      event.currentTarget.getBoundingClientRect();
 
     setZoomPosition({
-      x: ((e.clientX - left) / width) * 100,
-      y: ((e.clientY - top) / height) * 100,
+      x: ((event.clientX - left) / width) * 100,
+      y: ((event.clientY - top) / height) * 100,
     });
   };
 
@@ -102,10 +138,7 @@ export const ProductDetailPage: React.FC = () => {
 
   const handleImageMouseLeave = () => {
     setIsZooming(false);
-    setZoomPosition({
-      x: 50,
-      y: 50,
-    });
+    setZoomPosition({ x: 50, y: 50 });
   };
 
   const handleSubscribe = () => {
@@ -119,7 +152,7 @@ export const ProductDetailPage: React.FC = () => {
     addItem(item, selectedPlanMonths);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseAuthModal = () => {
     setIsAuthModalOpen(false);
   };
 
@@ -211,7 +244,7 @@ export const ProductDetailPage: React.FC = () => {
             }`}
             aria-label="Benefícios incluídos no plano"
           >
-            {item.benefits.map((benefit: string, index: number) => (
+            {item.benefits.map((benefit, index) => (
               <li
                 key={`${item.id}-benefit-${index}`}
                 className="product-detail__benefit-item"
@@ -267,9 +300,8 @@ export const ProductDetailPage: React.FC = () => {
                 disabled={isOutOfStock || isStockLimitReached}
                 className="product-detail__select"
               >
-                <option value={12}>12 Meses (Upgrade grátis)</option>
-                <option value={24}>24 Meses (Menor parcela)</option>
-                <option value={1}>Sem Fidelidade (+15%)</option>
+                <option value={12}>12 Meses</option>
+                <option value={1}>Sem Fidelidade</option>
               </select>
             </div>
 
@@ -302,7 +334,7 @@ export const ProductDetailPage: React.FC = () => {
         titleColor="var(--color-secondary)"
         buttonUrl="/login"
         closeUrl="/login"
-        onClose={handleCloseModal}
+        onClose={handleCloseAuthModal}
       />
 
       <div className="product-detail__footer">

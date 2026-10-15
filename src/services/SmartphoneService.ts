@@ -115,6 +115,36 @@ export const SmartphoneService = {
 
     return data.map(mapSmartphone);
   },
+
+  escutarAtualizacoesEstoque(
+    onUpdate: (idsProdutos: string[]) => void,
+  ): () => void {
+    const source = new EventSource(
+      `${API_URL}/api/smartphones/estoque/eventos`,
+    );
+
+    source.addEventListener(
+      "estoque-atualizado",
+      (event: MessageEvent<string>) => {
+        try {
+          const idsProdutos: unknown = JSON.parse(event.data);
+
+          if (
+            Array.isArray(idsProdutos) &&
+            idsProdutos.every((id) => typeof id === "string")
+          ) {
+            onUpdate(idsProdutos);
+          }
+        } catch {
+          return;
+        }
+      },
+    );
+
+    return () => {
+      source.close();
+    };
+  },
 };
 
 export default SmartphoneService;

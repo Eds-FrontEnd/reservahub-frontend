@@ -1,8 +1,7 @@
-// Cart.tsx
-
 import React, { useEffect, useState } from "react";
 
 import { useCart } from "../../contexts/CartContext";
+import { CompraService } from "../../services/CompraService";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import Tooltip from "@mui/material/Tooltip";
@@ -23,8 +22,6 @@ const getPlanName = (planMonths: number): string => {
   switch (planMonths) {
     case 12:
       return "12 Meses";
-    case 24:
-      return "24 Meses";
     case 1:
       return "Sem Fidelidade";
     default:
@@ -41,11 +38,12 @@ export const Cart: React.FC = () => {
     updateQuantity,
     removeItem,
     clearCart,
-    savePurchasePayload,
   } = useCart();
 
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] =
     useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [checkoutError, setCheckoutError] = useState<string>("");
 
   useEffect(() => {
     if (!isOpen) return;
@@ -63,24 +61,32 @@ export const Cart: React.FC = () => {
     };
   }, [isOpen, closeCart]);
 
-  const handleCheckout = () => {
-    if (items.length === 0) return;
+  const handleCheckout = async () => {
+    if (items.length === 0 || isSubmitting) return;
 
-    const purchasePayload = {
-      items,
-      totalItems: items.reduce(
-        (accumulator, item) => accumulator + item.quantity,
-        0,
-      ),
-      total,
-      createdAt: new Date().toISOString(),
-    };
+    setIsSubmitting(true);
+    setCheckoutError("");
 
-    savePurchasePayload(purchasePayload);
+    try {
+      const purchaseItems = items.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+        planMonths: item.planMonths,
+      }));
 
-    clearCart();
+      await CompraService.concluirCompra(purchaseItems);
 
-    setIsPurchaseModalOpen(true);
+      clearCart();
+      setIsPurchaseModalOpen(true);
+    } catch (error: unknown) {
+      setCheckoutError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível concluir sua assinatura. Tente novamente.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClosePurchaseModal = () => {
@@ -106,7 +112,6 @@ export const Cart: React.FC = () => {
             <header className="cart-drawer__header">
               <div>
                 <span className="cart-drawer__eyebrow">Sua assinatura</span>
-
                 <h2 id="cart-title">Meu carrinho</h2>
               </div>
 
@@ -124,7 +129,7 @@ export const Cart: React.FC = () => {
               {items.length === 0 ? (
                 <div className="cart-drawer__empty">
                   <span aria-hidden="true">
-                    <img src={IconBag} />
+                    <img src={IconBag} alt="" />
                   </span>
 
                   <h3>
@@ -137,6 +142,12 @@ export const Cart: React.FC = () => {
                 <ul className="cart-drawer__items">
                   {items.map((item) => {
                     const isStockLimitReached = item.quantity >= item.stock;
+
+                    const stockLimitMessage = `Estoque máximo atingido. Há apenas ${item.stock} ${
+                      item.stock === 1
+                        ? "unidade disponível"
+                        : "unidades disponíveis"
+                    } para este smartphone.`;
 
                     return (
                       <li
@@ -181,28 +192,20 @@ export const Cart: React.FC = () => {
                               <Tooltip
                                 title={
                                   isStockLimitReached
-                                    ? `Estoque máximo atingido. Há apenas ${
-                                        item.stock
-                                      } unidade${item.stock === 1 ? "" : "s"} ${
-                                        item.stock === 1
-                                          ? "disponível"
-                                          : "disponíveis"
-                                      } para este smartphone.`
+                                    ? stockLimitMessage
                                     : "Adicionar unidade"
                                 }
-                                placement="top"
-                                arrow
                               >
                                 <span>
                                   <button
                                     type="button"
-                                    onClick={() => updateQuantity(item.id, 1)}
-                                    disabled={isStockLimitReached}
                                     aria-label={
                                       isStockLimitReached
                                         ? `Estoque máximo de ${item.product} atingido`
                                         : `Aumentar quantidade de ${item.product}`
                                     }
+                                    disabled={isStockLimitReached}
+                                    onClick={() => updateQuantity(item.id, 1)}
                                   >
                                     +
                                   </button>
@@ -231,22 +234,32 @@ export const Cart: React.FC = () => {
               <footer className="cart-drawer__footer">
                 <div className="cart-drawer__summary">
                   <span>Total mensal</span>
-
                   <strong>{formatPrice(total)}</strong>
                 </div>
+
+                {checkoutError && (
+                  <p className="cart-drawer__error" role="alert">
+                    {checkoutError}
+                  </p>
+                )}
 
                 <button
                   type="button"
                   className="cart-drawer__checkout"
                   onClick={handleCheckout}
+                  disabled={isSubmitting}
+                  aria-busy={isSubmitting}
                 >
-                  Concluir assinatura
+                  {isSubmitting
+                    ? "Processando assinatura..."
+                    : "Concluir assinatura"}
                 </button>
 
                 <button
                   type="button"
                   className="cart-drawer__clear"
                   onClick={clearCart}
+                  disabled={isSubmitting}
                 >
                   Limpar carrinho
                 </button>
@@ -259,14 +272,11 @@ export const Cart: React.FC = () => {
       <Modal
         open={isPurchaseModalOpen}
         title="Compra realizada!"
-        message="Sua assinatura foi realizada com sucesso. Agradecemos pela preferência!"
+        message="Sua assinatura foi registrada com sucesso. Agradecemos pela preferência!"
         icon={<CheckCircleIcon />}
         iconColor="var(--color-secondary)"
         titleColor="var(--color-secondary)"
         onClose={handleClosePurchaseModal}
-        redirectUrl="/"
-        redirectDelay={3000}
-        closeUrl="/"
       />
     </>
   );

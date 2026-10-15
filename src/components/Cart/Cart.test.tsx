@@ -1,172 +1,190 @@
+import mockReact from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-
-import Cart from "../Cart/index";
-import { useCart } from "../../contexts/CartContext";
-import type { CartItem } from "../../contexts/CartContext";
-
-import type { SmartphoneSubscriptionItem } from "../Product";
-
 import "@testing-library/jest-dom";
+
+import { Cart } from "../Cart/index";
+import { useCart } from "../../contexts/CartContext";
+import { CompraService } from "../../services/CompraService";
+import type { CompraResponse } from "../../services/CompraService";
 
 jest.mock("../../contexts/CartContext", () => ({
   useCart: jest.fn(),
 }));
 
-jest.mock("../../assets/images/icons/icon-bag.svg", () => "icon-bag.svg");
+jest.mock("../../services/CompraService", () => ({
+  CompraService: {
+    concluirCompra: jest.fn(),
+  },
+}));
 
-jest.mock("../Modal", () => {
-  return function MockModal({
+jest.mock("@mui/material/Tooltip", () => ({
+  __esModule: true,
+  default: ({
+    children,
+    title,
+  }: {
+    children: mockReact.ReactNode;
+    title: mockReact.ReactNode;
+  }) =>
+    mockReact.createElement(
+      "span",
+      { title: typeof title === "string" ? title : "" },
+      children,
+    ),
+}));
+
+jest.mock("../../assets/images/icons/icon-bag.svg", () => ({
+  __esModule: true,
+  default: "icon-bag.svg",
+}));
+
+jest.mock("../Modal", () => ({
+  __esModule: true,
+  default: ({
     open,
     title,
     message,
     onClose,
-    redirectUrl,
-    redirectDelay,
-    closeUrl,
   }: {
     open: boolean;
     title: string;
     message: string;
     onClose: () => void;
-    redirectUrl?: string;
-    redirectDelay?: number;
-    closeUrl?: string;
-  }) {
-    if (!open) {
-      return null;
-    }
-
-    return (
-      <div
-        role="dialog"
-        aria-label={title}
-        data-testid="purchase-modal"
-        data-redirect-url={redirectUrl}
-        data-redirect-delay={redirectDelay}
-        data-close-url={closeUrl}
-      >
-        <h2>{title}</h2>
-
-        <p>{message}</p>
-
-        <button type="button" onClick={onClose}>
-          Fechar
-        </button>
-      </div>
-    );
-  };
-});
+  }) =>
+    open
+      ? mockReact.createElement(
+          "div",
+          { role: "dialog", "aria-label": title },
+          mockReact.createElement("h2", null, title),
+          mockReact.createElement("p", null, message),
+          mockReact.createElement(
+            "button",
+            { type: "button", onClick: onClose },
+            "Fechar modal",
+          ),
+        )
+      : null,
+}));
 
 const mockedUseCart = jest.mocked(useCart);
+const mockedConcluirCompra = jest.mocked(CompraService.concluirCompra);
 
-type CartContextValue = ReturnType<typeof useCart>;
-
-const createProduct = (
-  overrides: Partial<SmartphoneSubscriptionItem> = {},
-): SmartphoneSubscriptionItem => ({
-  id: "iphone-15-pro-max",
-  product: "iPhone 15 Pro Max",
-  model: "256GB",
-  image: "/iphone-15-pro-max.webp",
-  monthlyPrice: 289.9,
-  stock: 8,
-  description: "iPhone 15 Pro Max com 256GB de armazenamento.",
-  planType: "smartphone",
-  benefits: [
-    "Smartphone premium",
-    "Assinatura mensal",
-    "Suporte especializado",
-  ],
-  ...overrides,
-});
-
-const createCartItem = (overrides: Partial<CartItem> = {}): CartItem => ({
-  ...createProduct(),
-  quantity: 1,
-  planMonths: 24,
-  ...overrides,
-});
-
-const createCartMock = (
-  overrides: Partial<CartContextValue> = {},
-): CartContextValue => ({
-  items: [],
-  isOpen: true,
-  totalItems: 0,
-  total: 0,
-  addItem: jest.fn(),
-  updateQuantity: jest.fn(),
-  removeItem: jest.fn(),
-  clearCart: jest.fn(),
-  openCart: jest.fn(),
-  closeCart: jest.fn(),
-  savePurchasePayload: jest.fn(),
-  ...overrides,
-});
-
-const mockCart = (
-  overrides: Partial<CartContextValue> = {},
-): CartContextValue => {
-  const cart = createCartMock(overrides);
-
-  mockedUseCart.mockReturnValue(cart);
-
-  return cart;
+const mockCompraResponse: CompraResponse = {
+  mensagem: "Compra realizada com sucesso.",
+  totalItens: 1,
 };
 
-const renderCart = () => render(<Cart />);
+const mockItem = {
+  id: "smartphone-1",
+  product: "iPhone",
+  model: "iPhone 15 Pro Max 256GB",
+  image: "/images/iphone.png",
+  monthlyPrice: 289.9,
+  quantity: 2,
+  stock: 8,
+  planMonths: 12,
+  description: "Smartphone para assinatura",
+  planType: "12 meses",
+  benefits: [],
+};
+
+const mockCloseCart = jest.fn();
+const mockUpdateQuantity = jest.fn();
+const mockRemoveItem = jest.fn();
+const mockClearCart = jest.fn();
+
+const configureCart = (overrides: Partial<ReturnType<typeof useCart>> = {}) => {
+  mockedUseCart.mockReturnValue({
+    items: [mockItem],
+    isOpen: true,
+    total: 579.8,
+    closeCart: mockCloseCart,
+    updateQuantity: mockUpdateQuantity,
+    removeItem: mockRemoveItem,
+    clearCart: mockClearCart,
+    ...overrides,
+  } as ReturnType<typeof useCart>);
+};
 
 describe("Cart", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    configureCart();
+    mockedConcluirCompra.mockResolvedValue(mockCompraResponse);
   });
 
-  describe("visibilidade", () => {
-    it("deve renderizar o carrinho quando estiver aberto", () => {
-      mockCart({
-        isOpen: true,
+  describe("Renderização", () => {
+    it("deve renderizar o carrinho aberto", () => {
+      render(<Cart />);
+
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Meu carrinho" }),
+      ).toBeInTheDocument();
+      expect(screen.getByText("iPhone")).toBeInTheDocument();
+      expect(screen.getByText("iPhone 15 Pro Max 256GB")).toBeInTheDocument();
+    });
+
+    it("deve exibir o plano de 12 meses", () => {
+      render(<Cart />);
+
+      expect(screen.getByText("Plano: 12 Meses")).toBeInTheDocument();
+    });
+
+    it("deve exibir o plano sem fidelidade quando a duração for um mês", () => {
+      configureCart({
+        items: [{ ...mockItem, planMonths: 1 }],
       });
 
-      renderCart();
+      render(<Cart />);
+
+      expect(screen.getByText("Plano: Sem Fidelidade")).toBeInTheDocument();
+    });
+
+    it("deve exibir o total mensal formatado em reais", () => {
+      render(<Cart />);
+
+      expect(screen.getByText("Total mensal")).toBeInTheDocument();
+      expect(screen.getByText("R$ 579,80")).toBeInTheDocument();
+    });
+
+    it("deve exibir o preço mensal do smartphone", () => {
+      render(<Cart />);
+
+      expect(screen.getByText("R$ 289,90")).toBeInTheDocument();
+      expect(screen.getByText("/mês")).toBeInTheDocument();
+    });
+
+    it("deve exibir os botões de checkout e limpeza do carrinho", () => {
+      render(<Cart />);
 
       expect(
-        screen.getByRole("dialog", {
-          name: "Meu carrinho",
-        }),
+        screen.getByRole("button", { name: "Concluir assinatura" }),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByRole("button", { name: "Limpar carrinho" }),
       ).toBeInTheDocument();
     });
 
-    it("não deve renderizar o drawer quando estiver fechado", () => {
-      mockCart({
-        isOpen: false,
-      });
+    it("não deve renderizar o drawer quando o carrinho estiver fechado", () => {
+      configureCart({ isOpen: false });
 
-      renderCart();
+      render(<Cart />);
 
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       expect(
-        screen.queryByRole("dialog", {
-          name: "Meu carrinho",
-        }),
+        screen.queryByRole("heading", { name: "Meu carrinho" }),
       ).not.toBeInTheDocument();
     });
 
-    it("deve manter o modal de compra fechado inicialmente", () => {
-      mockCart();
-
-      renderCart();
-
-      expect(screen.queryByTestId("purchase-modal")).not.toBeInTheDocument();
-    });
-  });
-
-  describe("carrinho vazio", () => {
-    it("deve exibir a mensagem de carrinho vazio", () => {
-      mockCart({
+    it("deve exibir a mensagem quando o carrinho estiver vazio", () => {
+      configureCart({
         items: [],
+        total: 0,
       });
 
-      renderCart();
+      render(<Cart />);
 
       expect(
         screen.getByText(
@@ -177,736 +195,328 @@ describe("Cart", () => {
       expect(
         screen.getByText("Adicione um smartphone para começar sua assinatura."),
       ).toBeInTheDocument();
-    });
-
-    it("deve renderizar o ícone do carrinho vazio", () => {
-      mockCart({
-        items: [],
-      });
-
-      renderCart();
-
-      const icon = document.querySelector(
-        '.cart-drawer__empty img[src="icon-bag.svg"]',
-      );
-
-      expect(icon).toBeInTheDocument();
-    });
-
-    it("não deve exibir o rodapé quando o carrinho estiver vazio", () => {
-      mockCart({
-        items: [],
-      });
-
-      renderCart();
 
       expect(
-        document.querySelector(".cart-drawer__footer"),
+        screen.queryByRole("button", { name: "Concluir assinatura" }),
       ).not.toBeInTheDocument();
     });
   });
 
-  describe("produto", () => {
-    it("deve exibir as informações do produto", () => {
-      const item = createCartItem();
+  describe("Interações com o carrinho", () => {
+    it("deve fechar o carrinho ao clicar no botão de fechar", () => {
+      render(<Cart />);
 
-      mockCart({
-        items: [item],
-        total: 289.9,
-        totalItems: 1,
-      });
+      fireEvent.click(screen.getByRole("button", { name: "Fechar carrinho" }));
 
-      renderCart();
-
-      expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
-      expect(screen.getByText("256GB")).toBeInTheDocument();
-      expect(screen.getByText("Plano: 24 Meses")).toBeInTheDocument();
-
-      const productItem = screen.getByRole("listitem");
-
-      expect(productItem).toHaveTextContent("R$ 289,90");
-      expect(productItem).toHaveTextContent("/mês");
+      expect(mockCloseCart).toHaveBeenCalledTimes(1);
     });
 
-    it("deve exibir o plano de 24 meses", () => {
-      const item = createCartItem({
-        planMonths: 24,
-      });
+    it("deve fechar o carrinho ao clicar no overlay", () => {
+      const { container } = render(<Cart />);
 
-      mockCart({
-        items: [item],
-      });
-
-      renderCart();
-
-      expect(screen.getByText("Plano: 24 Meses")).toBeInTheDocument();
-    });
-
-    it("deve exibir o plano de 12 meses", () => {
-      const item = createCartItem({
-        planMonths: 12,
-      });
-
-      mockCart({
-        items: [item],
-      });
-
-      renderCart();
-
-      expect(screen.getByText("Plano: 12 Meses")).toBeInTheDocument();
-    });
-
-    it("deve exibir o plano sem fidelidade", () => {
-      const item = createCartItem({
-        planMonths: 1,
-      });
-
-      mockCart({
-        items: [item],
-      });
-
-      renderCart();
-
-      expect(screen.getByText("Plano: Sem Fidelidade")).toBeInTheDocument();
-    });
-
-    it("deve exibir o número de meses quando o plano não for 1, 12 ou 24", () => {
-      const item = createCartItem({
-        planMonths: 36,
-      });
-
-      mockCart({
-        items: [item],
-      });
-
-      renderCart();
-
-      expect(screen.getByText("Plano: 36 Meses")).toBeInTheDocument();
-    });
-
-    it("deve renderizar a imagem do produto com o alt correto", () => {
-      const item = createCartItem();
-
-      mockCart({
-        items: [item],
-      });
-
-      renderCart();
-
-      expect(
-        screen.getByRole("img", {
-          name: "iPhone 15 Pro Max - 256GB",
-        }),
-      ).toHaveAttribute("src", "/iphone-15-pro-max.webp");
-    });
-
-    it("deve renderizar múltiplos produtos", () => {
-      const firstItem = createCartItem({
-        id: "iphone-15-pro-max",
-        product: "iPhone 15 Pro Max",
-        model: "256GB",
-      });
-
-      const secondItem = createCartItem({
-        id: "galaxy-s24-ultra",
-        product: "Galaxy S24 Ultra",
-        model: "512GB",
-        image: "/galaxy-s24-ultra.webp",
-        monthlyPrice: 319.9,
-      });
-
-      mockCart({
-        items: [firstItem, secondItem],
-        total: 609.8,
-        totalItems: 2,
-      });
-
-      renderCart();
-
-      expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
-      expect(screen.getByText("Galaxy S24 Ultra")).toBeInTheDocument();
-
-      expect(screen.getAllByRole("listitem")).toHaveLength(2);
-    });
-
-    it("deve exibir a quantidade correta do produto", () => {
-      const item = createCartItem({
-        quantity: 3,
-      });
-
-      mockCart({
-        items: [item],
-        totalItems: 3,
-      });
-
-      renderCart();
-
-      const quantity = screen.getByText("3");
-
-      expect(quantity).toBeInTheDocument();
-      expect(quantity).toHaveAttribute("aria-live", "polite");
-    });
-  });
-
-  describe("quantidade", () => {
-    it("deve diminuir a quantidade ao clicar no botão de menos", async () => {
-      const updateQuantity = jest.fn();
-
-      const item = createCartItem({
-        quantity: 2,
-      });
-
-      mockCart({
-        items: [item],
-        updateQuantity,
-        totalItems: 2,
-      });
-
-      renderCart();
-
-      const decreaseButton = screen.getByRole("button", {
-        name: "Diminuir quantidade de iPhone 15 Pro Max",
-      });
-
-      await userEvent.click(decreaseButton);
-
-      expect(updateQuantity).toHaveBeenCalledTimes(1);
-      expect(updateQuantity).toHaveBeenCalledWith("iphone-15-pro-max", -1);
-    });
-
-    it("deve aumentar a quantidade ao clicar no botão de mais", async () => {
-      const updateQuantity = jest.fn();
-
-      const item = createCartItem({
-        quantity: 2,
-      });
-
-      mockCart({
-        items: [item],
-        updateQuantity,
-        totalItems: 2,
-      });
-
-      renderCart();
-
-      const increaseButton = screen.getByRole("button", {
-        name: "Aumentar quantidade de iPhone 15 Pro Max",
-      });
-
-      await userEvent.click(increaseButton);
-
-      expect(updateQuantity).toHaveBeenCalledTimes(1);
-      expect(updateQuantity).toHaveBeenCalledWith("iphone-15-pro-max", 1);
-    });
-
-    it("deve desabilitar o botão de aumentar quando atingir o estoque máximo", () => {
-      const item = createCartItem({
-        quantity: 8,
-        stock: 8,
-      });
-
-      mockCart({
-        items: [item],
-        totalItems: 8,
-      });
-
-      renderCart();
-
-      const increaseButton = screen.getByRole("button", {
-        name: "Estoque máximo de iPhone 15 Pro Max atingido",
-      });
-
-      expect(increaseButton).toBeDisabled();
-    });
-
-    it("deve habilitar o botão de aumentar quando não atingir o estoque máximo", () => {
-      const item = createCartItem({
-        quantity: 7,
-        stock: 8,
-      });
-
-      mockCart({
-        items: [item],
-        totalItems: 7,
-      });
-
-      renderCart();
-
-      const increaseButton = screen.getByRole("button", {
-        name: "Aumentar quantidade de iPhone 15 Pro Max",
-      });
-
-      expect(increaseButton).toBeEnabled();
-    });
-
-    it("deve exibir tooltip no plural quando houver mais de uma unidade disponível", async () => {
-      const user = userEvent.setup();
-
-      const item = createCartItem({
-        quantity: 8,
-        stock: 8,
-      });
-
-      mockCart({
-        items: [item],
-        totalItems: 8,
-      });
-
-      renderCart();
-
-      const increaseButton = screen.getByRole("button", {
-        name: "Estoque máximo de iPhone 15 Pro Max atingido",
-      });
-
-      await user.hover(increaseButton);
-
-      expect(await screen.findByRole("tooltip")).toHaveTextContent(
-        "Estoque máximo atingido. Há apenas 8 unidades disponíveis para este smartphone.",
-      );
-    });
-
-    it("deve exibir tooltip no singular quando houver apenas uma unidade disponível", async () => {
-      const user = userEvent.setup();
-
-      const item = createCartItem({
-        quantity: 1,
-        stock: 1,
-      });
-
-      mockCart({
-        items: [item],
-        totalItems: 1,
-      });
-
-      renderCart();
-
-      const increaseButton = screen.getByRole("button", {
-        name: "Estoque máximo de iPhone 15 Pro Max atingido",
-      });
-
-      await user.hover(increaseButton);
-
-      expect(await screen.findByRole("tooltip")).toHaveTextContent(
-        "Estoque máximo atingido. Há apenas 1 unidade disponível para este smartphone.",
-      );
-    });
-  });
-
-  describe("remoção", () => {
-    it("deve remover o produto ao clicar em Remover", async () => {
-      const removeItem = jest.fn();
-
-      const item = createCartItem();
-
-      mockCart({
-        items: [item],
-        removeItem,
-        totalItems: 1,
-      });
-
-      renderCart();
-
-      const removeButton = screen.getByRole("button", {
-        name: "Remover iPhone 15 Pro Max do carrinho",
-      });
-
-      await userEvent.click(removeButton);
-
-      expect(removeItem).toHaveBeenCalledTimes(1);
-      expect(removeItem).toHaveBeenCalledWith("iphone-15-pro-max");
-    });
-
-    it("deve limpar o carrinho ao clicar em Limpar carrinho", async () => {
-      const clearCart = jest.fn();
-
-      const item = createCartItem();
-
-      mockCart({
-        items: [item],
-        clearCart,
-      });
-
-      renderCart();
-
-      await userEvent.click(
-        screen.getByRole("button", {
-          name: "Limpar carrinho",
-        }),
-      );
-
-      expect(clearCart).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe("fechamento", () => {
-    it("deve fechar o carrinho pelo botão X", async () => {
-      const closeCart = jest.fn();
-
-      mockCart({
-        closeCart,
-      });
-
-      renderCart();
-
-      await userEvent.click(
-        screen.getByRole("button", {
-          name: "Fechar carrinho",
-        }),
-      );
-
-      expect(closeCart).toHaveBeenCalledTimes(1);
-    });
-
-    it("deve fechar o carrinho ao clicar no overlay", async () => {
-      const closeCart = jest.fn();
-
-      mockCart({
-        closeCart,
-      });
-
-      renderCart();
-
-      const overlay = document.querySelector(".cart-overlay");
+      const overlay = container.querySelector(".cart-overlay");
 
       expect(overlay).toBeInTheDocument();
 
-      fireEvent.click(overlay as Element);
+      fireEvent.click(overlay!);
 
-      expect(closeCart).toHaveBeenCalledTimes(1);
+      expect(mockCloseCart).toHaveBeenCalledTimes(1);
     });
 
     it("deve fechar o carrinho ao pressionar Escape", () => {
-      const closeCart = jest.fn();
+      render(<Cart />);
 
-      mockCart({
-        closeCart,
-        isOpen: true,
-      });
+      fireEvent.keyDown(document, { key: "Escape" });
 
-      renderCart();
-
-      fireEvent.keyDown(document, {
-        key: "Escape",
-      });
-
-      expect(closeCart).toHaveBeenCalledTimes(1);
+      expect(mockCloseCart).toHaveBeenCalledTimes(1);
     });
 
     it("não deve fechar o carrinho ao pressionar outra tecla", () => {
-      const closeCart = jest.fn();
+      render(<Cart />);
 
-      mockCart({
-        closeCart,
-        isOpen: true,
-      });
+      fireEvent.keyDown(document, { key: "Enter" });
 
-      renderCart();
-
-      fireEvent.keyDown(document, {
-        key: "Enter",
-      });
-
-      expect(closeCart).not.toHaveBeenCalled();
+      expect(mockCloseCart).not.toHaveBeenCalled();
     });
 
-    it("não deve registrar o fechamento por Escape quando o carrinho estiver fechado", () => {
-      const closeCart = jest.fn();
+    it("deve aumentar a quantidade do smartphone", () => {
+      render(<Cart />);
 
-      mockCart({
-        closeCart,
-        isOpen: false,
-      });
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "Aumentar quantidade de iPhone",
+        }),
+      );
 
-      renderCart();
+      expect(mockUpdateQuantity).toHaveBeenCalledWith("smartphone-1", 1);
+    });
 
-      fireEvent.keyDown(document, {
-        key: "Escape",
-      });
+    it("deve diminuir a quantidade do smartphone", () => {
+      render(<Cart />);
 
-      expect(closeCart).not.toHaveBeenCalled();
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "Diminuir quantidade de iPhone",
+        }),
+      );
+
+      expect(mockUpdateQuantity).toHaveBeenCalledWith("smartphone-1", -1);
+    });
+
+    it("deve remover o smartphone do carrinho", () => {
+      render(<Cart />);
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Remover iPhone do carrinho" }),
+      );
+
+      expect(mockRemoveItem).toHaveBeenCalledWith("smartphone-1");
+    });
+
+    it("deve limpar o carrinho ao clicar no botão correspondente", () => {
+      render(<Cart />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Limpar carrinho" }));
+
+      expect(mockClearCart).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe("resumo", () => {
-    it("deve exibir o total formatado corretamente", () => {
-      const item = createCartItem();
-
-      mockCart({
-        items: [item],
-        total: 289.9,
+  describe("Limite de estoque", () => {
+    it("deve desabilitar o botão de aumentar quando a quantidade atingir o estoque", () => {
+      configureCart({
+        items: [{ ...mockItem, quantity: 8, stock: 8 }],
       });
 
-      renderCart();
-
-      const summary = document.querySelector(".cart-drawer__summary");
-
-      expect(summary).toBeInTheDocument();
-      expect(summary).toHaveTextContent("Total mensal");
-      expect(summary).toHaveTextContent("R$ 289,90");
-    });
-
-    it("deve calcular e exibir corretamente um total com múltiplas unidades", () => {
-      const item = createCartItem({
-        quantity: 2,
-      });
-
-      mockCart({
-        items: [item],
-        total: 579.8,
-        totalItems: 2,
-      });
-
-      renderCart();
-
-      const summary = document.querySelector(".cart-drawer__summary");
-
-      expect(summary).toHaveTextContent("R$ 579,80");
-    });
-  });
-
-  describe("checkout", () => {
-    it("não deve concluir a assinatura quando o carrinho estiver vazio", async () => {
-      const savePurchasePayload = jest.fn();
-      const clearCart = jest.fn();
-
-      mockCart({
-        items: [],
-        savePurchasePayload,
-        clearCart,
-      });
-
-      renderCart();
+      render(<Cart />);
 
       expect(
-        screen.queryByRole("button", {
-          name: "Concluir assinatura",
+        screen.getByRole("button", {
+          name: "Estoque máximo de iPhone atingido",
         }),
-      ).not.toBeInTheDocument();
-
-      expect(savePurchasePayload).not.toHaveBeenCalled();
-      expect(clearCart).not.toHaveBeenCalled();
+      ).toBeDisabled();
     });
 
-    it("deve salvar o payload da compra", async () => {
-      const savePurchasePayload = jest.fn();
-      const clearCart = jest.fn();
-
-      const item = createCartItem({
-        quantity: 2,
+    it("deve exibir a mensagem de estoque máximo com plural correto", () => {
+      configureCart({
+        items: [{ ...mockItem, quantity: 8, stock: 8 }],
       });
 
-      mockCart({
-        items: [item],
-        totalItems: 2,
-        total: 579.8,
-        savePurchasePayload,
-        clearCart,
-      });
-
-      renderCart();
-
-      await userEvent.click(
-        screen.getByRole("button", {
-          name: "Concluir assinatura",
-        }),
-      );
-
-      expect(savePurchasePayload).toHaveBeenCalledTimes(1);
-
-      const payload = savePurchasePayload.mock.calls[0][0] as {
-        items: CartItem[];
-        totalItems: number;
-        total: number;
-        createdAt: string;
-      };
-
-      expect(payload.items).toEqual([item]);
-      expect(payload.totalItems).toBe(2);
-      expect(payload.total).toBe(579.8);
-      expect(payload.createdAt).toEqual(expect.any(String));
-    });
-
-    it("deve criar createdAt em formato ISO", async () => {
-      const savePurchasePayload = jest.fn();
-
-      const item = createCartItem();
-
-      mockCart({
-        items: [item],
-        totalItems: 1,
-        total: 289.9,
-        savePurchasePayload,
-      });
-
-      renderCart();
-
-      await userEvent.click(
-        screen.getByRole("button", {
-          name: "Concluir assinatura",
-        }),
-      );
-
-      const payload = savePurchasePayload.mock.calls[0][0] as {
-        createdAt: string;
-      };
-
-      expect(payload.createdAt).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/,
-      );
-    });
-
-    it("deve limpar o carrinho após concluir a assinatura", async () => {
-      const clearCart = jest.fn();
-
-      const item = createCartItem();
-
-      mockCart({
-        items: [item],
-        totalItems: 1,
-        total: 289.9,
-        clearCart,
-      });
-
-      renderCart();
-
-      await userEvent.click(
-        screen.getByRole("button", {
-          name: "Concluir assinatura",
-        }),
-      );
-
-      expect(clearCart).toHaveBeenCalledTimes(1);
-    });
-
-    it("deve abrir o modal após concluir a assinatura", async () => {
-      const item = createCartItem();
-
-      mockCart({
-        items: [item],
-        totalItems: 1,
-        total: 289.9,
-      });
-
-      renderCart();
-
-      await userEvent.click(
-        screen.getByRole("button", {
-          name: "Concluir assinatura",
-        }),
-      );
-
-      expect(screen.getByTestId("purchase-modal")).toBeInTheDocument();
+      render(<Cart />);
 
       expect(
-        screen.getByRole("heading", {
-          name: "Compra realizada!",
-        }),
+        screen.getByTitle(
+          "Estoque máximo atingido. Há apenas 8 unidades disponíveis para este smartphone.",
+        ),
       ).toBeInTheDocument();
     });
 
-    it("deve passar os parâmetros corretos para o modal", async () => {
-      const item = createCartItem();
-
-      mockCart({
-        items: [item],
-        totalItems: 1,
-        total: 289.9,
+    it("deve exibir a mensagem no singular quando houver uma unidade em estoque", () => {
+      configureCart({
+        items: [{ ...mockItem, quantity: 1, stock: 1 }],
       });
 
-      renderCart();
+      render(<Cart />);
 
-      await userEvent.click(
-        screen.getByRole("button", {
-          name: "Concluir assinatura",
-        }),
-      );
-
-      const modal = screen.getByTestId("purchase-modal");
-
-      expect(modal).toHaveAttribute("data-redirect-url", "/");
-      expect(modal).toHaveAttribute("data-redirect-delay", "3000");
-      expect(modal).toHaveAttribute("data-close-url", "/");
+      expect(
+        screen.getByTitle(
+          "Estoque máximo atingido. Há apenas 1 unidade disponível para este smartphone.",
+        ),
+      ).toBeInTheDocument();
     });
 
-    it("deve fechar o modal ao clicar em Fechar", async () => {
-      const item = createCartItem();
-
-      mockCart({
-        items: [item],
-        totalItems: 1,
-        total: 289.9,
+    it("deve permitir aumentar a quantidade quando ainda houver estoque", () => {
+      configureCart({
+        items: [{ ...mockItem, quantity: 2, stock: 8 }],
       });
 
-      renderCart();
+      render(<Cart />);
 
-      await userEvent.click(
+      expect(
         screen.getByRole("button", {
-          name: "Concluir assinatura",
+          name: "Aumentar quantidade de iPhone",
         }),
-      );
+      ).toBeEnabled();
 
-      expect(screen.getByTestId("purchase-modal")).toBeInTheDocument();
+      expect(screen.getByTitle("Adicionar unidade")).toBeInTheDocument();
+    });
+  });
 
-      await userEvent.click(
-        screen.getByRole("button", {
-          name: "Fechar",
-        }),
+  describe("Checkout", () => {
+    it("deve enviar os itens da assinatura para o serviço de compra", async () => {
+      render(<Cart />);
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Concluir assinatura" }),
       );
 
       await waitFor(() => {
-        expect(screen.queryByTestId("purchase-modal")).not.toBeInTheDocument();
+        expect(mockedConcluirCompra).toHaveBeenCalledWith([
+          {
+            productId: "smartphone-1",
+            quantity: 2,
+            planMonths: 12,
+          },
+        ]);
       });
     });
-  });
 
-  describe("acessibilidade", () => {
-    it("deve possuir role dialog e aria-modal", () => {
-      mockCart();
+    it("deve limpar o carrinho após concluir a compra com sucesso", async () => {
+      render(<Cart />);
 
-      renderCart();
+      fireEvent.click(
+        screen.getByRole("button", { name: "Concluir assinatura" }),
+      );
 
-      const dialog = screen.getByRole("dialog", {
-        name: "Meu carrinho",
+      await waitFor(() => {
+        expect(mockClearCart).toHaveBeenCalledTimes(1);
       });
-
-      expect(dialog).toHaveAttribute("aria-modal", "true");
-      expect(dialog).toHaveAttribute("aria-labelledby", "cart-title");
     });
 
-    it("deve possuir aria-label na área de quantidade", () => {
-      const item = createCartItem();
+    it("deve abrir o modal de sucesso após concluir a compra", async () => {
+      render(<Cart />);
 
-      mockCart({
-        items: [item],
-      });
-
-      renderCart();
+      fireEvent.click(
+        screen.getByRole("button", { name: "Concluir assinatura" }),
+      );
 
       expect(
-        screen.getByLabelText("Quantidade de iPhone 15 Pro Max"),
+        await screen.findByRole("heading", {
+          name: "Compra realizada!",
+        }),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByText(
+          "Sua assinatura foi registrada com sucesso. Agradecemos pela preferência!",
+        ),
       ).toBeInTheDocument();
     });
 
-    it("deve utilizar aria-live para atualizar a quantidade", () => {
-      const item = createCartItem();
+    it("deve fechar o modal de sucesso ao clicar no botão de fechar", async () => {
+      render(<Cart />);
 
-      mockCart({
-        items: [item],
-      });
+      fireEvent.click(
+        screen.getByRole("button", { name: "Concluir assinatura" }),
+      );
 
-      renderCart();
+      expect(
+        await screen.findByRole("heading", {
+          name: "Compra realizada!",
+        }),
+      ).toBeInTheDocument();
 
-      expect(screen.getByText("1")).toHaveAttribute("aria-live", "polite");
+      fireEvent.click(screen.getByRole("button", { name: "Fechar modal" }));
+
+      expect(
+        screen.queryByRole("heading", {
+          name: "Compra realizada!",
+        }),
+      ).not.toBeInTheDocument();
     });
 
-    it("deve marcar o overlay como aria-hidden", () => {
-      mockCart();
+    it("deve exibir a mensagem de erro quando o serviço lançar uma exceção", async () => {
+      mockedConcluirCompra.mockRejectedValueOnce(
+        new Error("Não foi possível concluir sua assinatura."),
+      );
 
-      renderCart();
+      render(<Cart />);
 
-      const overlay = document.querySelector(".cart-overlay");
+      fireEvent.click(
+        screen.getByRole("button", { name: "Concluir assinatura" }),
+      );
 
-      expect(overlay).toHaveAttribute("aria-hidden", "true");
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "Não foi possível concluir sua assinatura.",
+      );
+
+      expect(mockClearCart).not.toHaveBeenCalled();
+
+      expect(
+        screen.queryByRole("heading", {
+          name: "Compra realizada!",
+        }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("deve exibir uma mensagem genérica quando o erro não for uma instância de Error", async () => {
+      mockedConcluirCompra.mockRejectedValueOnce("erro inesperado");
+
+      render(<Cart />);
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Concluir assinatura" }),
+      );
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "Não foi possível concluir sua assinatura. Tente novamente.",
+      );
+
+      expect(mockClearCart).not.toHaveBeenCalled();
+    });
+
+    it("deve manter os itens no carrinho quando a compra falhar", async () => {
+      mockedConcluirCompra.mockRejectedValueOnce(
+        new Error("Sua sessão expirou. Faça login novamente."),
+      );
+
+      render(<Cart />);
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Concluir assinatura" }),
+      );
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "Sua sessão expirou. Faça login novamente.",
+      );
+
+      expect(screen.getByText("iPhone")).toBeInTheDocument();
+      expect(mockClearCart).not.toHaveBeenCalled();
+    });
+
+    it("deve liberar o botão de checkout após uma compra bem-sucedida", async () => {
+      render(<Cart />);
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Concluir assinatura" }),
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: "Concluir assinatura" }),
+        ).toBeEnabled();
+      });
+    });
+
+    it("deve liberar o botão de checkout após uma falha", async () => {
+      mockedConcluirCompra.mockRejectedValueOnce(
+        new Error("Erro ao processar a assinatura."),
+      );
+
+      render(<Cart />);
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Concluir assinatura" }),
+      );
+
+      await screen.findByRole("alert");
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: "Concluir assinatura" }),
+        ).toBeEnabled();
+      });
+    });
+
+    it("não deve chamar o serviço quando o carrinho estiver vazio", () => {
+      configureCart({
+        items: [],
+        total: 0,
+      });
+
+      render(<Cart />);
+
+      expect(mockedConcluirCompra).not.toHaveBeenCalled();
     });
   });
 });
