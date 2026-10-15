@@ -78,12 +78,11 @@
 }
 
 h1#exit-discount-result-title {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
 }
 
-p#exit-discount-result-title {
+p.exit-discount__result-title {
   font-size: 1.2rem;
-  margin-bottom: 1.2rem;
 }
 
 .exit-discount__result-title {
@@ -99,6 +98,7 @@ p#exit-discount-result-title {
   align-items: center;
   justify-content: center;
   padding: 0.65rem 1rem;
+  margin: 1.1rem;
   border: 2px dashed var(--color-secondary);
   border-radius: 8px;
   background-color: var(--color-white);
