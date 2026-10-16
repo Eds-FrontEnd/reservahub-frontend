@@ -18,16 +18,77 @@ export interface CompraPayload {
   cupomDesconto: string | null;
 }
 
+export interface ValidarCupomResponse {
+  valido: boolean;
+  mensagem: string;
+}
+
+const getToken = (): string => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new Error("Sua sessão expirou. Faça login novamente.");
+  }
+
+  return token;
+};
+
+const getErrorMessage = async (
+  response: Response,
+  fallbackMessage: string,
+): Promise<string> => {
+  try {
+    const data: { message?: string; detail?: string } = await response.json();
+
+    return (
+      data.message ??
+      data.detail ??
+      (response.status === 401 || response.status === 403
+        ? "Sua sessão expirou. Faça login novamente."
+        : fallbackMessage)
+    );
+  } catch {
+    if (response.status === 401 || response.status === 403) {
+      return "Sua sessão expirou. Faça login novamente.";
+    }
+
+    return fallbackMessage;
+  }
+};
+
 export const CompraService = {
+  async validarCupom(cupomDesconto: string): Promise<ValidarCupomResponse> {
+    const token = getToken();
+    const cupomNormalizado = cupomDesconto.trim().toUpperCase();
+
+    const response = await fetch(`${API_URL}/api/compras/validar-cupom`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        cupomDesconto: cupomNormalizado,
+      }),
+    });
+
+    if (!response.ok) {
+      const message = await getErrorMessage(
+        response,
+        "Não foi possível validar o cupom.",
+      );
+
+      throw new Error(message);
+    }
+
+    return response.json() as Promise<ValidarCupomResponse>;
+  },
+
   async concluirCompra(
     items: ItemCompra[],
     cupomDesconto?: string,
   ): Promise<CompraResponse> {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      throw new Error("Sua sessão expirou. Faça login novamente.");
-    }
+    const token = getToken();
 
     const payload: CompraPayload = {
       items,
@@ -44,18 +105,10 @@ export const CompraService = {
     });
 
     if (!response.ok) {
-      let message = "Não foi possível concluir sua assinatura.";
-
-      try {
-        const data: { message?: string; detail?: string } =
-          await response.json();
-
-        message = data.message ?? data.detail ?? message;
-      } catch {
-        if (response.status === 401 || response.status === 403) {
-          message = "Sua sessão expirou. Faça login novamente.";
-        }
-      }
+      const message = await getErrorMessage(
+        response,
+        "Não foi possível concluir sua assinatura.",
+      );
 
       throw new Error(message);
     }

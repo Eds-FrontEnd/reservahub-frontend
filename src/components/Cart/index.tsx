@@ -57,10 +57,12 @@ export const Cart: React.FC = () => {
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] =
     useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState<boolean>(false);
   const [checkoutError, setCheckoutError] = useState<string>("");
   const [couponInput, setCouponInput] = useState<string>("");
   const [appliedCoupon, setAppliedCoupon] = useState<string>("");
   const [couponError, setCouponError] = useState<string>("");
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState<boolean>(true);
 
   const totalRounded = roundPrice(total);
 
@@ -90,12 +92,20 @@ export const Cart: React.FC = () => {
     };
   }, [isOpen, closeCart]);
 
-  const handleApplyCoupon = () => {
+  const handleApplyCoupon = async () => {
     const normalizedCoupon = couponInput.trim().toUpperCase();
+
+    if (isValidatingCoupon || isSubmitting) return;
 
     if (!normalizedCoupon) {
       setAppliedCoupon("");
       setCouponError("");
+      setCheckoutError("");
+      return;
+    }
+
+    if (normalizedCoupon === appliedCoupon) {
+      setCouponError("Este cupom já está aplicado neste carrinho.");
       setCheckoutError("");
       return;
     }
@@ -105,13 +115,39 @@ export const Cart: React.FC = () => {
     if (percentage === null) {
       setAppliedCoupon("");
       setCouponError("Cupom inválido. Confira o código e tente novamente.");
+      setCheckoutError("");
       return;
     }
 
-    setAppliedCoupon(normalizedCoupon);
-    setCouponInput(normalizedCoupon);
+    setAppliedCoupon("");
     setCouponError("");
     setCheckoutError("");
+    setIsValidatingCoupon(true);
+
+    try {
+      const response = await CompraService.validarCupom(normalizedCoupon);
+
+      if (!response.valido) {
+        setCouponError(
+          response.mensagem ||
+            "Não foi possível validar este cupom. Tente novamente.",
+        );
+        return;
+      }
+
+      setAppliedCoupon(normalizedCoupon);
+      setCouponInput(normalizedCoupon);
+      setCouponError("");
+    } catch (error: unknown) {
+      setAppliedCoupon("");
+      setCouponError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível validar o cupom. Tente novamente.",
+      );
+    } finally {
+      setIsValidatingCoupon(false);
+    }
   };
 
   const handleRemoveCoupon = () => {
@@ -122,7 +158,9 @@ export const Cart: React.FC = () => {
   };
 
   const handleCheckout = async () => {
-    if (items.length === 0 || isSubmitting) return;
+    if (items.length === 0 || isSubmitting || isValidatingCoupon) {
+      return;
+    }
 
     setIsSubmitting(true);
     setCheckoutError("");
@@ -143,6 +181,7 @@ export const Cart: React.FC = () => {
       setCouponInput("");
       setAppliedCoupon("");
       setCouponError("");
+      setIsSummaryExpanded(true);
       setIsPurchaseModalOpen(true);
     } catch (error: unknown) {
       setCheckoutError(
@@ -187,7 +226,7 @@ export const Cart: React.FC = () => {
                 onClick={closeCart}
                 aria-label="Fechar carrinho"
               >
-                x
+                ×
               </button>
             </header>
 
@@ -298,85 +337,116 @@ export const Cart: React.FC = () => {
 
             {items.length > 0 && (
               <footer className="cart-drawer__footer">
-                <div className="cart-drawer__coupon">
-                  <label htmlFor="cart-coupon">Cupom de desconto</label>
-
-                  <div className="cart-drawer__coupon-controls">
-                    <input
-                      id="cart-coupon"
-                      name="coupon"
-                      type="text"
-                      value={couponInput}
-                      onChange={(event) => {
-                        setCouponInput(event.target.value.toUpperCase());
-                        setCouponError("");
-                        setCheckoutError("");
-                      }}
-                      placeholder="Ex.: DESC10%"
-                      autoComplete="off"
-                      aria-invalid={Boolean(couponError)}
-                      aria-describedby={
-                        couponError ? "cart-coupon-error" : undefined
-                      }
-                      disabled={isSubmitting}
-                    />
-
-                    <button
-                      type="button"
-                      className="cart-drawer__coupon-apply"
-                      onClick={handleApplyCoupon}
-                      disabled={isSubmitting}
-                    >
-                      Aplicar
-                    </button>
-                  </div>
-
-                  {couponError && (
-                    <p
-                      id="cart-coupon-error"
-                      className="cart-drawer__error"
-                      role="alert"
-                    >
-                      {couponError}
-                    </p>
-                  )}
-
-                  {appliedCoupon && (
-                    <div className="cart-drawer__coupon-applied">
-                      <span>
-                        Cupom {appliedCoupon} aplicado ({discountPercent}%)
+                <button
+                  type="button"
+                  className="cart-drawer__footer-toggle"
+                  onClick={() => setIsSummaryExpanded((expanded) => !expanded)}
+                  aria-expanded={isSummaryExpanded}
+                  aria-controls="cart-drawer-footer-details"
+                >
+                  <span className="cart-drawer__footer-toggle-label">
+                    Resumo do pedido
+                    {!isSummaryExpanded && (
+                      <span className="cart-drawer__footer-toggle-hint">
+                        Ver cupom e valores
                       </span>
+                    )}
+                  </span>
+
+                  <span
+                    className="cart-drawer__footer-chevron"
+                    aria-hidden="true"
+                  />
+                </button>
+
+                <div
+                  id="cart-drawer-footer-details"
+                  className="cart-drawer__footer-details"
+                  hidden={!isSummaryExpanded}
+                >
+                  <div className="cart-drawer__coupon">
+                    <label htmlFor="cart-coupon">Cupom de desconto</label>
+
+                    <div className="cart-drawer__coupon-controls">
+                      <input
+                        id="cart-coupon"
+                        name="coupon"
+                        type="text"
+                        value={couponInput}
+                        onChange={(event) => {
+                          setCouponInput(event.target.value.toUpperCase());
+                          setAppliedCoupon("");
+                          setCouponError("");
+                          setCheckoutError("");
+                        }}
+                        placeholder="Ex.: DESC10%"
+                        autoComplete="off"
+                        aria-invalid={Boolean(couponError)}
+                        aria-describedby={
+                          couponError ? "cart-coupon-error" : undefined
+                        }
+                        disabled={isSubmitting || isValidatingCoupon}
+                      />
 
                       <button
                         type="button"
-                        onClick={handleRemoveCoupon}
-                        disabled={isSubmitting}
-                        aria-label="Remover cupom"
+                        className="cart-drawer__coupon-apply"
+                        onClick={handleApplyCoupon}
+                        disabled={isSubmitting || isValidatingCoupon}
                       >
-                        Remover
+                        {isValidatingCoupon ? "Validando..." : "Aplicar"}
                       </button>
+
+                      {appliedCoupon && (
+                        <button
+                          type="button"
+                          className="cart-drawer__coupon-remove"
+                          onClick={handleRemoveCoupon}
+                          disabled={isSubmitting || isValidatingCoupon}
+                          aria-label="Remover cupom"
+                        >
+                          Remover
+                        </button>
+                      )}
                     </div>
+
+                    {couponError && (
+                      <p
+                        id="cart-coupon-error"
+                        className="cart-drawer__error"
+                        role="alert"
+                      >
+                        {couponError}
+                      </p>
+                    )}
+
+                    {appliedCoupon && (
+                      <p className="cart-drawer__success" role="status">
+                        Cupom de {getDiscountPercent(appliedCoupon)}% aplicado
+                        com sucesso!
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="cart-drawer__summary">
+                    <span>Total mensal</span>
+                    <strong>{formatPrice(totalRounded)}</strong>
+                  </div>
+
+                  {appliedCoupon && (
+                    <>
+                      <div className="cart-drawer__summary">
+                        <span>Desconto ({discountPercent}%)</span>
+                        <strong>- {formatPrice(discountAmount)}</strong>
+                      </div>
+
+                      <div className="cart-drawer__summary">
+                        <span>Total mensal com desconto</span>
+                        <strong>{formatPrice(totalWithDiscount)}</strong>
+                      </div>
+                    </>
                   )}
                 </div>
-
-                <div className="cart-drawer__summary">
-                  <span>Total mensal</span>
-                  <strong>{formatPrice(totalRounded)}</strong>
-                </div>
-
-                {appliedCoupon && (
-                  <>
-                    <div className="cart-drawer__summary">
-                      <span>Desconto ({discountPercent}%)</span>
-                      <strong>- {formatPrice(discountAmount)}</strong>
-                    </div>
-
-                    <div className="cart-drawer__summary">
-                      <span>Total mensal com desconto</span>
-                      <strong>{formatPrice(totalWithDiscount)}</strong>
-                    </div>
-                  </>
-                )}
 
                 {checkoutError && (
                   <p className="cart-drawer__error" role="alert">
@@ -388,7 +458,7 @@ export const Cart: React.FC = () => {
                   type="button"
                   className="cart-drawer__checkout"
                   onClick={handleCheckout}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isValidatingCoupon}
                   aria-busy={isSubmitting}
                 >
                   {isSubmitting
@@ -400,7 +470,7 @@ export const Cart: React.FC = () => {
                   type="button"
                   className="cart-drawer__clear"
                   onClick={clearCart}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isValidatingCoupon}
                 >
                   Limpar carrinho
                 </button>

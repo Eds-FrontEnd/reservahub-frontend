@@ -1,11 +1,11 @@
-import mockReact from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import mockReact from "react";
 
-import { Cart } from "../Cart/index";
 import { useCart } from "../../contexts/CartContext";
-import { CompraService } from "../../services/CompraService";
 import type { CompraResponse } from "../../services/CompraService";
+import { CompraService } from "../../services/CompraService";
+import { Cart } from "../Cart/index";
 
 jest.mock("../../contexts/CartContext", () => ({
   useCart: jest.fn(),
@@ -13,6 +13,7 @@ jest.mock("../../contexts/CartContext", () => ({
 
 jest.mock("../../services/CompraService", () => ({
   CompraService: {
+    validarCupom: jest.fn(),
     concluirCompra: jest.fn(),
   },
 }));
@@ -67,6 +68,7 @@ jest.mock("../Modal", () => ({
 }));
 
 const mockedUseCart = jest.mocked(useCart);
+const mockedValidarCupom = jest.mocked(CompraService.validarCupom);
 const mockedConcluirCompra = jest.mocked(CompraService.concluirCompra);
 
 const mockCompraResponse: CompraResponse = {
@@ -106,10 +108,27 @@ const configureCart = (overrides: Partial<ReturnType<typeof useCart>> = {}) => {
   } as ReturnType<typeof useCart>);
 };
 
+const mensagemCupomAplicado = /Cupom de\s*10\s*%\s*aplicado com sucesso!/;
+
 describe("Cart", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     configureCart();
+
+    mockedValidarCupom.mockImplementation(async (cupom: string) => {
+      if (cupom.trim().toUpperCase() === "DESC10%") {
+        return {
+          valido: true,
+          mensagem: "Cupom aplicado com sucesso.",
+        };
+      }
+
+      return {
+        valido: false,
+        mensagem: "Cupom inválido. Confira o código e tente novamente.",
+      };
+    });
+
     mockedConcluirCompra.mockResolvedValue(mockCompraResponse);
   });
 
@@ -215,7 +234,7 @@ describe("Cart", () => {
   });
 
   describe("Cupom de desconto", () => {
-    it("deve aplicar um cupom válido e calcular o desconto", () => {
+    it("deve aplicar um cupom válido e calcular o desconto", async () => {
       render(<Cart />);
 
       fireEvent.change(
@@ -228,15 +247,17 @@ describe("Cart", () => {
       fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
 
       expect(
-        screen.getByText("Cupom DESC10% aplicado (10%)"),
+        await screen.findByText(mensagemCupomAplicado),
       ).toBeInTheDocument();
       expect(screen.getByText("Desconto (10%)")).toBeInTheDocument();
       expect(screen.getByText("- R$ 57,98")).toBeInTheDocument();
       expect(screen.getByText("Total mensal com desconto")).toBeInTheDocument();
       expect(screen.getByText("R$ 521,82")).toBeInTheDocument();
+
+      expect(mockedValidarCupom).toHaveBeenCalledWith("DESC10%");
     });
 
-    it("deve aceitar o cupom informado em letras minúsculas", () => {
+    it("deve aceitar o cupom informado em letras minúsculas", async () => {
       render(<Cart />);
 
       fireEvent.change(
@@ -249,12 +270,13 @@ describe("Cart", () => {
       fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
 
       expect(
-        screen.getByText("Cupom DESC10% aplicado (10%)"),
+        await screen.findByText(mensagemCupomAplicado),
       ).toBeInTheDocument();
       expect(screen.getByText("- R$ 57,98")).toBeInTheDocument();
+      expect(mockedValidarCupom).toHaveBeenCalledWith("DESC10%");
     });
 
-    it("deve exibir uma mensagem para um cupom inválido", () => {
+    it("deve exibir uma mensagem para um cupom inválido", async () => {
       render(<Cart />);
 
       fireEvent.change(
@@ -266,7 +288,7 @@ describe("Cart", () => {
 
       fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
 
-      expect(screen.getByRole("alert")).toHaveTextContent(
+      expect(await screen.findByRole("alert")).toHaveTextContent(
         "Cupom inválido. Confira o código e tente novamente.",
       );
 
@@ -275,7 +297,7 @@ describe("Cart", () => {
       ).not.toBeInTheDocument();
     });
 
-    it("deve remover o cupom aplicado", () => {
+    it("deve remover o cupom aplicado", async () => {
       render(<Cart />);
 
       fireEvent.change(
@@ -286,6 +308,9 @@ describe("Cart", () => {
       );
 
       fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+
+      await screen.findByText(mensagemCupomAplicado);
+
       fireEvent.click(screen.getByRole("button", { name: "Remover cupom" }));
 
       expect(
@@ -306,6 +331,8 @@ describe("Cart", () => {
       );
 
       fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+
+      await screen.findByText(mensagemCupomAplicado);
 
       fireEvent.click(
         screen.getByRole("button", { name: "Concluir assinatura" }),
