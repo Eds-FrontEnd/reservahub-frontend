@@ -3,10 +3,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 
-import {
-  generateCoupon,
-  getDiscountByState,
-} from "../../services/DiscountService";
 import { fetchCepData } from "../../services/ViaCepService";
 
 import "./PopupStyle.css";
@@ -23,6 +19,13 @@ interface DiscountResult {
 interface CepResponse {
   cep: string;
   mensagem?: string;
+}
+
+interface CouponIssueResponse {
+  novo: boolean;
+  cupom: string | null;
+  percentual: number;
+  mensagem: string;
 }
 
 const API_URL = (
@@ -104,15 +107,44 @@ function Popup() {
           return;
         }
 
-        const discount = getDiscountByState(cepData.uf);
+        const couponResponse = await fetch(
+          `${API_URL}/api/cupons/promocional`,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              uf: cepData.uf,
+            }),
+            signal: controller.signal,
+          },
+        );
+
+        if (controller.signal.aborted || !couponResponse.ok) {
+          return;
+        }
+
+        const couponIssue =
+          (await couponResponse.json()) as CouponIssueResponse;
+
+        if (
+          controller.signal.aborted ||
+          !couponIssue.cupom ||
+          !/^DESC(100|[1-9]\d?)%$/.test(couponIssue.cupom)
+        ) {
+          return;
+        }
 
         setResult({
           cep: formatCep(cepData.cep || normalizedCep),
           city: cepData.localidade,
           state: cepData.uf,
           region: cepData.regiao || "Brasil",
-          discount,
-          coupon: generateCoupon(discount),
+          discount: couponIssue.percentual,
+          coupon: couponIssue.cupom,
         });
 
         setCopyMessage("");
