@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "../../components/Button";
 import Header from "../../components/Header";
+import Modal from "../../components/Modal";
 import {
   subscribePasswordResetStatus,
   type PasswordResetStatusResponse,
@@ -32,11 +33,23 @@ type ApiResponse =
 
 type RequestAction = "aprovar" | "recusar";
 
+type ModalState = {
+  open: boolean;
+  title: string;
+  message: string;
+  buttonText?: string;
+  buttonColor?: string;
+  buttonHoverColor?: string;
+  onConfirm?: () => void;
+};
+
 const API_URL = (
   import.meta.env.VITE_API_URL ?? "http://localhost:8080"
 ).replace(/\/+$/, "");
 
 const REQUESTS_ENDPOINT = `${API_URL}/api/admin/solicitacoes-reset-senha`;
+const ADMIN_EVENTS_ENDPOINT = `${REQUESTS_ENDPOINT}/eventos`;
+const RECONNECT_DELAY = 3000;
 
 const STATUS_LABELS: Record<RequestStatus, string> = {
   PENDENTE: "Pendente",
@@ -106,6 +119,37 @@ const AdminResetPasswordPage = () => {
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [modal, setModal] = useState<ModalState>({
+    open: false,
+    title: "",
+    message: "",
+  });
+
+  const hasConnectedBefore = useRef(false);
+  const activeRequestController = useRef<AbortController | null>(null);
+
+  const closeModal = useCallback(() => {
+    setModal((current) => ({
+      ...current,
+      open: false,
+      onConfirm: undefined,
+    }));
+  }, []);
+
+  const showFeedbackModal = useCallback(
+    (title: string, message: string, _action: RequestAction) => {
+      setModal({
+        open: true,
+        title,
+        message,
+        buttonText: "Entendi",
+        onConfirm: closeModal,
+        buttonColor: "var(--color-secondary)",
+        buttonHoverColor: "var(--color-primary)",
+      });
+    },
+    [closeModal],
+  );
 
   const loadRequests = useCallback(async (silent = false) => {
     if (!silent) {
@@ -117,7 +161,9 @@ const AdminResetPasswordPage = () => {
     const token = getToken();
 
     if (!token) {
-      setError("Sua sessão expirou. Entre novamente como administrador.");
+      const message = "Sua sessão expirou. Entre novamente como administrador.";
+
+      setError(message);
 
       if (!silent) {
         setLoading(false);
@@ -140,7 +186,6 @@ const AdminResetPasswordPage = () => {
       }
 
       const data: ApiResponse = await response.json();
-
       const result = Array.isArray(data) ? data : data.content;
 
       setRequests(result);
@@ -160,13 +205,135 @@ const AdminResetPasswordPage = () => {
 
   useEffect(() => {
     void loadRequests();
+  }, [loadRequests]);
 
-    const intervalId = window.setInterval(() => {
-      void loadRequests(true);
-    }, 5000);
+  useEffect(() => {
+    let active = true;
+    let reconnectTimer: number | undefined;
+    let controller: AbortController | null = null;
+
+    const connect = async (): Promise<void> => {
+      while (active) {
+        const token = getToken();
+
+        if (!token) {
+          setError("Sua sessão expirou. Entre novamente como administrador.");
+          return;
+        }
+
+        controller = new AbortController();
+        activeRequestController.current = controller;
+
+        try {
+          const response = await fetch(ADMIN_EVENTS_ENDPOINT, {
+            method: "GET",
+            headers: {
+              Accept: "text/event-stream",
+              Authorization: `Bearer ${token}`,
+            },
+            cache: "no-store",
+            signal: controller.signal,
+          });
+
+          if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+              setError(
+                "Sua sessão expirou ou você não tem permissão para acompanhar as solicitações.",
+              );
+              return;
+            }
+
+            throw new Error(`Falha na conexão SSE (HTTP ${response.status}).`);
+          }
+
+          if (!response.body) {
+            throw new Error("O servidor não disponibilizou o fluxo SSE.");
+          }
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+
+          while (active) {
+            const { done, value } = await reader.read();
+
+            if (done) {
+              break;
+            }
+
+            buffer += decoder.decode(value, { stream: true });
+
+            const frames = buffer.split(/\r?\n\r?\n/);
+            buffer = frames.pop() ?? "";
+
+            for (const frame of frames) {
+              if (!active || !frame.trim()) {
+                continue;
+              }
+
+              let eventName = "message";
+
+              for (const line of frame.split(/\r?\n/)) {
+                if (line.startsWith("event:")) {
+                  eventName = line.slice(6).trim();
+                  break;
+                }
+              }
+
+              if (eventName === "conectado") {
+                if (hasConnectedBefore.current) {
+                  void loadRequests(true);
+                }
+
+                hasConnectedBefore.current = true;
+              } else if (eventName === "alteracao") {
+                void loadRequests(true);
+              }
+            }
+          }
+
+          try {
+            await reader.cancel();
+          } catch {}
+        } catch (connectionError) {
+          if (!active) {
+            return;
+          }
+
+          if (
+            connectionError instanceof DOMException &&
+            connectionError.name === "AbortError"
+          ) {
+            return;
+          }
+        }
+
+        if (!active) {
+          return;
+        }
+
+        await new Promise<void>((resolve) => {
+          reconnectTimer = window.setTimeout(resolve, RECONNECT_DELAY);
+        });
+      }
+    };
+
+    const startTimer = window.setTimeout(() => {
+      void connect();
+    }, 0);
 
     return () => {
-      window.clearInterval(intervalId);
+      active = false;
+      window.clearTimeout(startTimer);
+      controller?.abort();
+
+      if (activeRequestController.current === controller) {
+        activeRequestController.current = null;
+      }
+
+      if (reconnectTimer !== undefined) {
+        window.clearTimeout(reconnectTimer);
+      }
     };
   }, [loadRequests]);
 
@@ -183,7 +350,6 @@ const AdminResetPasswordPage = () => {
 
     let active = true;
     const eventSources: EventSource[] = [];
-
     const requestIds = pendingRequestIdsKey.split(",").map(Number);
 
     requestIds.forEach((requestId) => {
@@ -232,24 +398,17 @@ const AdminResetPasswordPage = () => {
     };
   }, [pendingRequestIdsKey]);
 
-  const handleRequestAction = async (
+  const processRequestAction = async (
     request: ResetPasswordRequest,
     action: RequestAction,
   ) => {
-    const actionLabel = action === "aprovar" ? "aprovar" : "recusar";
-
-    const confirmed = window.confirm(
-      `Deseja realmente ${actionLabel} a solicitação de redefinição de senha de ${request.email}?`,
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
     const token = getToken();
 
     if (!token) {
-      setError("Sua sessão expirou. Entre novamente como administrador.");
+      const message = "Sua sessão expirou. Entre novamente como administrador.";
+
+      setError(message);
+      showFeedbackModal("Sessão expirada", message, action);
       return;
     }
 
@@ -273,22 +432,55 @@ const AdminResetPasswordPage = () => {
         throw new Error(await getErrorMessage(response));
       }
 
-      setFeedback(
+      const successMessage =
         action === "aprovar"
           ? `Solicitação de ${request.email} aprovada.`
-          : `Solicitação de ${request.email} recusada.`,
-      );
+          : `Solicitação de ${request.email} recusada.`;
 
-      await loadRequests();
+      setFeedback(successMessage);
+      showFeedbackModal("Operação concluída", successMessage, action);
+      await loadRequests(true);
     } catch (requestError) {
-      setError(
+      const errorMessage =
         requestError instanceof Error
           ? requestError.message
-          : "Não foi possível atualizar a solicitação.",
-      );
+          : "Não foi possível atualizar a solicitação.";
+
+      setError(errorMessage);
+      showFeedbackModal("Não foi possível concluir", errorMessage, action);
     } finally {
       setProcessingId(null);
     }
+  };
+
+  const handleRequestAction = (
+    request: ResetPasswordRequest,
+    action: RequestAction,
+  ) => {
+    const actionLabel = action === "aprovar" ? "aprovar" : "recusar";
+
+    setModal({
+      open: true,
+      title: "Confirmar ação",
+      message: `Deseja realmente ${actionLabel} a solicitação de redefinição de senha de ${request.email}?`,
+      buttonText: `Confirmar ${actionLabel}`,
+      buttonColor:
+        action === "aprovar" ? "var(--color-secondary)" : "var(--color-red)",
+      buttonHoverColor: "var(--color-primary)",
+      onConfirm: () => {
+        closeModal();
+        void processRequestAction(request, action);
+      },
+    });
+  };
+
+  const handleModalButtonClick = () => {
+    if (modal.onConfirm) {
+      modal.onConfirm();
+      return;
+    }
+
+    closeModal();
   };
 
   const pendingCount = requests.filter(
@@ -410,7 +602,7 @@ const AdminResetPasswordPage = () => {
                                 hoverBackgroundColor="var(--color-primary)"
                                 disabled={processingId !== null}
                                 onClick={() =>
-                                  void handleRequestAction(request, "aprovar")
+                                  handleRequestAction(request, "aprovar")
                                 }
                               >
                                 {isProcessing ? "Processando..." : "Aprovar"}
@@ -422,7 +614,7 @@ const AdminResetPasswordPage = () => {
                                 hoverBackgroundColor="var(--color-primary)"
                                 disabled={processingId !== null}
                                 onClick={() =>
-                                  void handleRequestAction(request, "recusar")
+                                  handleRequestAction(request, "recusar")
                                 }
                               >
                                 {isProcessing ? "Processando..." : "Recusar"}
@@ -443,6 +635,17 @@ const AdminResetPasswordPage = () => {
           )}
         </section>
       </main>
+
+      <Modal
+        open={modal.open}
+        title={modal.title}
+        message={modal.message}
+        buttonText={modal.buttonText ?? "Entendi"}
+        buttonColor={modal.buttonColor ?? "var(--color-secondary)"}
+        buttonHoverColor={modal.buttonHoverColor ?? "var(--color-primary)"}
+        onClose={closeModal}
+        onButtonClick={handleModalButtonClick}
+      />
     </>
   );
 };
