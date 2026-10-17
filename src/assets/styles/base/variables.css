@@ -1,31 +1,79 @@
 :root {
-  /* --- Variáveis de Cores (Tema Claro) --- */
+  /* Cores principais */
   --color-primary: #003399;
+  --color-primary-rgb: 0 51 153;
   --color-secondary: #008000;
+  --color-secondary-rgb: 0 128 0;
   --color-black: #000000;
+  --color-black-rgb: 0 0 0;
   --color-white: #ffffff;
+  --color-white-rgb: 255 255 255;
   --color-red: #d00000;
+  --color-red-rgb: 208 0 0;
   --color-blue: #e4effd;
+  --color-blue-rgb: 228 239 253;
   --color-gray-light: #818081;
+  --color-gray-light-rgb: 129 128 129;
+  --color-gray-border: #d9e0eb;
   --color-yellow: #f9c900;
-  /* --- Tipografia --- */
+
+  /* Tipografia */
   --font-main: "Open Sans", sans-serif;
+
+  /* Cores semânticas do painel administrativo */
+  --admin-reset-container-border: rgb(var(--color-white-rgb) / 55%);
+  --admin-reset-summary-border: var(--color-gray-border);
+  --admin-reset-header-border: var(--color-gray-border);
+  --admin-reset-table-border: var(--color-gray-border);
+
+  --admin-reset-shadow-alert: rgb(var(--color-black-rgb) / 3%);
+  --admin-reset-shadow-table: rgb(var(--color-black-rgb) / 4%);
+  --admin-reset-shadow-row: rgb(var(--color-black-rgb) / 4%);
+
+  --admin-reset-alert-error-bg: rgb(var(--color-red-rgb) / 5%);
+  --admin-reset-alert-success-bg: rgb(var(--color-secondary-rgb) / 5%);
+
+  --admin-reset-status-pending-bg: rgb(var(--color-primary-rgb) / 7%);
+  --admin-reset-status-approved-bg: rgb(var(--color-secondary-rgb) / 8%);
+  --admin-reset-status-approved-border: rgb(var(--color-secondary-rgb) / 25%);
+  --admin-reset-status-rejected-bg: rgb(var(--color-red-rgb) / 8%);
+  --admin-reset-status-rejected-border: rgb(var(--color-red-rgb) / 25%);
+  --admin-reset-status-canceled-bg: rgb(var(--color-black-rgb) / 3%);
+
+  --admin-reset-table-header-bg: rgb(var(--color-primary-rgb) / 6%);
+  --admin-reset-table-row-hover-bg: rgb(var(--color-primary-rgb) / 4%);
+
+  /* Campos de contato no tema escuro */
+  --contact-field-bg: #ffffff;
+  --contact-field-color: #003399;
 }
 
-/* --- Tema Escuro (Cores super vivas e chamativas) --- */
+/* Tema escuro */
 body.dark-theme {
-  /* Fundo preto-azulado bem escuro para fazer as cores brilharem */
   --color-white: #172554;
+  --color-white-rgb: 23 37 84;
 
-  /* Texto principal em branco puro/nítido */
   --color-black: #ffffff;
+  --color-black-rgb: 255 255 255;
 
-  /* Cores vibrantes e de alto impacto visual */
-  --color-primary: #fff; /* Ciano neon elétrico (super chamativo para botões/destaques) */
-  --color-secondary: #a8cf45; /* Verde limão/neon vivo */
-  --color-blue: #090d16; /* Azul profundo luminoso para cards e blocos */
-  --color-gray-light: #fff; /* Cinza claro para textos de apoio */
-  --color-red: #ff3333; /* Vermelho vivo intenso para erros/alertas */
+  --color-primary: #ffffff;
+  --color-primary-rgb: 255 255 255;
+
+  --color-secondary: #a8cf45;
+  --color-secondary-rgb: 168 207 69;
+
+  --color-blue: #090d16;
+  --color-blue-rgb: 9 13 22;
+
+  --color-gray-light: #ffffff;
+  --color-gray-light-rgb: 255 255 255;
+  --color-gray-border: rgb(255 255 255 / 20%);
+
+  --color-red: #ff3333;
+  --color-red-rgb: 255 51 51;
+
+  --contact-field-bg: #ffffff;
+  --contact-field-color: #003399;
 
   background-color: var(--color-white);
   color: var(--color-black);
@@ -33,14 +81,10 @@ body.dark-theme {
 
 body.dark-theme .contact-form__field input,
 body.dark-theme .contact-form__field select,
-body.dark-theme .contact-form__field textarea {
-  background-color: #ffffff;
-  color: #003399;
-}
-
+body.dark-theme .contact-form__field textarea,
 body.dark-theme .contact-form__field input:focus,
 body.dark-theme .contact-form__field select:focus,
 body.dark-theme .contact-form__field textarea:focus {
-  background-color: #ffffff;
-  color: #003399;
+  background-color: var(--contact-field-bg);
+  color: var(--contact-field-color);
 }
