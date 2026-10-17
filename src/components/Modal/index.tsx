@@ -1,9 +1,7 @@
 import type React from "react";
 import { useEffect } from "react";
 
-import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
@@ -12,21 +10,19 @@ import CloseIcon from "@mui/icons-material/Close";
 import Fade from "@mui/material/Fade";
 import Grow from "@mui/material/Grow";
 
+import { Button } from "../Button";
+
 import "./ModalStyle.css";
 
 interface ModalProps {
-  open: boolean;
+  open?: boolean;
   title?: string;
-  message: string;
+  message?: string;
 
   buttonText?: string;
   buttonUrl?: string;
   closeUrl?: string;
 
-  /**
-   * Tempo em milissegundos para redirecionamento automático.
-   * Exemplo: 3000 = 3 segundos.
-   */
   redirectDelay?: number;
   redirectUrl?: string;
 
@@ -39,12 +35,13 @@ interface ModalProps {
 
   onClose?: () => void;
   onNavigate?: (url: string) => void;
+  onButtonClick?: () => void;
 }
 
 const Modal = ({
-  open,
+  open = false,
   title,
-  message,
+  message = "",
   buttonText,
   buttonUrl,
   closeUrl,
@@ -57,6 +54,7 @@ const Modal = ({
   buttonHoverColor = "var(--color-black)",
   onClose,
   onNavigate,
+  onButtonClick,
 }: ModalProps) => {
   const handleNavigation = (url?: string) => {
     onClose?.();
@@ -74,7 +72,12 @@ const Modal = ({
   };
 
   useEffect(() => {
-    if (!open || !redirectUrl || !redirectDelay) {
+    if (
+      !open ||
+      !redirectUrl ||
+      redirectDelay === undefined ||
+      redirectDelay <= 0
+    ) {
       return;
     }
 
@@ -88,6 +91,11 @@ const Modal = ({
   }, [open, redirectUrl, redirectDelay]);
 
   const handleButtonClick = () => {
+    if (onButtonClick) {
+      onButtonClick();
+      return;
+    }
+
     handleNavigation(buttonUrl);
   };
 
@@ -101,7 +109,7 @@ const Modal = ({
       open={open}
       onClose={onClose}
       aria-labelledby={title ? "modal-title" : undefined}
-      aria-describedby="modal-message"
+      aria-describedby={message ? "modal-message" : undefined}
       slots={{
         transition: Grow,
       }}
@@ -147,29 +155,26 @@ const Modal = ({
             </DialogTitle>
           )}
 
-          <DialogContent className="modal__message-container">
-            <p className="modal__message" id="modal-message">
-              {message}
-            </p>
-          </DialogContent>
+          {message && (
+            <DialogContent className="modal__message-container">
+              <p className="modal__message" id="modal-message">
+                {message}
+              </p>
+            </DialogContent>
+          )}
 
           {buttonText && (
-            <DialogActions className="modal__actions">
+            <div className="modal__actions">
               <Button
-                variant="contained"
                 autoFocus
                 onClick={handleButtonClick}
                 className="modal__button"
-                style={
-                  {
-                    backgroundColor: buttonColor,
-                    "--modal-button-hover": buttonHoverColor,
-                  } as React.CSSProperties
-                }
+                backgroundColor={buttonColor}
+                hoverBackgroundColor={buttonHoverColor}
               >
                 {buttonText}
               </Button>
-            </DialogActions>
+            </div>
           )}
         </div>
       </Fade>

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import Modal from "../Modal/index";
+import Modal from "./index";
 
 import "@testing-library/jest-dom";
 
@@ -20,6 +20,12 @@ describe("Modal", () => {
   afterEach(() => {
     jest.clearAllMocks();
     jest.useRealTimers();
+  });
+
+  it("deve permitir renderizar o componente sem propriedades", () => {
+    render(<Modal />);
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("deve renderizar o modal quando open for true", () => {
@@ -43,9 +49,7 @@ describe("Modal", () => {
   it("deve renderizar a mensagem dentro de um parágrafo", () => {
     renderModal();
 
-    const message = screen.getByText("Mensagem de teste");
-
-    expect(message.tagName).toBe("P");
+    expect(screen.getByText("Mensagem de teste").tagName).toBe("P");
   });
 
   it("deve aplicar a classe modal__message à mensagem", () => {
@@ -55,9 +59,7 @@ describe("Modal", () => {
   });
 
   it("deve renderizar o título quando informado", () => {
-    renderModal({
-      title: "Título do modal",
-    });
+    renderModal({ title: "Título do modal" });
 
     expect(
       screen.getByRole("heading", { name: "Título do modal" }),
@@ -71,9 +73,7 @@ describe("Modal", () => {
   });
 
   it("deve aplicar a classe modal__title ao título", () => {
-    renderModal({
-      title: "Título do modal",
-    });
+    renderModal({ title: "Título do modal" });
 
     expect(
       screen.getByRole("heading", { name: "Título do modal" }),
@@ -81,29 +81,33 @@ describe("Modal", () => {
   });
 
   it("deve associar o título ao modal pelo aria-labelledby", () => {
-    renderModal({
-      title: "Título do modal",
-    });
+    renderModal({ title: "Título do modal" });
 
-    const dialog = screen.getByRole("dialog");
-
-    expect(dialog).toHaveAttribute("aria-labelledby", "modal-title");
+    expect(screen.getByRole("dialog")).toHaveAttribute(
+      "aria-labelledby",
+      "modal-title",
+    );
   });
 
   it("deve associar a mensagem ao modal pelo aria-describedby", () => {
     renderModal();
 
-    const dialog = screen.getByRole("dialog");
+    expect(screen.getByRole("dialog")).toHaveAttribute(
+      "aria-describedby",
+      "modal-message",
+    );
+  });
 
-    expect(dialog).toHaveAttribute("aria-describedby", "modal-message");
+  it("não deve associar uma mensagem quando ela não for informada", () => {
+    render(<Modal open />);
+
+    expect(screen.getByRole("dialog")).not.toHaveAttribute("aria-describedby");
   });
 
   it("deve aplicar a classe modal ao Dialog", () => {
     renderModal();
 
-    const modal = document.querySelector(".modal");
-
-    expect(modal).toBeInTheDocument();
+    expect(document.querySelector(".modal")).toBeInTheDocument();
   });
 
   it("deve renderizar o botão Fechar", () => {
@@ -121,9 +125,7 @@ describe("Modal", () => {
   });
 
   it("deve renderizar o botão de ação quando buttonText for informado", () => {
-    renderModal({
-      buttonText: "Continuar",
-    });
+    renderModal({ buttonText: "Continuar" });
 
     expect(
       screen.getByRole("button", { name: "Continuar" }),
@@ -139,9 +141,7 @@ describe("Modal", () => {
   });
 
   it("deve aplicar a classe modal__button ao botão de ação", () => {
-    renderModal({
-      buttonText: "Continuar",
-    });
+    renderModal({ buttonText: "Continuar" });
 
     expect(screen.getByRole("button", { name: "Continuar" })).toHaveClass(
       "modal__button",
@@ -155,7 +155,7 @@ describe("Modal", () => {
     });
 
     expect(screen.getByRole("button", { name: "Continuar" })).toHaveStyle({
-      backgroundColor: "#003399",
+      "--button-background-color": "#003399",
     });
   });
 
@@ -165,13 +165,11 @@ describe("Modal", () => {
       buttonHoverColor: "#000000",
     });
 
-    const button = screen.getByRole("button", {
-      name: "Continuar",
-    });
-
-    expect(button.style.getPropertyValue("--modal-button-hover")).toBe(
-      "#000000",
-    );
+    expect(
+      screen
+        .getByRole("button", { name: "Continuar" })
+        .style.getPropertyValue("--button-hover-background-color"),
+    ).toBe("#000000");
   });
 
   it("deve aplicar a cor personalizada ao título", () => {
@@ -182,17 +180,13 @@ describe("Modal", () => {
 
     expect(
       screen.getByRole("heading", { name: "Título do modal" }),
-    ).toHaveStyle({
-      color: "#008000",
-    });
+    ).toHaveStyle({ color: "#008000" });
   });
 
   it("deve renderizar o ícone quando informado", () => {
     const icon: ReactNode = <span data-testid="modal-icon">✓</span>;
 
-    renderModal({
-      icon,
-    });
+    renderModal({ icon });
 
     expect(screen.getByTestId("modal-icon")).toBeInTheDocument();
   });
@@ -207,15 +201,9 @@ describe("Modal", () => {
   it("deve aplicar a cor personalizada ao ícone", () => {
     const icon: ReactNode = <span data-testid="modal-icon">✓</span>;
 
-    renderModal({
-      icon,
-      iconColor: "#008000",
-    });
+    renderModal({ icon, iconColor: "#008000" });
 
-    const iconContainer = document.querySelector<HTMLElement>(".modal__icon");
-
-    expect(iconContainer).toBeInTheDocument();
-    expect(iconContainer).toHaveStyle({
+    expect(document.querySelector(".modal__icon")).toHaveStyle({
       color: "#008000",
     });
   });
@@ -224,9 +212,7 @@ describe("Modal", () => {
     const user = userEvent.setup();
     const onClose = jest.fn();
 
-    renderModal({
-      onClose,
-    });
+    renderModal({ onClose });
 
     await user.click(screen.getByRole("button", { name: "Fechar" }));
 
@@ -238,17 +224,13 @@ describe("Modal", () => {
     const onClose = jest.fn();
     const onNavigate = jest.fn();
 
-    renderModal({
-      closeUrl: "/",
-      onClose,
-      onNavigate,
-    });
+    renderModal({ closeUrl: "/", onClose, onNavigate });
 
     await user.click(screen.getByRole("button", { name: "Fechar" }));
 
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(onNavigate).toHaveBeenCalledTimes(1);
     expect(onNavigate).toHaveBeenCalledWith("/");
+    expect(onNavigate).toHaveBeenCalledTimes(1);
   });
 
   it("não deve navegar quando closeUrl não for informado", async () => {
@@ -256,10 +238,7 @@ describe("Modal", () => {
     const onClose = jest.fn();
     const onNavigate = jest.fn();
 
-    renderModal({
-      onClose,
-      onNavigate,
-    });
+    renderModal({ onClose, onNavigate });
 
     await user.click(screen.getByRole("button", { name: "Fechar" }));
 
@@ -299,8 +278,8 @@ describe("Modal", () => {
     await user.click(screen.getByRole("button", { name: "Continuar" }));
 
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(onNavigate).toHaveBeenCalledTimes(1);
     expect(onNavigate).toHaveBeenCalledWith("/smartphones");
+    expect(onNavigate).toHaveBeenCalledTimes(1);
   });
 
   it("deve priorizar onNavigate quando buttonUrl for informado", async () => {
@@ -317,6 +296,27 @@ describe("Modal", () => {
 
     expect(onNavigate).toHaveBeenCalledWith("/smartphones");
     expect(onNavigate).toHaveBeenCalledTimes(1);
+  });
+
+  it("deve executar onButtonClick sem acionar a navegação", async () => {
+    const user = userEvent.setup();
+    const onButtonClick = jest.fn();
+    const onNavigate = jest.fn();
+    const onClose = jest.fn();
+
+    renderModal({
+      buttonText: "Confirmar",
+      buttonUrl: "/smartphones",
+      onButtonClick,
+      onNavigate,
+      onClose,
+    });
+
+    await user.click(screen.getByRole("button", { name: "Confirmar" }));
+
+    expect(onButtonClick).toHaveBeenCalledTimes(1);
+    expect(onNavigate).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it("deve executar o redirecionamento automático após o tempo definido", () => {
@@ -345,8 +345,8 @@ describe("Modal", () => {
     });
 
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(onNavigate).toHaveBeenCalledTimes(1);
     expect(onNavigate).toHaveBeenCalledWith("/smartphones");
+    expect(onNavigate).toHaveBeenCalledTimes(1);
   });
 
   it("não deve configurar redirecionamento automático quando redirectUrl não for informado", () => {
@@ -354,10 +354,7 @@ describe("Modal", () => {
 
     const onNavigate = jest.fn();
 
-    renderModal({
-      redirectDelay: 3000,
-      onNavigate,
-    });
+    renderModal({ redirectDelay: 3000, onNavigate });
 
     act(() => {
       jest.advanceTimersByTime(5000);
@@ -371,10 +368,7 @@ describe("Modal", () => {
 
     const onNavigate = jest.fn();
 
-    renderModal({
-      redirectUrl: "/smartphones",
-      onNavigate,
-    });
+    renderModal({ redirectUrl: "/smartphones", onNavigate });
 
     act(() => {
       jest.advanceTimersByTime(5000);
@@ -452,29 +446,18 @@ describe("Modal", () => {
   });
 
   it("deve renderizar a ação dentro do container de ações", () => {
-    renderModal({
-      buttonText: "Continuar",
-    });
+    renderModal({ buttonText: "Continuar" });
 
-    const actions = document.querySelector(".modal__actions");
-
-    expect(actions).toBeInTheDocument();
-    expect(actions).toContainElement(
+    expect(document.querySelector(".modal__actions")).toContainElement(
       screen.getByRole("button", { name: "Continuar" }),
     );
   });
 
   it("deve aplicar autoFocus ao botão de ação", async () => {
-    renderModal({
-      buttonText: "Continuar",
-    });
-
-    const button = screen.getByRole("button", {
-      name: "Continuar",
-    });
+    renderModal({ buttonText: "Continuar" });
 
     await waitFor(() => {
-      expect(button).toHaveFocus();
+      expect(screen.getByRole("button", { name: "Continuar" })).toHaveFocus();
     });
   });
 
