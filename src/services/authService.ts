@@ -19,7 +19,7 @@ export interface User {
 interface LoginResponse {
   token: string;
   nome: string;
-  perfil: "USER" | "ADMIN";
+  perfil: string;
 }
 
 interface ApiMessage {
@@ -115,10 +115,18 @@ export const loginUser = async (
     }
 
     const data = (await response.json()) as LoginResponse;
+    const perfil = data.perfil?.trim().toUpperCase();
 
-    if (!data.token || !data.nome || !["USER", "ADMIN"].includes(data.perfil)) {
+    if (
+      !data.token ||
+      !data.nome?.trim() ||
+      !perfil ||
+      !["USER", "ADMIN", "ROLE_USER", "ROLE_ADMIN"].includes(perfil)
+    ) {
       return null;
     }
+
+    const normalizedProfile = perfil.replace("ROLE_", "") as User["perfil"];
 
     localStorage.setItem("token", data.token);
 
@@ -126,7 +134,7 @@ export const loginUser = async (
       name: data.nome,
       email: email.trim(),
       password: "",
-      perfil: data.perfil,
+      perfil: normalizedProfile,
     };
   } catch {
     return null;

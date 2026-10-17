@@ -223,12 +223,6 @@ const AdminLoginPage = () => {
               onChange={handleChange}
               error={errors.password}
             />
-
-            {errors.password && (
-              <span className="admin-login__field-error">
-                {errors.password}
-              </span>
-            )}
           </div>
 
           <Button
