@@ -4,7 +4,6 @@ import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 
 import { fetchCepData } from "../../services/ViaCepService";
-
 import "./PopupStyle.css";
 
 interface DiscountResult {
@@ -23,9 +22,15 @@ interface CepResponse {
 
 interface CouponIssueResponse {
   novo: boolean;
+  utilizado: boolean;
   cupom: string | null;
   percentual: number;
   mensagem: string;
+}
+
+interface AuthenticatedUser {
+  perfil?: string;
+  role?: string;
 }
 
 const API_URL = (
@@ -34,6 +39,7 @@ const API_URL = (
 
 const LOGIN_EVENT = "reservahub:login";
 const TRIGGER_KEY = "reservahub-show-discount-after-login";
+const AUTHENTICATED_USER_KEY = "authenticatedUser";
 
 const formatCep = (value: string): string => {
   const digits = value.replace(/\D/g, "").slice(0, 8);
@@ -43,6 +49,23 @@ const formatCep = (value: string): string => {
   }
 
   return digits;
+};
+
+const isAdminUser = (): boolean => {
+  try {
+    const authenticatedUser = localStorage.getItem(AUTHENTICATED_USER_KEY);
+
+    if (!authenticatedUser) {
+      return false;
+    }
+
+    const user = JSON.parse(authenticatedUser) as AuthenticatedUser;
+    const profile = user.perfil ?? user.role;
+
+    return profile?.toUpperCase() === "ADMIN";
+  } catch {
+    return false;
+  }
 };
 
 function Popup() {
@@ -59,6 +82,11 @@ function Popup() {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     const loadDiscount = async () => {
+      if (isAdminUser()) {
+        setIsOpen(false);
+        return;
+      }
+
       if (requestInProgressRef.current) {
         return;
       }
@@ -130,8 +158,11 @@ function Popup() {
         const couponIssue =
           (await couponResponse.json()) as CouponIssueResponse;
 
+        if (controller.signal.aborted || couponIssue.utilizado) {
+          return;
+        }
+
         if (
-          controller.signal.aborted ||
           !couponIssue.cupom ||
           !/^DESC(100|[1-9]\d?)%$/.test(couponIssue.cupom)
         ) {
@@ -168,6 +199,11 @@ function Popup() {
       }
 
       localStorage.removeItem(TRIGGER_KEY);
+
+      if (isAdminUser()) {
+        setIsOpen(false);
+        return;
+      }
 
       if (timeoutId !== null) {
         clearTimeout(timeoutId);
@@ -211,13 +247,9 @@ function Popup() {
     }
   }, [isOpen]);
 
-  const handleClose = () => {
-    setIsOpen(false);
-  };
+  const handleClose = () => setIsOpen(false);
 
-  const handleDialogClose = () => {
-    setIsOpen(false);
-  };
+  const handleDialogClose = () => setIsOpen(false);
 
   const handleCopyCoupon = async () => {
     if (!result) {
