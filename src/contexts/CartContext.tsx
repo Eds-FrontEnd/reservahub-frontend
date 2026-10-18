@@ -1,5 +1,3 @@
-// CartContext.tsx
-
 import {
   createContext,
   useCallback,
@@ -149,10 +147,15 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
   const total = useMemo(
     () =>
-      items.reduce(
-        (total, item) => total + item.monthlyPrice * item.quantity,
-        0,
-      ),
+      Math.round(
+        (items.reduce(
+          (total, item) =>
+            total + item.monthlyPrice * item.quantity * item.planMonths,
+          0,
+        ) +
+          Number.EPSILON) *
+          100,
+      ) / 100,
     [items],
   );
 

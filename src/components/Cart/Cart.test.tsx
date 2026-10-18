@@ -99,7 +99,7 @@ const configureCart = (overrides: Partial<ReturnType<typeof useCart>> = {}) => {
   mockedUseCart.mockReturnValue({
     items: [mockItem],
     isOpen: true,
-    total: 579.8,
+    total: 6957.6,
     closeCart: mockCloseCart,
     updateQuantity: mockUpdateQuantity,
     removeItem: mockRemoveItem,
@@ -160,11 +160,11 @@ describe("Cart", () => {
       expect(screen.getByText("Plano: Sem Fidelidade")).toBeInTheDocument();
     });
 
-    it("deve exibir o total mensal formatado em reais", () => {
+    it("deve exibir o total do contrato formatado em reais", () => {
       render(<Cart />);
 
-      expect(screen.getByText("Total mensal")).toBeInTheDocument();
-      expect(screen.getByText("R$ 579,80")).toBeInTheDocument();
+      expect(screen.getByText("Total do contrato")).toBeInTheDocument();
+      expect(screen.getByText("R$ 6.957,60")).toBeInTheDocument();
     });
 
     it("deve exibir o preço mensal do smartphone", () => {
@@ -250,9 +250,11 @@ describe("Cart", () => {
         await screen.findByText(mensagemCupomAplicado),
       ).toBeInTheDocument();
       expect(screen.getByText("Desconto (10%)")).toBeInTheDocument();
-      expect(screen.getByText("- R$ 57,98")).toBeInTheDocument();
-      expect(screen.getByText("Total mensal com desconto")).toBeInTheDocument();
-      expect(screen.getByText("R$ 521,82")).toBeInTheDocument();
+      expect(screen.getByText("- R$ 695,76")).toBeInTheDocument();
+      expect(
+        screen.getByText("Total do contrato com desconto"),
+      ).toBeInTheDocument();
+      expect(screen.getByText("R$ 6.261,84")).toBeInTheDocument();
 
       expect(mockedValidarCupom).toHaveBeenCalledWith("DESC10%");
     });
@@ -272,7 +274,7 @@ describe("Cart", () => {
       expect(
         await screen.findByText(mensagemCupomAplicado),
       ).toBeInTheDocument();
-      expect(screen.getByText("- R$ 57,98")).toBeInTheDocument();
+      expect(screen.getByText("- R$ 695,76")).toBeInTheDocument();
       expect(mockedValidarCupom).toHaveBeenCalledWith("DESC10%");
     });
 
@@ -293,7 +295,7 @@ describe("Cart", () => {
       );
 
       expect(
-        screen.queryByText("Total mensal com desconto"),
+        screen.queryByText("Total do contrato com desconto"),
       ).not.toBeInTheDocument();
     });
 
@@ -314,10 +316,10 @@ describe("Cart", () => {
       fireEvent.click(screen.getByRole("button", { name: "Remover cupom" }));
 
       expect(
-        screen.queryByText("Total mensal com desconto"),
+        screen.queryByText("Total do contrato com desconto"),
       ).not.toBeInTheDocument();
 
-      expect(screen.getByText("R$ 579,80")).toBeInTheDocument();
+      expect(screen.getByText("R$ 6.957,60")).toBeInTheDocument();
     });
 
     it("deve enviar os itens da assinatura e o cupom aplicado para o serviço", async () => {

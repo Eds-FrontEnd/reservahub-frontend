@@ -144,7 +144,7 @@ describe("CartProvider", () => {
     );
 
     expect(screen.getByTestId("total-items")).toHaveTextContent("2");
-    expect(screen.getByTestId("total")).toHaveTextContent("579.8");
+    expect(screen.getByTestId("total")).toHaveTextContent("6957.6");
   });
 
   it("deve iniciar com carrinho vazio quando o localStorage contém JSON inválido", () => {
@@ -195,7 +195,7 @@ describe("CartProvider", () => {
     });
 
     expect(screen.getByTestId("total-items")).toHaveTextContent("1");
-    expect(screen.getByTestId("total")).toHaveTextContent("289.9");
+    expect(screen.getByTestId("total")).toHaveTextContent("3478.8");
   });
 
   it("deve abrir o carrinho ao adicionar um produto", () => {
@@ -245,7 +245,7 @@ describe("CartProvider", () => {
     expect(items[0].quantity).toBe(2);
 
     expect(screen.getByTestId("total-items")).toHaveTextContent("2");
-    expect(screen.getByTestId("total")).toHaveTextContent("579.8");
+    expect(screen.getByTestId("total")).toHaveTextContent("6957.6");
   });
 
   it("deve adicionar o mesmo produto como item diferente quando o plano mudar", () => {
@@ -269,7 +269,7 @@ describe("CartProvider", () => {
     expect(result.current.items[1].quantity).toBe(1);
 
     expect(result.current.totalItems).toBe(2);
-    expect(result.current.total).toBe(579.8);
+    expect(result.current.total).toBeCloseTo(10436.4, 2);
   });
 
   it("deve atualizar a quantidade de um produto", () => {
@@ -286,7 +286,7 @@ describe("CartProvider", () => {
 
     expect(result.current.items[0].quantity).toBe(3);
     expect(result.current.totalItems).toBe(3);
-    expect(result.current.total).toBeCloseTo(869.7, 2);
+    expect(result.current.total).toBeCloseTo(10436.4, 2);
   });
 
   it("deve remover o item quando a atualização da quantidade resultar em zero", () => {
@@ -347,7 +347,7 @@ describe("CartProvider", () => {
     expect(result.current.items[1].quantity).toBe(1);
 
     expect(result.current.totalItems).toBe(4);
-    expect(result.current.total).toBe(1119.6);
+    expect(result.current.total).toBeCloseTo(16434, 2);
   });
 
   it("deve remover um produto pelo id", () => {
@@ -373,7 +373,7 @@ describe("CartProvider", () => {
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0].id).toBe(secondProduct.id);
     expect(result.current.totalItems).toBe(1);
-    expect(result.current.total).toBe(249.9);
+    expect(result.current.total).toBeCloseTo(5997.6, 2);
   });
 
   it("deve limpar o carrinho e fechar o carrinho", () => {
@@ -517,7 +517,23 @@ describe("CartProvider", () => {
       result.current.addItem(secondProduct, 24);
     });
 
-    expect(result.current.total).toBeCloseTo(779.7, 2);
+    expect(result.current.total).toBeCloseTo(11755.2, 2);
+  });
+
+  it("deve calcular corretamente o contrato anual de R$ 249,90 por mês", () => {
+    const product = createProduct({
+      monthlyPrice: 249.9,
+    });
+
+    const { result } = renderHook(() => useCart(), {
+      wrapper,
+    });
+
+    act(() => {
+      result.current.addItem(product, 12);
+    });
+
+    expect(result.current.total).toBeCloseTo(2998.8, 2);
   });
 
   it("deve salvar o payload da compra no localStorage", () => {

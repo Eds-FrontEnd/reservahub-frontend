@@ -429,7 +429,7 @@ export const Cart: React.FC = () => {
                   </div>
 
                   <div className="cart-drawer__summary">
-                    <span>Total mensal</span>
+                    <span>Total do contrato</span>
                     <strong>{formatPrice(totalRounded)}</strong>
                   </div>
 
@@ -441,7 +441,7 @@ export const Cart: React.FC = () => {
                       </div>
 
                       <div className="cart-drawer__summary">
-                        <span>Total mensal com desconto</span>
+                        <span>Total do contrato com desconto</span>
                         <strong>{formatPrice(totalWithDiscount)}</strong>
                       </div>
                     </>
