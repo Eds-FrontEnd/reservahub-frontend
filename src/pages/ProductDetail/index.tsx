@@ -16,6 +16,9 @@ import { useCart } from "../../contexts/CartContext";
 import NotFound from "../NotFound";
 import "./ProductDetailStyle.css";
 
+const PLANO_SEM_FIDELIDADE = 1;
+const PLANO_ANUAL = 12;
+
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated } = useAuth();
@@ -25,7 +28,8 @@ export const ProductDetailPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalMessage, setModalMessage] = useState<string>("");
-  const [selectedPlanMonths, setSelectedPlanMonths] = useState<number>(12);
+  const [selectedPlanMonths, setSelectedPlanMonths] =
+    useState<number>(PLANO_ANUAL);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [imageLoading, setImageLoading] = useState<boolean>(true);
   const [isZooming, setIsZooming] = useState<boolean>(false);
@@ -52,7 +56,9 @@ export const ProductDetailPage: React.FC = () => {
 
         setItem(data);
         setSelectedPlanMonths(
-          data.planType.toLowerCase().includes("mensal") ? 1 : 12,
+          data.planType.toLowerCase().includes("mensal")
+            ? PLANO_SEM_FIDELIDADE
+            : PLANO_ANUAL,
         );
         setImageLoading(true);
       } catch {
@@ -119,7 +125,11 @@ export const ProductDetailPage: React.FC = () => {
   const isStockLimitReached = cartQuantity >= item.stock;
 
   const handlePlanChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedPlanMonths(Number(event.target.value));
+    const planMonths = Number(event.target.value);
+
+    setSelectedPlanMonths(
+      planMonths === PLANO_ANUAL ? PLANO_ANUAL : PLANO_SEM_FIDELIDADE,
+    );
   };
 
   const handleImageMouseMove = (event: React.MouseEvent<HTMLElement>) => {
@@ -149,7 +159,10 @@ export const ProductDetailPage: React.FC = () => {
       return;
     }
 
-    addItem(item, selectedPlanMonths);
+    const planMonths =
+      selectedPlanMonths === PLANO_ANUAL ? PLANO_ANUAL : PLANO_SEM_FIDELIDADE;
+
+    addItem(item, planMonths);
   };
 
   const handleCloseAuthModal = () => {
@@ -300,8 +313,8 @@ export const ProductDetailPage: React.FC = () => {
                 disabled={isOutOfStock || isStockLimitReached}
                 className="product-detail__select"
               >
-                <option value={12}>12 Meses</option>
-                <option value={1}>Sem Fidelidade</option>
+                <option value={PLANO_ANUAL}>12 Meses</option>
+                <option value={PLANO_SEM_FIDELIDADE}>Sem Fidelidade</option>
               </select>
             </div>
 

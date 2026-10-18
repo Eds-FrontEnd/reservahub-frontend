@@ -153,11 +153,39 @@ describe("Cart", () => {
     it("deve exibir o plano sem fidelidade quando a duração for um mês", () => {
       configureCart({
         items: [{ ...mockItem, planMonths: 1 }],
+        total: 579.8,
       });
 
       render(<Cart />);
 
       expect(screen.getByText("Plano: Sem Fidelidade")).toBeInTheDocument();
+    });
+
+    it("deve exibir planos diferentes para o mesmo smartphone", () => {
+      configureCart({
+        items: [
+          { ...mockItem, quantity: 1, planMonths: 1 },
+          { ...mockItem, quantity: 1, planMonths: 12 },
+        ],
+        total: 3768.7,
+      });
+
+      render(<Cart />);
+
+      expect(screen.getByText("Plano: Sem Fidelidade")).toBeInTheDocument();
+      expect(screen.getByText("Plano: 12 Meses")).toBeInTheDocument();
+
+      expect(
+        screen.getByRole("button", {
+          name: "Aumentar quantidade de iPhone - Sem Fidelidade",
+        }),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByRole("button", {
+          name: "Aumentar quantidade de iPhone - 12 Meses",
+        }),
+      ).toBeInTheDocument();
     });
 
     it("deve exibir o total do contrato formatado em reais", () => {
@@ -353,6 +381,40 @@ describe("Cart", () => {
         );
       });
     });
+
+    it("deve enviar a duração correta de cada plano no checkout", async () => {
+      configureCart({
+        items: [
+          { ...mockItem, quantity: 2, planMonths: 1 },
+          { ...mockItem, quantity: 1, planMonths: 12 },
+        ],
+        total: 4058.6,
+      });
+
+      render(<Cart />);
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Concluir assinatura" }),
+      );
+
+      await waitFor(() => {
+        expect(mockedConcluirCompra).toHaveBeenCalledWith(
+          [
+            {
+              productId: "smartphone-1",
+              quantity: 2,
+              planMonths: 1,
+            },
+            {
+              productId: "smartphone-1",
+              quantity: 1,
+              planMonths: 12,
+            },
+          ],
+          undefined,
+        );
+      });
+    });
   });
 
   describe("Interações com o carrinho", () => {
@@ -392,38 +454,57 @@ describe("Cart", () => {
       expect(mockCloseCart).not.toHaveBeenCalled();
     });
 
-    it("deve aumentar a quantidade do smartphone", () => {
+    it("deve aumentar a quantidade somente do plano anual selecionado", () => {
       render(<Cart />);
 
       fireEvent.click(
         screen.getByRole("button", {
-          name: "Aumentar quantidade de iPhone",
+          name: "Aumentar quantidade de iPhone - 12 Meses",
         }),
       );
 
-      expect(mockUpdateQuantity).toHaveBeenCalledWith("smartphone-1", 1);
+      expect(mockUpdateQuantity).toHaveBeenCalledWith("smartphone-1", 12, 1);
     });
 
-    it("deve diminuir a quantidade do smartphone", () => {
+    it("deve aumentar a quantidade somente do plano sem fidelidade selecionado", () => {
+      configureCart({
+        items: [{ ...mockItem, planMonths: 1, quantity: 1 }],
+        total: 289.9,
+      });
+
       render(<Cart />);
 
       fireEvent.click(
         screen.getByRole("button", {
-          name: "Diminuir quantidade de iPhone",
+          name: "Aumentar quantidade de iPhone - Sem Fidelidade",
         }),
       );
 
-      expect(mockUpdateQuantity).toHaveBeenCalledWith("smartphone-1", -1);
+      expect(mockUpdateQuantity).toHaveBeenCalledWith("smartphone-1", 1, 1);
     });
 
-    it("deve remover o smartphone do carrinho", () => {
+    it("deve diminuir a quantidade somente do plano selecionado", () => {
       render(<Cart />);
 
       fireEvent.click(
-        screen.getByRole("button", { name: "Remover iPhone do carrinho" }),
+        screen.getByRole("button", {
+          name: "Diminuir quantidade de iPhone - 12 Meses",
+        }),
       );
 
-      expect(mockRemoveItem).toHaveBeenCalledWith("smartphone-1");
+      expect(mockUpdateQuantity).toHaveBeenCalledWith("smartphone-1", 12, -1);
+    });
+
+    it("deve remover somente o plano selecionado", () => {
+      render(<Cart />);
+
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "Remover iPhone - 12 Meses do carrinho",
+        }),
+      );
+
+      expect(mockRemoveItem).toHaveBeenCalledWith("smartphone-1", 12);
     });
 
     it("deve limpar o carrinho ao clicar no botão correspondente", () => {
@@ -487,7 +568,7 @@ describe("Cart", () => {
 
       expect(
         screen.getByRole("button", {
-          name: "Aumentar quantidade de iPhone",
+          name: "Aumentar quantidade de iPhone - 12 Meses",
         }),
       ).toBeEnabled();
 

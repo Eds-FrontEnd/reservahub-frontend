@@ -56,19 +56,19 @@ const CartConsumer = () => {
 
       <button
         type="button"
-        onClick={() => updateQuantity("iphone-15-pro-max", 1)}
+        onClick={() => updateQuantity("iphone-15-pro-max", 12, 1)}
       >
         Aumentar quantidade
       </button>
 
       <button
         type="button"
-        onClick={() => updateQuantity("iphone-15-pro-max", -1)}
+        onClick={() => updateQuantity("iphone-15-pro-max", 12, -1)}
       >
         Diminuir quantidade
       </button>
 
-      <button type="button" onClick={() => removeItem("iphone-15-pro-max")}>
+      <button type="button" onClick={() => removeItem("iphone-15-pro-max", 12)}>
         Remover
       </button>
 
@@ -178,11 +178,7 @@ describe("CartProvider", () => {
     );
 
     act(() => {
-      screen
-        .getByRole("button", {
-          name: "Adicionar",
-        })
-        .click();
+      screen.getByRole("button", { name: "Adicionar" }).click();
     });
 
     const items = JSON.parse(screen.getByTestId("items").textContent ?? "[]");
@@ -208,11 +204,7 @@ describe("CartProvider", () => {
     expect(screen.getByTestId("is-open")).toHaveTextContent("false");
 
     act(() => {
-      screen
-        .getByRole("button", {
-          name: "Adicionar",
-        })
-        .click();
+      screen.getByRole("button", { name: "Adicionar" }).click();
     });
 
     expect(screen.getByTestId("is-open")).toHaveTextContent("true");
@@ -226,17 +218,8 @@ describe("CartProvider", () => {
     );
 
     act(() => {
-      screen
-        .getByRole("button", {
-          name: "Adicionar",
-        })
-        .click();
-
-      screen
-        .getByRole("button", {
-          name: "Adicionar",
-        })
-        .click();
+      screen.getByRole("button", { name: "Adicionar" }).click();
+      screen.getByRole("button", { name: "Adicionar" }).click();
     });
 
     const items = JSON.parse(screen.getByTestId("items").textContent ?? "[]");
@@ -272,6 +255,71 @@ describe("CartProvider", () => {
     expect(result.current.total).toBeCloseTo(10436.4, 2);
   });
 
+  it("deve manter o plano sem fidelidade separado do plano anual", () => {
+    const product = createProduct();
+
+    const { result } = renderHook(() => useCart(), {
+      wrapper,
+    });
+
+    act(() => {
+      result.current.addItem(product, 1);
+      result.current.addItem(product, 12);
+    });
+
+    expect(result.current.items).toHaveLength(2);
+    expect(result.current.items[0].planMonths).toBe(1);
+    expect(result.current.items[1].planMonths).toBe(12);
+
+    expect(result.current.total).toBeCloseTo(3768.7, 2);
+  });
+
+  it("deve aumentar somente a quantidade do plano selecionado", () => {
+    const product = createProduct();
+
+    const { result } = renderHook(() => useCart(), {
+      wrapper,
+    });
+
+    act(() => {
+      result.current.addItem(product, 1);
+      result.current.addItem(product, 12);
+      result.current.updateQuantity(product.id, 1, 1);
+    });
+
+    expect(result.current.items).toHaveLength(2);
+    expect(result.current.items[0].quantity).toBe(2);
+    expect(result.current.items[0].planMonths).toBe(1);
+    expect(result.current.items[1].quantity).toBe(1);
+    expect(result.current.items[1].planMonths).toBe(12);
+
+    expect(result.current.totalItems).toBe(3);
+    expect(result.current.total).toBeCloseTo(4058.6, 2);
+  });
+
+  it("deve aumentar somente a quantidade do plano anual selecionado", () => {
+    const product = createProduct();
+
+    const { result } = renderHook(() => useCart(), {
+      wrapper,
+    });
+
+    act(() => {
+      result.current.addItem(product, 1);
+      result.current.addItem(product, 12);
+      result.current.updateQuantity(product.id, 12, 1);
+    });
+
+    expect(result.current.items).toHaveLength(2);
+    expect(result.current.items[0].quantity).toBe(1);
+    expect(result.current.items[0].planMonths).toBe(1);
+    expect(result.current.items[1].quantity).toBe(2);
+    expect(result.current.items[1].planMonths).toBe(12);
+
+    expect(result.current.totalItems).toBe(3);
+    expect(result.current.total).toBeCloseTo(7247.5, 2);
+  });
+
   it("deve atualizar a quantidade de um produto", () => {
     const product = createProduct();
 
@@ -281,7 +329,7 @@ describe("CartProvider", () => {
 
     act(() => {
       result.current.addItem(product, 12);
-      result.current.updateQuantity(product.id, 2);
+      result.current.updateQuantity(product.id, 12, 2);
     });
 
     expect(result.current.items[0].quantity).toBe(3);
@@ -298,7 +346,7 @@ describe("CartProvider", () => {
 
     act(() => {
       result.current.addItem(product, 12);
-      result.current.updateQuantity(product.id, -1);
+      result.current.updateQuantity(product.id, 12, -1);
     });
 
     expect(result.current.items).toEqual([]);
@@ -315,7 +363,7 @@ describe("CartProvider", () => {
 
     act(() => {
       result.current.addItem(product, 12);
-      result.current.updateQuantity(product.id, -2);
+      result.current.updateQuantity(product.id, 12, -2);
     });
 
     expect(result.current.items).toEqual([]);
@@ -340,7 +388,7 @@ describe("CartProvider", () => {
     act(() => {
       result.current.addItem(firstProduct, 12);
       result.current.addItem(secondProduct, 24);
-      result.current.updateQuantity(firstProduct.id, 2);
+      result.current.updateQuantity(firstProduct.id, 12, 2);
     });
 
     expect(result.current.items[0].quantity).toBe(3);
@@ -350,7 +398,29 @@ describe("CartProvider", () => {
     expect(result.current.total).toBeCloseTo(16434, 2);
   });
 
-  it("deve remover um produto pelo id", () => {
+  it("deve remover somente o plano selecionado do mesmo produto", () => {
+    const product = createProduct();
+
+    const { result } = renderHook(() => useCart(), {
+      wrapper,
+    });
+
+    act(() => {
+      result.current.addItem(product, 1);
+      result.current.addItem(product, 12);
+      result.current.removeItem(product.id, 1);
+    });
+
+    expect(result.current.items).toHaveLength(1);
+    expect(result.current.items[0].id).toBe(product.id);
+    expect(result.current.items[0].planMonths).toBe(12);
+    expect(result.current.items[0].quantity).toBe(1);
+
+    expect(result.current.totalItems).toBe(1);
+    expect(result.current.total).toBeCloseTo(3478.8, 2);
+  });
+
+  it("deve remover um produto pelo id e plano", () => {
     const firstProduct = createProduct();
 
     const secondProduct = createProduct({
@@ -367,7 +437,7 @@ describe("CartProvider", () => {
     act(() => {
       result.current.addItem(firstProduct, 12);
       result.current.addItem(secondProduct, 24);
-      result.current.removeItem(firstProduct.id);
+      result.current.removeItem(firstProduct.id, 12);
     });
 
     expect(result.current.items).toHaveLength(1);
@@ -454,6 +524,28 @@ describe("CartProvider", () => {
     );
   });
 
+  it("deve persistir a quantidade e o plano de cada item separadamente", () => {
+    const product = createProduct();
+
+    const { result } = renderHook(() => useCart(), {
+      wrapper,
+    });
+
+    act(() => {
+      result.current.addItem(product, 1);
+      result.current.addItem(product, 12);
+      result.current.updateQuantity(product.id, 1, 1);
+    });
+
+    const savedItems = JSON.parse(localStorage.getItem("cart-items") ?? "[]");
+
+    expect(savedItems).toHaveLength(2);
+    expect(savedItems[0].planMonths).toBe(1);
+    expect(savedItems[0].quantity).toBe(2);
+    expect(savedItems[1].planMonths).toBe(12);
+    expect(savedItems[1].quantity).toBe(1);
+  });
+
   it("deve remover os itens do localStorage quando o carrinho ficar vazio", () => {
     const product = createProduct();
 
@@ -468,7 +560,7 @@ describe("CartProvider", () => {
     expect(localStorage.getItem("cart-items")).not.toBeNull();
 
     act(() => {
-      result.current.removeItem(product.id);
+      result.current.removeItem(product.id, 12);
     });
 
     expect(localStorage.getItem("cart-items")).toBeNull();
@@ -534,6 +626,41 @@ describe("CartProvider", () => {
     });
 
     expect(result.current.total).toBeCloseTo(2998.8, 2);
+  });
+
+  it("deve calcular somente um mês para o plano sem fidelidade", () => {
+    const product = createProduct({
+      monthlyPrice: 289.9,
+    });
+
+    const { result } = renderHook(() => useCart(), {
+      wrapper,
+    });
+
+    act(() => {
+      result.current.addItem(product, 1);
+    });
+
+    expect(result.current.total).toBeCloseTo(289.9, 2);
+  });
+
+  it("deve recalcular o total corretamente ao aumentar a quantidade sem fidelidade", () => {
+    const product = createProduct({
+      monthlyPrice: 289.9,
+    });
+
+    const { result } = renderHook(() => useCart(), {
+      wrapper,
+    });
+
+    act(() => {
+      result.current.addItem(product, 1);
+      result.current.updateQuantity(product.id, 1, 1);
+    });
+
+    expect(result.current.items[0].quantity).toBe(2);
+    expect(result.current.items[0].planMonths).toBe(1);
+    expect(result.current.total).toBeCloseTo(579.8, 2);
   });
 
   it("deve salvar o payload da compra no localStorage", () => {

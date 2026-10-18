@@ -282,12 +282,14 @@ export const Cart: React.FC = () => {
                           <div className="cart-item__actions">
                             <div
                               className="cart-item__quantity"
-                              aria-label={`Quantidade de ${item.product}`}
+                              aria-label={`Quantidade de ${item.product} - ${getPlanName(item.planMonths)}`}
                             >
                               <button
                                 type="button"
-                                onClick={() => updateQuantity(item.id, -1)}
-                                aria-label={`Diminuir quantidade de ${item.product}`}
+                                onClick={() =>
+                                  updateQuantity(item.id, item.planMonths, -1)
+                                }
+                                aria-label={`Diminuir quantidade de ${item.product} - ${getPlanName(item.planMonths)}`}
                               >
                                 -
                               </button>
@@ -307,10 +309,16 @@ export const Cart: React.FC = () => {
                                     aria-label={
                                       isStockLimitReached
                                         ? `Estoque máximo de ${item.product} atingido`
-                                        : `Aumentar quantidade de ${item.product}`
+                                        : `Aumentar quantidade de ${item.product} - ${getPlanName(item.planMonths)}`
                                     }
                                     disabled={isStockLimitReached}
-                                    onClick={() => updateQuantity(item.id, 1)}
+                                    onClick={() =>
+                                      updateQuantity(
+                                        item.id,
+                                        item.planMonths,
+                                        1,
+                                      )
+                                    }
                                   >
                                     +
                                   </button>
@@ -321,8 +329,10 @@ export const Cart: React.FC = () => {
                             <button
                               type="button"
                               className="cart-item__remove"
-                              onClick={() => removeItem(item.id)}
-                              aria-label={`Remover ${item.product} do carrinho`}
+                              onClick={() =>
+                                removeItem(item.id, item.planMonths)
+                              }
+                              aria-label={`Remover ${item.product} - ${getPlanName(item.planMonths)} do carrinho`}
                             >
                               Remover
                             </button>

@@ -24,8 +24,8 @@ interface CartContextData {
   totalItems: number;
   total: number;
   addItem: (product: SmartphoneSubscriptionItem, planMonths: number) => void;
-  updateQuantity: (id: string, value: number) => void;
-  removeItem: (id: string) => void;
+  updateQuantity: (id: string, planMonths: number, value: number) => void;
+  removeItem: (id: string, planMonths: number) => void;
   clearCart: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -98,23 +98,30 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     [],
   );
 
-  const updateQuantity = useCallback((id: string, value: number) => {
-    setItems((currentItems) =>
-      currentItems
-        .map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                quantity: item.quantity + value,
-              }
-            : item,
-        )
-        .filter((item) => item.quantity > 0),
-    );
-  }, []);
+  const updateQuantity = useCallback(
+    (id: string, planMonths: number, value: number) => {
+      setItems((currentItems) =>
+        currentItems
+          .map((item) =>
+            item.id === id && item.planMonths === planMonths
+              ? {
+                  ...item,
+                  quantity: item.quantity + value,
+                }
+              : item,
+          )
+          .filter((item) => item.quantity > 0),
+      );
+    },
+    [],
+  );
 
-  const removeItem = useCallback((id: string) => {
-    setItems((currentItems) => currentItems.filter((item) => item.id !== id));
+  const removeItem = useCallback((id: string, planMonths: number) => {
+    setItems((currentItems) =>
+      currentItems.filter(
+        (item) => item.id !== id || item.planMonths !== planMonths,
+      ),
+    );
   }, []);
 
   const clearCart = useCallback(() => {
@@ -149,8 +156,8 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     () =>
       Math.round(
         (items.reduce(
-          (total, item) =>
-            total + item.monthlyPrice * item.quantity * item.planMonths,
+          (sum, item) =>
+            sum + item.monthlyPrice * item.quantity * item.planMonths,
           0,
         ) +
           Number.EPSILON) *
