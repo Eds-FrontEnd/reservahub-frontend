@@ -1,6 +1,3 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
-
 import "./MenuStyle.css";
 
 import IconMenuMobile from "../../assets/images/icons/icon-menu-mobile.svg";
@@ -8,10 +5,16 @@ import IconMenuMobileDark from "../../assets/images/icons/icon-menu-mobile-dark.
 import IconCloseButton from "../../assets/images/icons/icon-close-button.svg";
 import IconCloseButtonDark from "../../assets/images/icons/icon-close-button-dark.svg";
 import { useDarkTheme } from "../../contexts/DarkThemeContext";
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
 
 interface MenuItem {
   href: string;
   label: string;
+}
+
+interface MenuProps {
+  isAdmin?: boolean;
 }
 
 const menuItems: MenuItem[] = [
@@ -21,7 +24,18 @@ const menuItems: MenuItem[] = [
   { href: "/contato", label: "Contato" },
 ];
 
-const Menu = () => {
+const adminMenuItems = [
+  {
+    href: "/admin/cupons",
+    label: "Cupons promocionais",
+  },
+  {
+    href: "/admin/solicitacoes-reset-senha",
+    label: "Solicitações de reset de senha",
+  },
+];
+
+const Menu = ({ isAdmin = false }: MenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isDarkMode } = useDarkTheme();
 
@@ -37,7 +51,10 @@ const Menu = () => {
   const closeIcon = isDarkMode ? IconCloseButtonDark : IconCloseButton;
 
   return (
-    <nav className="menu" aria-label="Navegação principal">
+    <nav
+      className="menu"
+      aria-label={isAdmin ? "Navegação administrativa" : "Navegação principal"}
+    >
       <button
         className={`menu__mobile-button ${
           isMenuOpen ? "menu__mobile-button--open" : ""
@@ -65,18 +82,26 @@ const Menu = () => {
         id="main-menu"
         className={`menu__list ${isMenuOpen ? "menu__list--open" : ""}`}
       >
-        {menuItems.map(({ href, label }) => (
-          <li className="menu__item" key={href}>
-            <NavLink
-              className="menu__link"
-              to={href}
-              end={href === "/"}
-              onClick={closeMenu}
-            >
-              {label}
-            </NavLink>
-          </li>
-        ))}
+        {isAdmin
+          ? adminMenuItems.map(({ href, label }) => (
+              <li className="menu__item" key={href}>
+                <NavLink className="menu__link" to={href} onClick={closeMenu}>
+                  {label}
+                </NavLink>
+              </li>
+            ))
+          : menuItems.map(({ href, label }) => (
+              <li className="menu__item" key={href}>
+                <NavLink
+                  className="menu__link"
+                  to={href}
+                  end={href === "/"}
+                  onClick={closeMenu}
+                >
+                  {label}
+                </NavLink>
+              </li>
+            ))}
       </ul>
     </nav>
   );

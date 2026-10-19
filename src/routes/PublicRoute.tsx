@@ -35,7 +35,7 @@ const PublicRoute = () => {
 
   const perfil = getAuthenticatedProfile();
 
-  return <Navigate to={perfil === "ADMIN" ? "/admin/painel" : "/"} replace />;
+  return <Navigate to={perfil === "ADMIN" ? "/admin/cupons" : "/"} replace />;
 };
 
 export default PublicRoute;

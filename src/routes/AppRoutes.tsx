@@ -42,7 +42,7 @@ const HomeRoute = () => {
           typeof user.perfil === "string" &&
           user.perfil.trim().toUpperCase() === "ADMIN"
         ) {
-          return <Navigate to="/admin/painel" replace />;
+          return <Navigate to="/admin/solicitacoes-reset-senha" replace />;
         }
       }
     } catch {
@@ -73,7 +73,10 @@ const AppRoutes = () => {
         </Route>
 
         <Route element={<AdminRoute />}>
-          <Route path="/admin/painel" element={<AdminResetPasswordPage />} />
+          <Route
+            path="/admin/solicitacoes-reset-senha"
+            element={<AdminResetPasswordPage />}
+          />
           <Route path="/admin/cupons" element={<AdminCouponsPage />} />
         </Route>
 

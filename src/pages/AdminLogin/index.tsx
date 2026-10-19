@@ -253,13 +253,13 @@ const AdminLoginPage = () => {
           open={modalOpen}
           title="Acesso autorizado!"
           message="Autenticação administrativa realizada. Você será redirecionado para o painel."
-          redirectUrl="/admin/painel"
+          redirectUrl="/admin/solicitacoes-reset-senha"
           redirectDelay={3000}
           icon={<CheckCircleIcon />}
           iconColor="var(--color-secondary)"
           titleColor="var(--color-secondary)"
           onNavigate={navigate}
-          closeUrl="/admin/painel"
+          closeUrl="/admin/solicitacoes-reset-senha"
         />
 
         <Modal

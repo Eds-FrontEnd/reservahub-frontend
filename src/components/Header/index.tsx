@@ -74,11 +74,9 @@ const Header: React.FC = () => {
       <header className="header">
         <Logo />
 
-        {!isAdmin && (
-          <nav className="header__navigation" aria-label="Navegação principal">
-            <Menu />
-          </nav>
-        )}
+        <nav className="header__navigation" aria-label="Navegação principal">
+          <Menu isAdmin={isAdmin} />
+        </nav>
 
         <nav className="header__actions" aria-label="Ações do usuário">
           {!isAdmin && (
