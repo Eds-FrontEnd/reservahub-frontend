@@ -29,15 +29,10 @@ const getPlanName = (planMonths: number): string => {
   }
 };
 
-const getDiscountPercent = (coupon: string): number | null => {
-  const match = coupon
-    .trim()
-    .toUpperCase()
-    .match(/^DESC(100|[1-9]\d?)%$/);
+const isValidCouponFormat = (coupon: string): boolean => {
+  const normalizedCoupon = coupon.trim().toUpperCase();
 
-  if (!match) return null;
-
-  return Number(match[1]);
+  return /^(?:DESC(?:100|[1-9]\d?)%|[A-Z0-9_-]{3,30})$/.test(normalizedCoupon);
 };
 
 const roundPrice = (value: number): number =>
@@ -61,14 +56,13 @@ export const Cart: React.FC = () => {
   const [checkoutError, setCheckoutError] = useState<string>("");
   const [couponInput, setCouponInput] = useState<string>("");
   const [appliedCoupon, setAppliedCoupon] = useState<string>("");
+  const [appliedCouponPercent, setAppliedCouponPercent] = useState<number>(0);
   const [couponError, setCouponError] = useState<string>("");
   const [isSummaryExpanded, setIsSummaryExpanded] = useState<boolean>(true);
 
   const totalRounded = roundPrice(total);
 
-  const discountPercent = appliedCoupon
-    ? (getDiscountPercent(appliedCoupon) ?? 0)
-    : 0;
+  const discountPercent = appliedCoupon ? appliedCouponPercent : 0;
 
   const discountAmount = roundPrice((totalRounded * discountPercent) / 100);
 
@@ -99,6 +93,7 @@ export const Cart: React.FC = () => {
 
     if (!normalizedCoupon) {
       setAppliedCoupon("");
+      setAppliedCouponPercent(0);
       setCouponError("");
       setCheckoutError("");
       return;
@@ -110,16 +105,16 @@ export const Cart: React.FC = () => {
       return;
     }
 
-    const percentage = getDiscountPercent(normalizedCoupon);
-
-    if (percentage === null) {
+    if (!isValidCouponFormat(normalizedCoupon)) {
       setAppliedCoupon("");
+      setAppliedCouponPercent(0);
       setCouponError("Cupom inválido. Confira o código e tente novamente.");
       setCheckoutError("");
       return;
     }
 
     setAppliedCoupon("");
+    setAppliedCouponPercent(0);
     setCouponError("");
     setCheckoutError("");
     setIsValidatingCoupon(true);
@@ -135,11 +130,22 @@ export const Cart: React.FC = () => {
         return;
       }
 
+      if (
+        !Number.isInteger(response.percentual) ||
+        response.percentual < 1 ||
+        response.percentual > 100
+      ) {
+        setCouponError("O percentual cadastrado para este cupom é inválido.");
+        return;
+      }
+
       setAppliedCoupon(normalizedCoupon);
+      setAppliedCouponPercent(response.percentual);
       setCouponInput(normalizedCoupon);
       setCouponError("");
     } catch (error: unknown) {
       setAppliedCoupon("");
+      setAppliedCouponPercent(0);
       setCouponError(
         error instanceof Error
           ? error.message
@@ -153,6 +159,7 @@ export const Cart: React.FC = () => {
   const handleRemoveCoupon = () => {
     setCouponInput("");
     setAppliedCoupon("");
+    setAppliedCouponPercent(0);
     setCouponError("");
     setCheckoutError("");
   };
@@ -180,6 +187,7 @@ export const Cart: React.FC = () => {
       clearCart();
       setCouponInput("");
       setAppliedCoupon("");
+      setAppliedCouponPercent(0);
       setCouponError("");
       setIsSummaryExpanded(true);
       setIsPurchaseModalOpen(true);
@@ -386,10 +394,11 @@ export const Cart: React.FC = () => {
                         onChange={(event) => {
                           setCouponInput(event.target.value.toUpperCase());
                           setAppliedCoupon("");
+                          setAppliedCouponPercent(0);
                           setCouponError("");
                           setCheckoutError("");
                         }}
-                        placeholder="Ex.: DESC10%"
+                        placeholder="Ex.: PROMO15"
                         autoComplete="off"
                         aria-invalid={Boolean(couponError)}
                         aria-describedby={
@@ -432,8 +441,7 @@ export const Cart: React.FC = () => {
 
                     {appliedCoupon && (
                       <p className="cart-drawer__success" role="status">
-                        Cupom de {getDiscountPercent(appliedCoupon)}% aplicado
-                        com sucesso!
+                        Cupom de {discountPercent}% aplicado com sucesso!
                       </p>
                     )}
                   </div>

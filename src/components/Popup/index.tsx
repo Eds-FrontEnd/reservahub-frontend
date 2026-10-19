@@ -1,6 +1,5 @@
 import { Loyalty } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
-import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 
 import { fetchCepData } from "../../services/ViaCepService";
@@ -25,6 +24,7 @@ interface CouponIssueResponse {
   utilizado: boolean;
   cupom: string | null;
   percentual: number;
+  ativo: boolean;
   mensagem: string;
 }
 
@@ -51,6 +51,9 @@ const formatCep = (value: string): string => {
   return digits;
 };
 
+const isValidCouponFormat = (coupon: string): boolean =>
+  /^[A-Z0-9_-]{3,30}$/.test(coupon.trim().toUpperCase());
+
 const isAdminUser = (): boolean => {
   try {
     const authenticatedUser = localStorage.getItem(AUTHENTICATED_USER_KEY);
@@ -60,6 +63,7 @@ const isAdminUser = (): boolean => {
     }
 
     const user = JSON.parse(authenticatedUser) as AuthenticatedUser;
+
     const profile = user.perfil ?? user.role;
 
     return profile?.toUpperCase() === "ADMIN";
@@ -72,6 +76,7 @@ function Popup() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const requestControllerRef = useRef<AbortController | null>(null);
   const requestInProgressRef = useRef(false);
+  const mountedRef = useRef(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -79,15 +84,26 @@ function Popup() {
   const [copyMessage, setCopyMessage] = useState("");
 
   useEffect(() => {
+    mountedRef.current = true;
+
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-    const loadDiscount = async () => {
-      if (isAdminUser()) {
+    const loadDiscount = async (): Promise<void> => {
+      if (!mountedRef.current || isAdminUser()) {
         setIsOpen(false);
         return;
       }
 
       if (requestInProgressRef.current) {
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.warn(
+          "[Popup] Consulta cancelada: token de autenticação não encontrado.",
+        );
         return;
       }
 
@@ -99,41 +115,62 @@ function Popup() {
       setIsLoading(true);
 
       try {
-        const token = localStorage.getItem("token");
+        console.info("[Popup] Consultando CEP do usuário.");
 
-        if (!token) {
-          return;
-        }
-
-        const response = await fetch(`${API_URL}/api/auth/cep`, {
+        const cepResponse = await fetch(`${API_URL}/api/auth/cep`, {
           method: "GET",
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,
           },
+          cache: "no-store",
           signal: controller.signal,
         });
 
-        if (!response.ok) {
+        if (!cepResponse.ok) {
+          console.error(
+            "[Popup] Falha ao consultar CEP:",
+            cepResponse.status,
+            await cepResponse.text(),
+          );
           return;
         }
 
-        const data = (await response.json()) as CepResponse;
-        const normalizedCep = data.cep?.replace(/\D/g, "");
+        const cepDataResponse = (await cepResponse.json()) as CepResponse;
+
+        const normalizedCep = cepDataResponse.cep?.replace(/\D/g, "");
 
         if (!normalizedCep || !/^\d{8}$/.test(normalizedCep)) {
+          console.error(
+            "[Popup] CEP ausente ou inválido na resposta da API:",
+            cepDataResponse,
+          );
           return;
         }
 
-        const cepData = await fetchCepData(normalizedCep, controller.signal);
+        console.info("[Popup] CEP encontrado:", formatCep(normalizedCep));
 
-        if (controller.signal.aborted) {
+        const addressData = await fetchCepData(
+          normalizedCep,
+          controller.signal,
+        );
+
+        if (controller.signal.aborted || !mountedRef.current) {
           return;
         }
 
-        if (cepData.erro || !cepData.localidade || !cepData.uf) {
+        if (addressData.erro || !addressData.localidade || !addressData.uf) {
+          console.error(
+            "[Popup] Não foi possível obter cidade e UF pelo CEP.",
+            addressData,
+          );
           return;
         }
+
+        console.info(
+          "[Popup] Consultando cupom promocional para a UF:",
+          addressData.uf,
+        );
 
         const couponResponse = await fetch(
           `${API_URL}/api/cupons/promocional`,
@@ -145,63 +182,99 @@ function Popup() {
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-              uf: cepData.uf,
+              uf: addressData.uf,
             }),
+            cache: "no-store",
             signal: controller.signal,
           },
         );
 
-        if (controller.signal.aborted || !couponResponse.ok) {
+        if (!couponResponse.ok) {
+          console.error(
+            "[Popup] Falha ao consultar cupom promocional:",
+            couponResponse.status,
+            await couponResponse.text(),
+          );
           return;
         }
 
         const couponIssue =
           (await couponResponse.json()) as CouponIssueResponse;
 
-        if (controller.signal.aborted || couponIssue.utilizado) {
+        console.info("[Popup] Resposta da API de cupons:", couponIssue);
+
+        if (controller.signal.aborted || !mountedRef.current) {
+          return;
+        }
+
+        if (couponIssue.utilizado || !couponIssue.ativo) {
+          console.info(
+            "[Popup] Popup não exibido: cupom utilizado ou inativo.",
+          );
           return;
         }
 
         if (
           !couponIssue.cupom ||
-          !/^DESC(100|[1-9]\d?)%$/.test(couponIssue.cupom)
+          !isValidCouponFormat(couponIssue.cupom) ||
+          !Number.isInteger(couponIssue.percentual) ||
+          couponIssue.percentual < 1 ||
+          couponIssue.percentual > 100
+        ) {
+          console.error("[Popup] Dados do cupom inválidos:", couponIssue);
+          return;
+        }
+
+        const discountResult: DiscountResult = {
+          cep: formatCep(addressData.cep || normalizedCep),
+          city: addressData.localidade,
+          state: addressData.uf,
+          region: addressData.regiao || "Brasil",
+          discount: couponIssue.percentual,
+          coupon: couponIssue.cupom.trim().toUpperCase(),
+        };
+
+        setResult(discountResult);
+        setCopyMessage("");
+        setIsOpen(true);
+
+        console.info("[Popup] Cupom válido. Solicitando abertura do popup.");
+      } catch (error: unknown) {
+        if (
+          controller.signal.aborted ||
+          (error instanceof Error && error.name === "AbortError")
         ) {
           return;
         }
 
-        setResult({
-          cep: formatCep(cepData.cep || normalizedCep),
-          city: cepData.localidade,
-          state: cepData.uf,
-          region: cepData.regiao || "Brasil",
-          discount: couponIssue.percentual,
-          coupon: couponIssue.cupom,
-        });
-
-        setCopyMessage("");
-        setIsOpen(true);
-      } catch (error: unknown) {
-        if (controller.signal.aborted || axios.isCancel(error)) {
-          return;
-        }
+        console.error("[Popup] Erro ao carregar o desconto:", error);
       } finally {
         if (requestControllerRef.current === controller) {
           requestControllerRef.current = null;
           requestInProgressRef.current = false;
-          setIsLoading(false);
+
+          if (mountedRef.current) {
+            setIsLoading(false);
+          }
         }
       }
     };
 
-    const handleLogin = () => {
+    const handleLogin = (): void => {
       if (localStorage.getItem(TRIGGER_KEY) !== "true") {
         return;
       }
 
-      localStorage.removeItem(TRIGGER_KEY);
-
       if (isAdminUser()) {
+        localStorage.removeItem(TRIGGER_KEY);
         setIsOpen(false);
+        return;
+      }
+
+      if (!localStorage.getItem("token")) {
+        console.warn(
+          "[Popup] Login detectado, mas o token ainda não está disponível.",
+        );
         return;
       }
 
@@ -209,16 +282,21 @@ function Popup() {
         clearTimeout(timeoutId);
       }
 
+      localStorage.removeItem(TRIGGER_KEY);
+
       timeoutId = setTimeout(() => {
         timeoutId = null;
         void loadDiscount();
-      }, 3000);
+      }, 1000);
     };
 
     window.addEventListener(LOGIN_EVENT, handleLogin);
+
     handleLogin();
 
     return () => {
+      mountedRef.current = false;
+
       window.removeEventListener(LOGIN_EVENT, handleLogin);
 
       if (timeoutId !== null) {
@@ -240,18 +318,20 @@ function Popup() {
 
     if (isOpen && !dialog.open) {
       dialog.showModal();
-    }
-
-    if (!isOpen && dialog.open) {
+    } else if (!isOpen && dialog.open) {
       dialog.close();
     }
   }, [isOpen]);
 
-  const handleClose = () => setIsOpen(false);
+  const handleClose = (): void => {
+    setIsOpen(false);
+  };
 
-  const handleDialogClose = () => setIsOpen(false);
+  const handleDialogClose = (): void => {
+    setIsOpen(false);
+  };
 
-  const handleCopyCoupon = async () => {
+  const handleCopyCoupon = async (): Promise<void> => {
     if (!result) {
       return;
     }

@@ -21,6 +21,7 @@ export interface CompraPayload {
 export interface ValidarCupomResponse {
   valido: boolean;
   mensagem: string;
+  percentual: number;
 }
 
 const getToken = (): string => {

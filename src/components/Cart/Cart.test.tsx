@@ -116,16 +116,28 @@ describe("Cart", () => {
     configureCart();
 
     mockedValidarCupom.mockImplementation(async (cupom: string) => {
-      if (cupom.trim().toUpperCase() === "DESC10%") {
+      const cupomNormalizado = cupom.trim().toUpperCase();
+
+      if (cupomNormalizado === "DESC10%") {
         return {
           valido: true,
           mensagem: "Cupom aplicado com sucesso.",
+          percentual: 10,
+        };
+      }
+
+      if (cupomNormalizado === "PROMO15") {
+        return {
+          valido: true,
+          mensagem: "Cupom aplicado com sucesso.",
+          percentual: 15,
         };
       }
 
       return {
         valido: false,
         mensagem: "Cupom inválido. Confira o código e tente novamente.",
+        percentual: 0,
       };
     });
 
@@ -306,13 +318,59 @@ describe("Cart", () => {
       expect(mockedValidarCupom).toHaveBeenCalledWith("DESC10%");
     });
 
+    it("deve aplicar PROMO15 usando o percentual retornado pelo backend", async () => {
+      render(<Cart />);
+
+      fireEvent.change(
+        screen.getByRole("textbox", { name: "Cupom de desconto" }),
+        {
+          target: { value: "PROMO15" },
+        },
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+
+      expect(
+        await screen.findByText(/Cupom de\s*15\s*%\s*aplicado com sucesso!/),
+      ).toBeInTheDocument();
+
+      expect(screen.getByText("Desconto (15%)")).toBeInTheDocument();
+      expect(screen.getByText("- R$ 1.043,64")).toBeInTheDocument();
+      expect(
+        screen.getByText("Total do contrato com desconto"),
+      ).toBeInTheDocument();
+      expect(screen.getByText("R$ 5.913,96")).toBeInTheDocument();
+
+      expect(mockedValidarCupom).toHaveBeenCalledWith("PROMO15");
+    });
+
+    it("deve aceitar PROMO15 informado em letras minúsculas", async () => {
+      render(<Cart />);
+
+      fireEvent.change(
+        screen.getByRole("textbox", { name: "Cupom de desconto" }),
+        {
+          target: { value: "promo15" },
+        },
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+
+      expect(
+        await screen.findByText(/Cupom de\s*15\s*%\s*aplicado com sucesso!/),
+      ).toBeInTheDocument();
+
+      expect(screen.getByText("Desconto (15%)")).toBeInTheDocument();
+      expect(mockedValidarCupom).toHaveBeenCalledWith("PROMO15");
+    });
+
     it("deve exibir uma mensagem para um cupom inválido", async () => {
       render(<Cart />);
 
       fireEvent.change(
         screen.getByRole("textbox", { name: "Cupom de desconto" }),
         {
-          target: { value: "PROMOCAO" },
+          target: { value: "CUPOMINVALIDO" },
         },
       );
 
@@ -378,6 +436,38 @@ describe("Cart", () => {
             },
           ],
           "DESC10%",
+        );
+      });
+    });
+
+    it("deve enviar PROMO15 ao serviço ao concluir a assinatura", async () => {
+      render(<Cart />);
+
+      fireEvent.change(
+        screen.getByRole("textbox", { name: "Cupom de desconto" }),
+        {
+          target: { value: "PROMO15" },
+        },
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+
+      await screen.findByText(/Cupom de\s*15\s*%\s*aplicado com sucesso!/);
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Concluir assinatura" }),
+      );
+
+      await waitFor(() => {
+        expect(mockedConcluirCompra).toHaveBeenCalledWith(
+          [
+            {
+              productId: "smartphone-1",
+              quantity: 2,
+              planMonths: 12,
+            },
+          ],
+          "PROMO15",
         );
       });
     });

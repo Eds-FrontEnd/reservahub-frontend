@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import Loader from "../components/Loader";
 import AdminLoginPage from "../pages/AdminLogin";
+import AdminRoute from "./AdminRoute";
 import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
 import { useAuth } from "../contexts/AutContext";
@@ -21,6 +22,7 @@ const AguardandoRespostaResetSenha = lazy(
 const AdminResetPasswordPage = lazy(
   () => import("../pages/AdminResetPassword"),
 );
+const AdminCouponsPage = lazy(() => import("../pages/AdminCoupons"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 const HomeRoute = () => {
@@ -68,7 +70,11 @@ const AppRoutes = () => {
 
         <Route element={<PrivateRoute />}>
           <Route path="/smartphones/:id" element={<ProductDetailPage />} />
+        </Route>
+
+        <Route element={<AdminRoute />}>
           <Route path="/admin/painel" element={<AdminResetPasswordPage />} />
+          <Route path="/admin/cupons" element={<AdminCouponsPage />} />
         </Route>
 
         <Route element={<PublicRoute />}>
