@@ -174,10 +174,14 @@ const AdminCouponsPage = () => {
 
   useEffect(() => {
     mounted.current = true;
-    void loadCoupons();
+
+    const initialLoadTimer = window.setTimeout(() => {
+      void loadCoupons();
+    }, 0);
 
     return () => {
       mounted.current = false;
+      window.clearTimeout(initialLoadTimer);
       listController.current?.abort();
       listController.current = null;
     };
