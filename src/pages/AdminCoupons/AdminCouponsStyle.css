@@ -163,6 +163,7 @@
 }
 
 .admin-coupons__field label {
+  min-width: 90px;
   color: var(--color-primary);
   font-size: 0.85rem;
   font-weight: 700;
@@ -317,6 +318,7 @@
 }
 
 .admin-coupons__user-email {
+  min-width: 10rem;
   margin-top: 0.2rem;
   font-size: 0.75rem;
   overflow-wrap: anywhere;
