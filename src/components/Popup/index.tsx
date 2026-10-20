@@ -115,8 +115,6 @@ function Popup() {
       setIsLoading(true);
 
       try {
-        console.info("[Popup] Consultando CEP do usuário.");
-
         const cepResponse = await fetch(`${API_URL}/api/auth/cep`, {
           method: "GET",
           headers: {
@@ -148,8 +146,6 @@ function Popup() {
           return;
         }
 
-        console.info("[Popup] CEP encontrado:", formatCep(normalizedCep));
-
         const addressData = await fetchCepData(
           normalizedCep,
           controller.signal,
@@ -166,11 +162,6 @@ function Popup() {
           );
           return;
         }
-
-        console.info(
-          "[Popup] Consultando cupom promocional para a UF:",
-          addressData.uf,
-        );
 
         const couponResponse = await fetch(
           `${API_URL}/api/cupons/promocional`,
@@ -201,16 +192,11 @@ function Popup() {
         const couponIssue =
           (await couponResponse.json()) as CouponIssueResponse;
 
-        console.info("[Popup] Resposta da API de cupons:", couponIssue);
-
         if (controller.signal.aborted || !mountedRef.current) {
           return;
         }
 
         if (couponIssue.utilizado || !couponIssue.ativo) {
-          console.info(
-            "[Popup] Popup não exibido: cupom utilizado ou inativo.",
-          );
           return;
         }
 
@@ -237,8 +223,6 @@ function Popup() {
         setResult(discountResult);
         setCopyMessage("");
         setIsOpen(true);
-
-        console.info("[Popup] Cupom válido. Solicitando abertura do popup.");
       } catch (error: unknown) {
         if (
           controller.signal.aborted ||
