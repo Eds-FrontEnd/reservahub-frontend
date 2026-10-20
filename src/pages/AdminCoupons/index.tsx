@@ -11,6 +11,10 @@ import { Button } from "../../components/Button";
 import Header from "../../components/Header";
 import Modal from "../../components/Modal";
 import {
+  adminCouponSchema,
+  editCouponSchema,
+} from "../../schemas/AdminCouponsSchema";
+import {
   alterarStatusCupomPromocional,
   criarCupomPromocional,
   editarCupomPromocional,
@@ -88,6 +92,7 @@ const AdminCouponsPage = () => {
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("TODOS");
   const [modal, setModal] = useState<ModalState>({
@@ -317,18 +322,26 @@ const AdminCouponsPage = () => {
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
 
-    if (name === "cupom") {
-      setForm((current) => ({
-        ...current,
-        cupom: value.toUpperCase().replace(/\s/g, "").slice(0, 20),
-      }));
+    const nextForm: FormValues = {
+      ...form,
+      [name]:
+        name === "cupom"
+          ? value.toUpperCase().replace(/\s/g, "").slice(0, 20)
+          : value,
+    };
 
-      return;
-    }
+    setForm(nextForm);
 
-    setForm((current) => ({
+    const result = adminCouponSchema.safeParse(nextForm);
+
+    const fieldError = result.success
+      ? ""
+      : (result.error.issues.find((issue) => issue.path[0] === name)?.message ??
+        "");
+
+    setFieldErrors((current) => ({
       ...current,
-      [name]: value,
+      [name]: fieldError,
     }));
   };
 
@@ -339,32 +352,29 @@ const AdminCouponsPage = () => {
       return;
     }
 
-    const emailUsuario = form.emailUsuario.trim();
-    const cupom = form.cupom.trim().toUpperCase();
-    const percentual = Number(form.percentual);
+    const result = adminCouponSchema.safeParse({
+      ...form,
+      emailUsuario: form.emailUsuario.trim(),
+      cupom: form.cupom.trim().toUpperCase(),
+    });
 
-    if (!emailUsuario) {
-      setError("Informe o e-mail do usuário.");
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailUsuario)) {
-      setError("Informe um endereço de e-mail válido.");
-      return;
-    }
-
-    if (!/^[A-Z0-9_-]{3,20}$/.test(cupom)) {
-      setError(
-        "O código deve conter de 3 a 20 caracteres: letras, números, hífen ou sublinhado.",
+    if (!result.success) {
+      setFieldErrors(
+        Object.fromEntries(
+          result.error.issues.map((issue) => [
+            String(issue.path[0]),
+            issue.message,
+          ]),
+        ),
       );
+      setError("");
       return;
     }
 
-    if (!Number.isInteger(percentual) || percentual < 1 || percentual > 100) {
-      setError("O percentual deve ser um número inteiro entre 1 e 100.");
-      return;
-    }
+    const { emailUsuario, cupom } = result.data;
+    const percentual = Number(result.data.percentual);
 
+    setFieldErrors({});
     setSubmitting(true);
     setError("");
     setFeedback("");
@@ -387,6 +397,7 @@ const AdminCouponsPage = () => {
       ]);
 
       setForm(INITIAL_FORM);
+      setFieldErrors({});
 
       const successMessage = `O cupom ${createdCoupon.cupom} foi criado com sucesso.`;
 
@@ -421,6 +432,7 @@ const AdminCouponsPage = () => {
       cupom: coupon.cupom,
       percentual: String(coupon.percentual),
     });
+    setFieldErrors({});
     setError("");
     setFeedback("");
   };
@@ -428,24 +440,33 @@ const AdminCouponsPage = () => {
   const handleCancelEditing = () => {
     setEditingId(null);
     setEditForm(INITIAL_EDIT_FORM);
+    setFieldErrors({});
     setError("");
   };
 
   const handleEditInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
 
-    if (name === "cupom") {
-      setEditForm((current) => ({
-        ...current,
-        cupom: value.toUpperCase().replace(/\s/g, "").slice(0, 20),
-      }));
+    const nextEditForm: EditFormValues = {
+      ...editForm,
+      [name]:
+        name === "cupom"
+          ? value.toUpperCase().replace(/\s/g, "").slice(0, 20)
+          : value,
+    };
 
-      return;
-    }
+    setEditForm(nextEditForm);
 
-    setEditForm((current) => ({
+    const result = editCouponSchema.safeParse(nextEditForm);
+
+    const fieldError = result.success
+      ? ""
+      : (result.error.issues.find((issue) => issue.path[0] === name)?.message ??
+        "");
+
+    setFieldErrors((current) => ({
       ...current,
-      [name]: value,
+      [`edit-${name}`]: fieldError,
     }));
   };
 
@@ -454,21 +475,28 @@ const AdminCouponsPage = () => {
       return;
     }
 
-    const cupom = editForm.cupom.trim().toUpperCase();
-    const percentual = Number(editForm.percentual);
+    const result = editCouponSchema.safeParse({
+      cupom: editForm.cupom.trim().toUpperCase(),
+      percentual: editForm.percentual,
+    });
 
-    if (!/^[A-Z0-9_-]{3,20}$/.test(cupom)) {
-      setError(
-        "O código deve conter de 3 a 20 caracteres: letras, números, hífen ou sublinhado.",
+    if (!result.success) {
+      setFieldErrors(
+        Object.fromEntries(
+          result.error.issues.map((issue) => [
+            `edit-${String(issue.path[0])}`,
+            issue.message,
+          ]),
+        ),
       );
+      setError("");
       return;
     }
 
-    if (!Number.isInteger(percentual) || percentual < 1 || percentual > 100) {
-      setError("O percentual deve ser um número inteiro entre 1 e 100.");
-      return;
-    }
+    const { cupom } = result.data;
+    const percentual = Number(result.data.percentual);
 
+    setFieldErrors({});
     setProcessingId(coupon.id);
     setError("");
     setFeedback("");
@@ -492,6 +520,7 @@ const AdminCouponsPage = () => {
 
       setEditingId(null);
       setEditForm(INITIAL_EDIT_FORM);
+      setFieldErrors({});
 
       const successMessage = `O cupom ${updatedCoupon.cupom} foi atualizado com sucesso.`;
 
@@ -783,11 +812,23 @@ const AdminCouponsPage = () => {
                   value={form.emailUsuario}
                   onChange={handleInputChange}
                   placeholder="cliente@email.com"
-                  required
                   disabled={
                     submitting || processingId !== null || editingId !== null
                   }
+                  aria-invalid={Boolean(fieldErrors.emailUsuario)}
+                  aria-describedby={
+                    fieldErrors.emailUsuario ? "coupon-email-help" : undefined
+                  }
                 />
+                {fieldErrors.emailUsuario && (
+                  <span
+                    id="coupon-email-help"
+                    className="admin-coupons__field-help"
+                    role="alert"
+                  >
+                    {fieldErrors.emailUsuario}
+                  </span>
+                )}
               </div>
 
               <div className="admin-coupons__field">
@@ -796,25 +837,29 @@ const AdminCouponsPage = () => {
                   id="coupon-code"
                   name="cupom"
                   type="text"
-                  autoComplete="off"
                   minLength={3}
                   maxLength={20}
                   pattern="[A-Za-z0-9_-]{3,20}"
                   value={form.cupom}
                   onChange={handleInputChange}
                   placeholder="BEMVINDO15"
-                  required
                   disabled={
                     submitting || processingId !== null || editingId !== null
                   }
-                  aria-describedby="coupon-code-help"
+                  aria-invalid={Boolean(fieldErrors.cupom)}
+                  aria-describedby={
+                    fieldErrors.cupom ? "coupon-code-help" : undefined
+                  }
                 />
-                <span
-                  id="coupon-code-help"
-                  className="admin-coupons__field-help"
-                >
-                  Use de 3 a 20 letras, números, hífen ou sublinhado.
-                </span>
+                {fieldErrors.cupom && (
+                  <span
+                    id="coupon-code-help"
+                    className="admin-coupons__field-help"
+                    role="alert"
+                  >
+                    {fieldErrors.cupom}
+                  </span>
+                )}
               </div>
 
               <div className="admin-coupons__field">
@@ -829,11 +874,25 @@ const AdminCouponsPage = () => {
                   inputMode="numeric"
                   value={form.percentual}
                   onChange={handleInputChange}
-                  required
                   disabled={
                     submitting || processingId !== null || editingId !== null
                   }
+                  aria-invalid={Boolean(fieldErrors.percentual)}
+                  aria-describedby={
+                    fieldErrors.percentual
+                      ? "coupon-percentage-help"
+                      : undefined
+                  }
                 />
+                {fieldErrors.percentual && (
+                  <span
+                    id="coupon-percentage-help"
+                    className="admin-coupons__field-help"
+                    role="alert"
+                  >
+                    {fieldErrors.percentual}
+                  </span>
+                )}
               </div>
 
               <div className="admin-coupons__form-actions">
@@ -969,10 +1028,26 @@ const AdminCouponsPage = () => {
                                   pattern="[A-Za-z0-9_-]{3,20}"
                                   value={editForm.cupom}
                                   onChange={handleEditInputChange}
-                                  required
                                   disabled={isProcessing}
                                   autoComplete="off"
+                                  aria-invalid={Boolean(
+                                    fieldErrors["edit-cupom"],
+                                  )}
+                                  aria-describedby={
+                                    fieldErrors["edit-cupom"]
+                                      ? `coupon-edit-code-help-${coupon.id}`
+                                      : undefined
+                                  }
                                 />
+                                {fieldErrors["edit-cupom"] && (
+                                  <span
+                                    id={`coupon-edit-code-help-${coupon.id}`}
+                                    className="admin-coupons__field-help"
+                                    role="alert"
+                                  >
+                                    {fieldErrors["edit-cupom"]}
+                                  </span>
+                                )}
                               </div>
                             ) : (
                               <span className="admin-coupons__code">
@@ -999,9 +1074,25 @@ const AdminCouponsPage = () => {
                                   inputMode="numeric"
                                   value={editForm.percentual}
                                   onChange={handleEditInputChange}
-                                  required
                                   disabled={isProcessing}
+                                  aria-invalid={Boolean(
+                                    fieldErrors["edit-percentual"],
+                                  )}
+                                  aria-describedby={
+                                    fieldErrors["edit-percentual"]
+                                      ? `coupon-edit-percentage-help-${coupon.id}`
+                                      : undefined
+                                  }
                                 />
+                                {fieldErrors["edit-percentual"] && (
+                                  <span
+                                    id={`coupon-edit-percentage-help-${coupon.id}`}
+                                    className="admin-coupons__field-help"
+                                    role="alert"
+                                  >
+                                    {fieldErrors["edit-percentual"]}
+                                  </span>
+                                )}
                               </div>
                             ) : (
                               <strong>{coupon.percentual}%</strong>
