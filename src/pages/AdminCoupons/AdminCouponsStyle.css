@@ -149,9 +149,10 @@
 .admin-coupons__form {
   width: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(130px, 0.5fr);
-  align-items: start;
+  grid-template-columns: 4.5fr 1fr 0.7fr 1fr;
+  grid-template-rows: auto;
   gap: 1rem;
+  align-items: end;
 }
 
 .admin-coupons__field {
@@ -205,18 +206,19 @@
 }
 
 .admin-coupons__field-help {
-  color: var(--color-primary);
+  color: var(--color-red);
   font-size: 0.75rem;
   line-height: 1.5;
   opacity: 0.75;
 }
 
 .admin-coupons__form-actions {
-  grid-column: 1 / -1;
+  grid-column: auto;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   padding-top: 0.25rem;
+  gap: 1rem;
 }
 
 .admin-coupons__toolbar {
@@ -322,6 +324,8 @@
 }
 
 .admin-coupons__code {
+  min-width: 85px;
+  text-align: center;
   display: inline-block;
   padding: 0.35rem 0.5rem;
   border: 1px dashed var(--color-primary);
@@ -380,7 +384,7 @@
   }
 
   .admin-coupons__form {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .admin-coupons__form-actions {
@@ -430,10 +434,6 @@
 
   .admin-coupons__form-section {
     padding: 1.15rem;
-  }
-
-  .admin-coupons__form {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   .admin-coupons__form-actions {
