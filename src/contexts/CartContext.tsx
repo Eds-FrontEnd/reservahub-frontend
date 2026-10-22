@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import type { SmartphoneSubscriptionItem } from "../components/Product";
+import { SmartphoneService } from "../services/SmartphoneService";
 
 const CART_STORAGE_KEY = "cart-items";
 const PURCHASE_STORAGE_KEY = "purchase-payload";
@@ -65,8 +66,69 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     }
   }, [items]);
 
+  useEffect(() => {
+    let active = true;
+
+    const sincronizarEstoque = async () => {
+      try {
+        const produtosDisponiveis = await SmartphoneService.listarDisponiveis();
+
+        if (!active) {
+          return;
+        }
+
+        const estoquePorId = new Map(
+          produtosDisponiveis.map((produto) => [produto.id, produto]),
+        );
+
+        setItems((currentItems) =>
+          currentItems.flatMap((item) => {
+            const produtoAtualizado = estoquePorId.get(item.id);
+
+            if (
+              !produtoAtualizado ||
+              !Number.isFinite(produtoAtualizado.stock) ||
+              produtoAtualizado.stock <= 0
+            ) {
+              return [];
+            }
+
+            return [
+              {
+                ...item,
+                ...produtoAtualizado,
+                quantity: Math.min(item.quantity, produtoAtualizado.stock),
+              },
+            ];
+          }),
+        );
+      } catch (error) {
+        if (active) {
+          console.error("Erro ao sincronizar o estoque do carrinho:", error);
+        }
+      }
+    };
+
+    void sincronizarEstoque();
+
+    const cancelarAtualizacoes = SmartphoneService.escutarAtualizacoesEstoque(
+      () => {
+        void sincronizarEstoque();
+      },
+    );
+
+    return () => {
+      active = false;
+      cancelarAtualizacoes();
+    };
+  }, []);
+
   const addItem = useCallback(
     (product: SmartphoneSubscriptionItem, planMonths: number) => {
+      if (!Number.isFinite(product.stock) || product.stock <= 0) {
+        return;
+      }
+
       setItems((currentItems) => {
         const existingItem = currentItems.find(
           (item) => item.id === product.id && item.planMonths === planMonths,
@@ -77,7 +139,8 @@ export const CartProvider = ({ children }: CartProviderProps) => {
             item.id === product.id && item.planMonths === planMonths
               ? {
                   ...item,
-                  quantity: item.quantity + 1,
+                  ...product,
+                  quantity: Math.min(item.quantity + 1, product.stock),
                 }
               : item,
           );
@@ -106,7 +169,10 @@ export const CartProvider = ({ children }: CartProviderProps) => {
             item.id === id && item.planMonths === planMonths
               ? {
                   ...item,
-                  quantity: item.quantity + value,
+                  quantity: Math.min(
+                    Math.max(item.quantity + value, 0),
+                    item.stock,
+                  ),
                 }
               : item,
           )
