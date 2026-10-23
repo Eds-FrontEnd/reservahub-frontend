@@ -1,0 +1,413 @@
+.admin-graphic {
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  background: var(--color-blue, #003399);
+}
+
+.admin-graphic *,
+.admin-graphic *::before,
+.admin-graphic *::after {
+  box-sizing: border-box;
+}
+
+.admin-graphic__container {
+  width: 100%;
+  max-width: 1440px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2.25rem);
+  border: 1px solid var(--color-gray-border, #d7deea);
+  border-radius: 1.25rem;
+  background: var(--color-white, #fff);
+}
+
+.admin-graphic__header,
+.admin-graphic__toolbar,
+.admin-graphic__panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-graphic__header {
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-gray-border, #d7deea);
+}
+
+.admin-graphic__title {
+  margin: 0;
+  color: var(--color-primary, #003399);
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.admin-graphic__description,
+.admin-graphic__hint {
+  margin: 0.5rem 0 0;
+  color: var(--color-primary, #003399);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  opacity: 0.76;
+}
+
+.admin-graphic__toolbar {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.admin-graphic__filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--color-primary, #003399);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.admin-graphic__filter select {
+  min-height: 42px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-gray-border, #d7deea);
+  border-radius: 0.5rem;
+  background: var(--color-white, #fff);
+  color: var(--color-primary, #003399);
+  font: inherit;
+}
+
+.admin-graphic__button {
+  min-height: 42px;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--color-primary, #003399);
+  color: var(--color-white, #fff);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 180ms ease;
+}
+
+.admin-graphic__button:hover:not(:disabled) {
+  background: var(--color-secondary, #008000);
+}
+
+.admin-graphic__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-graphic__summary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.admin-graphic__summary-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.15rem;
+  border: 1px solid var(--color-gray-border, #d7deea);
+  border-radius: 0.75rem;
+  background: #f2f5ff;
+}
+
+.admin-graphic__summary-label {
+  color: var(--color-primary, #003399);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.admin-graphic__summary-value {
+  color: var(--color-primary, #003399);
+  font-size: clamp(1.05rem, 1.8vw, 1.55rem);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-graphic__panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--color-gray-border, #d7deea);
+  border-radius: 0.75rem;
+  background: var(--color-white, #fff);
+  box-shadow: 0 5px 20px rgb(0 25 80 / 8%);
+}
+
+.admin-graphic__subtitle {
+  margin: 0;
+  color: var(--color-primary, #003399);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.admin-graphic__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  color: var(--color-primary, #003399);
+  font-size: 0.8rem;
+}
+
+.admin-graphic__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.admin-graphic__legend-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  display: inline-block;
+  border-radius: 50%;
+}
+
+.admin-graphic__legend-dot--monthly {
+  background: var(--color-primary, #003399);
+}
+
+.admin-graphic__legend-dot--annual {
+  background: var(--color-secondary, #008000);
+}
+
+.admin-graphic__chart {
+  min-height: 280px;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: stretch;
+  gap: clamp(0.25rem, 1vw, 0.8rem);
+  padding-top: 0.5rem;
+}
+
+.admin-graphic__chart-column {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: minmax(220px, 1fr) 1.5rem;
+  justify-items: center;
+  gap: 0.5rem;
+}
+
+.admin-graphic__chart-bars {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: clamp(0.1rem, 0.4vw, 0.35rem);
+}
+
+.admin-graphic__chart-series {
+  width: 50%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.admin-graphic__chart-value {
+  max-width: 100%;
+  min-height: 2.3rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: var(--color-primary, #003399);
+  font-size: clamp(0.5rem, 0.65vw, 0.68rem);
+  font-weight: 700;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.admin-graphic__chart-track {
+  width: min(100%, 36px);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: 0.35rem 0.35rem 0 0;
+  background: #edf1fb;
+}
+
+.admin-graphic__chart-bar {
+  width: 100%;
+  min-height: 0;
+  border-radius: 0.35rem 0.35rem 0 0;
+  transition: height 220ms ease;
+}
+
+.admin-graphic__chart-bar--monthly {
+  background: var(--color-primary, #003399);
+}
+
+.admin-graphic__chart-bar--annual {
+  background: var(--color-secondary, #008000);
+}
+
+.admin-graphic__chart-label {
+  color: var(--color-primary, #003399);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.admin-graphic__chart--quantity .admin-graphic__chart-column {
+  grid-template-rows: minmax(180px, 1fr) 1.5rem;
+}
+
+.admin-graphic__table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--color-gray-border, #d7deea);
+  border-radius: 0.65rem;
+  scrollbar-width: thin;
+}
+
+.admin-graphic__table {
+  width: 100%;
+  min-width: 1000px;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--color-primary, #003399);
+  font-size: 0.8rem;
+  text-align: left;
+}
+
+.admin-graphic__table caption {
+  padding: 1rem;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.admin-graphic__table th,
+.admin-graphic__table td {
+  padding: 0.85rem 0.75rem;
+  border-bottom: 1px solid var(--color-gray-border, #d7deea);
+  vertical-align: middle;
+}
+
+.admin-graphic__table th {
+  background: #edf1fb;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.admin-graphic__table td {
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.admin-graphic__table tbody tr:hover {
+  background: #f6f8fd;
+}
+
+.admin-graphic__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-graphic__message {
+  margin: 0;
+  padding: 2rem 1rem;
+  color: var(--color-primary, #003399);
+  line-height: 1.7;
+  text-align: center;
+}
+
+.admin-graphic__alert {
+  padding: 1rem;
+  border: 1px solid var(--color-red, #d00000);
+  border-radius: 0.65rem;
+  background: #fff0f0;
+  color: var(--color-red, #d00000);
+  line-height: 1.6;
+}
+
+.admin-graphic button:focus-visible,
+.admin-graphic select:focus-visible {
+  outline: 3px solid var(--color-primary, #003399);
+  outline-offset: 3px;
+}
+
+@media (max-width: 1100px) {
+  .admin-graphic__summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-graphic {
+    padding: 1rem 0.65rem;
+  }
+
+  .admin-graphic__container {
+    padding: 1rem;
+    gap: 1.1rem;
+  }
+
+  .admin-graphic__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-graphic__toolbar {
+    justify-content: flex-start;
+  }
+
+  .admin-graphic__summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .admin-graphic__summary-card {
+    padding: 0.9rem;
+  }
+
+  .admin-graphic__chart {
+    gap: 0.15rem;
+  }
+
+  .admin-graphic__chart-value {
+    font-size: 0.48rem;
+  }
+
+  .admin-graphic__chart-track {
+    width: min(100%, 22px);
+  }
+}
+
+@media (max-width: 420px) {
+  .admin-graphic__summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-graphic__chart-value {
+    font-size: 0.43rem;
+  }
+
+  .admin-graphic__chart-label {
+    font-size: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-graphic__button,
+  .admin-graphic__chart-bar {
+    transition: none;
+  }
+}

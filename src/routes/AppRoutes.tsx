@@ -7,6 +7,7 @@ import AdminRoute from "./AdminRoute";
 import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
 import { useAuth } from "../contexts/AutContext";
+import AdminGraphic from "../pages/AdminGraphic";
 
 const HomePage = lazy(() => import("../pages/Home"));
 const LoginPage = lazy(() => import("../pages/Login"));
@@ -42,7 +43,7 @@ const HomeRoute = () => {
           typeof user.perfil === "string" &&
           user.perfil.trim().toUpperCase() === "ADMIN"
         ) {
-          return <Navigate to="/admin/solicitacoes-reset-senha" replace />;
+          return <Navigate to="/admin/grafico" replace />;
         }
       }
     } catch {
@@ -77,6 +78,7 @@ const AppRoutes = () => {
             path="/admin/solicitacoes-reset-senha"
             element={<AdminResetPasswordPage />}
           />
+          <Route path="/admin/grafico" element={<AdminGraphic />} />
           <Route path="/admin/cupons" element={<AdminCouponsPage />} />
         </Route>
 

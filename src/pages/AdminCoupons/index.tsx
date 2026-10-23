@@ -57,14 +57,6 @@ const INITIAL_EDIT_FORM: EditFormValues = {
   percentual: "",
 };
 
-const API_URL = (
-  import.meta.env.VITE_API_URL ?? "http://localhost:8080"
-).replace(/\/+$/, "");
-
-const ESTOQUE_EVENTS_ENDPOINT = `${API_URL}/api/smartphones/estoque/eventos`;
-
-const RECONNECT_DELAY = 3000;
-
 const formatDate = (date: string): string => {
   const parsedDate = new Date(date);
 
@@ -76,10 +68,6 @@ const formatDate = (date: string): string => {
     dateStyle: "short",
     timeStyle: "short",
   }).format(parsedDate);
-};
-
-const getToken = (): string | null => {
-  return localStorage.getItem("token");
 };
 
 const AdminCouponsPage = () => {
@@ -189,133 +177,6 @@ const AdminCouponsPage = () => {
       window.clearTimeout(initialLoadTimer);
       listController.current?.abort();
       listController.current = null;
-    };
-  }, [loadCoupons]);
-
-  useEffect(() => {
-    let active = true;
-    let reconnectTimer: number | undefined;
-    let controller: AbortController | null = null;
-
-    const connect = async (): Promise<void> => {
-      while (active) {
-        const token = getToken();
-
-        if (!token) {
-          if (active) {
-            setError("Sua sessão expirou. Entre novamente como administrador.");
-          }
-
-          return;
-        }
-
-        controller = new AbortController();
-
-        try {
-          const response = await fetch(ESTOQUE_EVENTS_ENDPOINT, {
-            method: "GET",
-            headers: {
-              Accept: "text/event-stream",
-              Authorization: `Bearer ${token}`,
-            },
-            cache: "no-store",
-            signal: controller.signal,
-          });
-
-          if (!response.ok) {
-            if (response.status === 401 || response.status === 403) {
-              if (active) {
-                setError(
-                  "Sua sessão expirou ou você não tem permissão para acompanhar os cupons.",
-                );
-              }
-
-              return;
-            }
-
-            throw new Error(`Falha na conexão SSE (HTTP ${response.status}).`);
-          }
-
-          if (!response.body) {
-            throw new Error("O servidor não disponibilizou o fluxo SSE.");
-          }
-
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder();
-          let buffer = "";
-
-          while (active) {
-            const { done, value } = await reader.read();
-
-            if (done) {
-              break;
-            }
-
-            buffer += decoder.decode(value, { stream: true });
-
-            const frames = buffer.split(/\r?\n\r?\n/);
-            buffer = frames.pop() ?? "";
-
-            for (const frame of frames) {
-              if (!active || !frame.trim()) {
-                continue;
-              }
-
-              let eventName = "message";
-
-              for (const line of frame.split(/\r?\n/)) {
-                if (line.startsWith("event:")) {
-                  eventName = line.slice(6).trim();
-                  break;
-                }
-              }
-
-              if (eventName === "cupom-atualizado") {
-                void loadCoupons(true);
-              }
-            }
-          }
-
-          try {
-            await reader.cancel();
-          } catch {
-            // O fluxo pode já ter sido encerrado pelo servidor.
-          }
-        } catch (connectionError) {
-          if (!active) {
-            return;
-          }
-
-          if (
-            connectionError instanceof DOMException &&
-            connectionError.name === "AbortError"
-          ) {
-            return;
-          }
-        }
-
-        if (!active) {
-          return;
-        }
-
-        await new Promise<void>((resolve) => {
-          reconnectTimer = window.setTimeout(resolve, RECONNECT_DELAY);
-        });
-      }
-    };
-
-    const startTimer = window.setTimeout(() => {
-      void connect();
-    }, 0);
-
-    return () => {
-      active = false;
-      window.clearTimeout(startTimer);
-      controller?.abort();
-
-      if (reconnectTimer !== undefined) {
-        window.clearTimeout(reconnectTimer);
-      }
     };
   }, [loadCoupons]);
 

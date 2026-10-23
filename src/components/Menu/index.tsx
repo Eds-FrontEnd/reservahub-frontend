@@ -30,6 +30,10 @@ const adminMenuItems = [
     label: "Cupons promocionais",
   },
   {
+    href: "/admin/grafico",
+    label: "Gráfico vendas",
+  },
+  {
     href: "/admin/solicitacoes-reset-senha",
     label: "Solicitações de reset de senha",
   },

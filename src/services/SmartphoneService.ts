@@ -121,6 +121,10 @@ export const SmartphoneService = {
   escutarAtualizacoesEstoque(
     onUpdate: (idsProdutos: string[]) => void,
   ): () => void {
+    if (window.location.pathname.includes("/admin")) {
+      return () => {};
+    }
+
     const source = new EventSource(
       `${API_URL}/api/smartphones/estoque/eventos`,
     );
@@ -142,10 +146,6 @@ export const SmartphoneService = {
         }
       },
     );
-
-    source.onerror = () => {
-      source.close();
-    };
 
     return () => {
       source.close();
