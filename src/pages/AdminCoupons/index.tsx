@@ -172,11 +172,26 @@ const AdminCouponsPage = () => {
       void loadCoupons();
     }, 0);
 
+    const apiUrl = (
+      import.meta.env.VITE_API_URL ?? "http://localhost:8080"
+    ).replace(/\/+$/, "");
+
+    const eventSource = new EventSource(
+      `${apiUrl}/api/smartphones/estoque/eventos`,
+    );
+
+    eventSource.addEventListener("cupom-atualizado", () => {
+      if (mounted.current) {
+        void loadCoupons(true);
+      }
+    });
+
     return () => {
       mounted.current = false;
       window.clearTimeout(initialLoadTimer);
       listController.current?.abort();
       listController.current = null;
+      eventSource.close();
     };
   }, [loadCoupons]);
 
@@ -366,7 +381,7 @@ const AdminCouponsPage = () => {
       const updatedCoupon = await editarCupomPromocional(coupon.id, {
         cupom,
         percentual,
-        utilizado: false,
+        utilizado: coupon.utilizado,
       });
 
       if (!mounted.current) {
@@ -501,6 +516,14 @@ const AdminCouponsPage = () => {
     setFeedback("");
 
     try {
+      if (ativo) {
+        await editarCupomPromocional(coupon.id, {
+          cupom: coupon.cupom,
+          percentual: coupon.percentual,
+          utilizado: false,
+        });
+      }
+
       const updatedCoupon = await alterarStatusCupomPromocional(
         coupon.id,
         ativo,
@@ -517,7 +540,7 @@ const AdminCouponsPage = () => {
       );
 
       const successMessage = ativo
-        ? `O cupom ${updatedCoupon.cupom} foi ativado.`
+        ? `O cupom ${updatedCoupon.cupom} foi ativado e marcado como não utilizado.`
         : `O cupom ${updatedCoupon.cupom} foi desativado.`;
 
       setFeedback(successMessage);
@@ -700,10 +723,11 @@ const AdminCouponsPage = () => {
                   type="text"
                   minLength={3}
                   maxLength={20}
-                  pattern="[A-Za-z0-9_-]{3,20}"
+                  pattern="[A-Za-z0-9_%\-]{3,20}"
                   value={form.cupom}
                   onChange={handleInputChange}
-                  placeholder="BEMVINDO15"
+                  placeholder="DESC6%"
+                  title="Digite letras, números, hífen, underline ou percentual."
                   disabled={
                     submitting || processingId !== null || editingId !== null
                   }
@@ -886,11 +910,12 @@ const AdminCouponsPage = () => {
                                   type="text"
                                   minLength={3}
                                   maxLength={20}
-                                  pattern="[A-Za-z0-9_-]{3,20}"
+                                  pattern="[A-Za-z0-9_%\-]{3,20}"
                                   value={editForm.cupom}
                                   onChange={handleEditInputChange}
                                   disabled={isProcessing}
                                   autoComplete="off"
+                                  title="Digite letras, números, hífen, underline ou percentual."
                                   aria-invalid={Boolean(
                                     fieldErrors["edit-cupom"],
                                   )}

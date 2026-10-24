@@ -3,6 +3,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useEffect, useRef, useState } from "react";
 
 import { fetchCepData } from "../../services/ViaCepService";
+import { isValidCouponFormat } from "../../utils/isValidCouponFormat";
 import "./PopupStyle.css";
 
 interface DiscountResult {
@@ -50,9 +51,6 @@ const formatCep = (value: string): string => {
 
   return digits;
 };
-
-const isValidCouponFormat = (coupon: string): boolean =>
-  /^[A-Z0-9_-]{3,30}$/.test(coupon.trim().toUpperCase());
 
 const isAdminUser = (): boolean => {
   try {
@@ -197,15 +195,42 @@ function Popup() {
         }
 
         if (couponIssue.utilizado || !couponIssue.ativo) {
+          console.info("[Popup] Cupom não exibido: já utilizado ou inativo.", {
+            utilizado: couponIssue.utilizado,
+            ativo: couponIssue.ativo,
+          });
           return;
         }
 
+        const normalizedCoupon = couponIssue.cupom?.trim().toUpperCase();
+
+        const percentual = Number(couponIssue.percentual);
+
+        const couponValid = normalizedCoupon
+          ? isValidCouponFormat(normalizedCoupon)
+          : false;
+
+        const percentualInteger = Number.isInteger(percentual);
+
+        const percentualInRange = percentual >= 1 && percentual <= 100;
+
+        console.log("[Popup] Diagnóstico da validação:", {
+          couponOriginal: couponIssue.cupom,
+          normalizedCoupon,
+          couponValid,
+          percentualOriginal: couponIssue.percentual,
+          percentual,
+          percentualInteger,
+          percentualInRange,
+          ativo: couponIssue.ativo,
+          utilizado: couponIssue.utilizado,
+        });
+
         if (
-          !couponIssue.cupom ||
-          !isValidCouponFormat(couponIssue.cupom) ||
-          !Number.isInteger(couponIssue.percentual) ||
-          couponIssue.percentual < 1 ||
-          couponIssue.percentual > 100
+          !normalizedCoupon ||
+          !couponValid ||
+          !percentualInteger ||
+          !percentualInRange
         ) {
           console.error("[Popup] Dados do cupom inválidos:", couponIssue);
           return;
@@ -216,8 +241,8 @@ function Popup() {
           city: addressData.localidade,
           state: addressData.uf,
           region: addressData.regiao || "Brasil",
-          discount: couponIssue.percentual,
-          coupon: couponIssue.cupom.trim().toUpperCase(),
+          discount: percentual,
+          coupon: normalizedCoupon,
         };
 
         setResult(discountResult);

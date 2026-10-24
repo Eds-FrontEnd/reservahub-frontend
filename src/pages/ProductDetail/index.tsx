@@ -314,7 +314,7 @@ export const ProductDetailPage: React.FC = () => {
                 className="product-detail__select"
               >
                 <option value={PLANO_ANUAL}>12 Meses</option>
-                <option value={PLANO_SEM_FIDELIDADE}>Sem Fidelidade</option>
+                <option value={PLANO_SEM_FIDELIDADE}>Mensal</option>
               </select>
             </div>
 

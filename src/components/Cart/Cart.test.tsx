@@ -118,7 +118,7 @@ describe("Cart", () => {
     mockedValidarCupom.mockImplementation(async (cupom: string) => {
       const cupomNormalizado = cupom.trim().toUpperCase();
 
-      if (cupomNormalizado === "DESC10%") {
+      if (cupomNormalizado === "DESC10") {
         return {
           valido: true,
           mensagem: "Cupom aplicado com sucesso.",
@@ -170,7 +170,7 @@ describe("Cart", () => {
 
       render(<Cart />);
 
-      expect(screen.getByText("Plano: Sem Fidelidade")).toBeInTheDocument();
+      expect(screen.getByText("Plano: Mensal")).toBeInTheDocument();
     });
 
     it("deve exibir planos diferentes para o mesmo smartphone", () => {
@@ -184,12 +184,12 @@ describe("Cart", () => {
 
       render(<Cart />);
 
-      expect(screen.getByText("Plano: Sem Fidelidade")).toBeInTheDocument();
+      expect(screen.getByText("Plano: Mensal")).toBeInTheDocument();
       expect(screen.getByText("Plano: 12 Meses")).toBeInTheDocument();
 
       expect(
         screen.getByRole("button", {
-          name: "Aumentar quantidade de iPhone - Sem Fidelidade",
+          name: "Aumentar quantidade de iPhone - Mensal",
         }),
       ).toBeInTheDocument();
 
@@ -280,7 +280,7 @@ describe("Cart", () => {
       fireEvent.change(
         screen.getByRole("textbox", { name: "Cupom de desconto" }),
         {
-          target: { value: "DESC10%" },
+          target: { value: "DESC10" },
         },
       );
 
@@ -296,7 +296,7 @@ describe("Cart", () => {
       ).toBeInTheDocument();
       expect(screen.getByText("R$ 6.261,84")).toBeInTheDocument();
 
-      expect(mockedValidarCupom).toHaveBeenCalledWith("DESC10%");
+      expect(mockedValidarCupom).toHaveBeenCalledWith("DESC10");
     });
 
     it("deve aceitar o cupom informado em letras minúsculas", async () => {
@@ -305,7 +305,7 @@ describe("Cart", () => {
       fireEvent.change(
         screen.getByRole("textbox", { name: "Cupom de desconto" }),
         {
-          target: { value: "desc10%" },
+          target: { value: "desc10" },
         },
       );
 
@@ -315,7 +315,7 @@ describe("Cart", () => {
         await screen.findByText(mensagemCupomAplicado),
       ).toBeInTheDocument();
       expect(screen.getByText("- R$ 695,76")).toBeInTheDocument();
-      expect(mockedValidarCupom).toHaveBeenCalledWith("DESC10%");
+      expect(mockedValidarCupom).toHaveBeenCalledWith("DESC10");
     });
 
     it("deve aplicar PROMO15 usando o percentual retornado pelo backend", async () => {
@@ -391,7 +391,7 @@ describe("Cart", () => {
       fireEvent.change(
         screen.getByRole("textbox", { name: "Cupom de desconto" }),
         {
-          target: { value: "DESC10%" },
+          target: { value: "DESC10" },
         },
       );
 
@@ -414,7 +414,7 @@ describe("Cart", () => {
       fireEvent.change(
         screen.getByRole("textbox", { name: "Cupom de desconto" }),
         {
-          target: { value: "DESC10%" },
+          target: { value: "DESC10" },
         },
       );
 
@@ -435,7 +435,7 @@ describe("Cart", () => {
               planMonths: 12,
             },
           ],
-          "DESC10%",
+          "DESC10",
         );
       });
     });
@@ -566,7 +566,7 @@ describe("Cart", () => {
 
       fireEvent.click(
         screen.getByRole("button", {
-          name: "Aumentar quantidade de iPhone - Sem Fidelidade",
+          name: "Aumentar quantidade de iPhone - Mensal",
         }),
       );
 

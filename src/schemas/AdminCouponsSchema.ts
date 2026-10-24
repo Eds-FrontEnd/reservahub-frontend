@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-const COUPON_HELP = "Digite letras, números ou hífen.";
+const COUPON_HELP = "Digite letras, números, hífen, underline ou percentual.";
 
 const couponCodeSchema = z
   .string()
   .min(3, COUPON_HELP)
   .max(20, COUPON_HELP)
-  .regex(/^[A-Z0-9_-]+$/, COUPON_HELP);
+  .regex(/^[A-Z0-9_%\-]+$/, COUPON_HELP);
 
 const percentageSchema = z
   .string()

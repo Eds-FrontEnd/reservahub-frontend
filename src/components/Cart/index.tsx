@@ -11,6 +11,7 @@ import IconBag from "../../assets/images/icons/icon-bag.svg";
 import Modal from "../Modal";
 
 import "./CartStyle.css";
+import { isValidCouponFormat } from "../../utils/isValidCouponFormat";
 
 const formatPrice = (price: number): string =>
   new Intl.NumberFormat("pt-BR", {
@@ -23,16 +24,10 @@ const getPlanName = (planMonths: number): string => {
     case 12:
       return "12 Meses";
     case 1:
-      return "Sem Fidelidade";
+      return "Mensal";
     default:
       return `${planMonths} Meses`;
   }
-};
-
-const isValidCouponFormat = (coupon: string): boolean => {
-  const normalizedCoupon = coupon.trim().toUpperCase();
-
-  return /^(?:DESC(?:100|[1-9]\d?)%|[A-Z0-9_-]{3,30})$/.test(normalizedCoupon);
 };
 
 const roundPrice = (value: number): number =>

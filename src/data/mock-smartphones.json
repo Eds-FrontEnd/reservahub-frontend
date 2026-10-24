@@ -177,10 +177,6 @@
     "image": "../../src/assets/images/products/12-sub-ph-poco-f6.webp",
     "monthlyPrice": 149.9,
     "planType": "Mensal Flex",
-    "benefits": [
-      "Alta Performance",
-      "Manutenção Descomplicada",
-      "Sem Fidelidade"
-    ]
+    "benefits": ["Alta Performance", "Manutenção Descomplicada", "Mensal"]
   }
 ]
