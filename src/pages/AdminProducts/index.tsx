@@ -116,7 +116,6 @@ const getImageSource = (imageUrl: string): string => {
     }
   }
 
-  // URL imagem
   if (value.startsWith("http://localhost:8080/uploads/products/")) {
     return value;
   }
@@ -169,6 +168,7 @@ const AdminProducts = () => {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const listController = useRef<AbortController | null>(null);
@@ -404,6 +404,7 @@ const AdminProducts = () => {
     }
 
     setEditingId(product.id);
+    setIsFormOpen(true);
 
     setForm({
       nome: product.nome,
@@ -468,6 +469,7 @@ const AdminProducts = () => {
           selectedImage,
           form.modelo_produto,
         );
+
         imageUrl = uploadedImage.url;
       }
 
@@ -500,7 +502,6 @@ const AdminProducts = () => {
       }
 
       resetForm();
-
       await loadProducts(activeSearch, 0);
     } catch (requestError) {
       setError(
@@ -580,7 +581,10 @@ const AdminProducts = () => {
             <button
               className="admin-products__button admin-products__button--secondary"
               type="button"
-              onClick={resetForm}
+              onClick={() => {
+                resetForm();
+                setIsFormOpen(true);
+              }}
               disabled={submitting || processingId !== null}
             >
               Novo produto
@@ -611,257 +615,280 @@ const AdminProducts = () => {
             id="admin-products-form"
             aria-labelledby="admin-products-form-title"
           >
-            <h2
-              className="admin-products__section-title"
+            <button
+              className="admin-products__accordion-trigger"
               id="admin-products-form-title"
+              type="button"
+              aria-expanded={isFormOpen}
+              aria-controls="admin-products-form-content"
+              onClick={() => setIsFormOpen((current) => !current)}
             >
-              {editingId ? "Editar produto" : "Cadastrar produto"}
-            </h2>
+              <span className="admin-products__section-title">
+                {editingId ? "Editar produto" : "Cadastrar produto"}
+              </span>
 
-            <p className="admin-products__section-description">
-              Os campos marcados com * são obrigatórios.
-            </p>
+              <span
+                className={`admin-products__accordion-icon${
+                  isFormOpen ? " admin-products__accordion-icon--open" : ""
+                }`}
+                aria-hidden="true"
+              >
+                ▾
+              </span>
+            </button>
 
-            <form
-              className="admin-products__form"
-              onSubmit={handleSubmit}
-              noValidate
+            <div
+              className="admin-products__form-content"
+              id="admin-products-form-content"
+              hidden={!isFormOpen}
             >
-              <div className="admin-products__field">
-                <label htmlFor="admin-product-name">Nome do produto *</label>
+              <p className="admin-products__section-description">
+                Os campos marcados com * são obrigatórios.
+              </p>
 
-                <input
-                  id="admin-product-name"
-                  name="nome"
-                  type="text"
-                  value={form.nome}
-                  onChange={handleInputChange}
-                  maxLength={150}
-                  required
-                  autoComplete="off"
-                  aria-invalid={Boolean(fieldErrors.nome)}
-                  aria-describedby={
-                    fieldErrors.nome ? "admin-product-name-error" : undefined
-                  }
-                  disabled={submitting}
-                />
+              <form
+                className="admin-products__form"
+                onSubmit={handleSubmit}
+                noValidate
+              >
+                <div className="admin-products__field">
+                  <label htmlFor="admin-product-name">Nome do produto *</label>
 
-                {fieldErrors.nome && (
-                  <span
-                    className="admin-products__field-error"
-                    id="admin-product-name-error"
-                  >
-                    {fieldErrors.nome}
-                  </span>
-                )}
-              </div>
-
-              <div className="admin-products__field">
-                <label htmlFor="admin-product-model">Modelo *</label>
-
-                <input
-                  id="admin-product-model"
-                  name="modelo_produto"
-                  type="text"
-                  value={form.modelo_produto}
-                  onChange={handleInputChange}
-                  maxLength={100}
-                  required
-                  autoComplete="off"
-                  aria-invalid={Boolean(fieldErrors.modelo_produto)}
-                  aria-describedby={
-                    fieldErrors.modelo_produto
-                      ? "admin-product-model-error"
-                      : undefined
-                  }
-                  disabled={submitting}
-                />
-
-                {fieldErrors.modelo_produto && (
-                  <span
-                    className="admin-products__field-error"
-                    id="admin-product-model-error"
-                  >
-                    {fieldErrors.modelo_produto}
-                  </span>
-                )}
-              </div>
-
-              <div className="admin-products__field">
-                <label htmlFor="admin-product-stock">Estoque *</label>
-
-                <input
-                  id="admin-product-stock"
-                  name="stock"
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={form.stock}
-                  onChange={handleInputChange}
-                  required
-                  aria-invalid={Boolean(fieldErrors.stock)}
-                  aria-describedby={
-                    fieldErrors.stock ? "admin-product-stock-error" : undefined
-                  }
-                  disabled={submitting}
-                />
-
-                {fieldErrors.stock && (
-                  <span
-                    className="admin-products__field-error"
-                    id="admin-product-stock-error"
-                  >
-                    {fieldErrors.stock}
-                  </span>
-                )}
-              </div>
-
-              <div className="admin-products__field">
-                <label htmlFor="admin-product-plan">
-                  Plano padrão do produto *
-                </label>
-
-                <select
-                  id="admin-product-plan"
-                  name="id_plano"
-                  value={form.id_plano}
-                  onChange={handleInputChange}
-                  required
-                  aria-invalid={Boolean(fieldErrors.id_plano)}
-                  aria-describedby={
-                    fieldErrors.id_plano
-                      ? "admin-product-plan-error"
-                      : undefined
-                  }
-                  disabled={submitting || plans.length === 0}
-                >
-                  <option value="">Selecione um plano</option>
-
-                  {plans.map((plan) => (
-                    <option key={plan.id} value={plan.id}>
-                      {getPlanLabel(plan)}
-                    </option>
-                  ))}
-                </select>
-
-                {fieldErrors.id_plano && (
-                  <span
-                    className="admin-products__field-error"
-                    id="admin-product-plan-error"
-                  >
-                    {fieldErrors.id_plano}
-                  </span>
-                )}
-
-                <span className="admin-products__field-help">
-                  O plano anual de 12 meses é selecionado por padrão. Você pode
-                  escolher o mensal.
-                </span>
-              </div>
-
-              <div className="admin-products__field admin-products__field--full">
-                <label htmlFor="admin-product-description">Descrição *</label>
-
-                <textarea
-                  id="admin-product-description"
-                  name="description"
-                  value={form.description}
-                  onChange={handleInputChange}
-                  rows={4}
-                  required
-                  aria-invalid={Boolean(fieldErrors.description)}
-                  aria-describedby={
-                    fieldErrors.description
-                      ? "admin-product-description-error"
-                      : undefined
-                  }
-                  disabled={submitting}
-                />
-
-                {fieldErrors.description && (
-                  <span
-                    className="admin-products__field-error"
-                    id="admin-product-description-error"
-                  >
-                    {fieldErrors.description}
-                  </span>
-                )}
-              </div>
-
-              <div className="admin-products__field admin-products__field--full">
-                <label htmlFor="admin-product-image">Imagem do produto</label>
-
-                <input
-                  ref={fileInputRef}
-                  id="admin-product-image"
-                  name="imagem"
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  onChange={handleImageChange}
-                  aria-describedby="admin-product-image-help"
-                  disabled={submitting}
-                />
-
-                <span
-                  className="admin-products__field-help"
-                  id="admin-product-image-help"
-                >
-                  Formatos aceitos: PNG, JPEG e WebP. Tamanho máximo: 5 MB.
-                  {editingId &&
-                    " Se não selecionar uma nova imagem, a imagem atual será mantida."}
-                </span>
-
-                {form.image_url && (
-                  <div className="admin-products__image-preview">
-                    <img
-                      src={getImageSource(form.image_url)}
-                      alt={`Imagem atual de ${form.nome || "produto"}`}
-                      loading="lazy"
-                      onError={(event) => {
-                        event.currentTarget.style.visibility = "hidden";
-                      }}
-                    />
-
-                    <span>
-                      {selectedImage
-                        ? `Nova imagem: ${selectedImage.name}`
-                        : "Imagem atual"}
-                    </span>
-                  </div>
-                )}
-
-                {selectedImage && !form.image_url && (
-                  <p className="admin-products__field-help">
-                    Nova imagem selecionada: {selectedImage.name}
-                  </p>
-                )}
-              </div>
-
-              <div className="admin-products__form-actions">
-                {editingId && (
-                  <button
-                    className="admin-products__button admin-products__button--secondary"
-                    type="button"
-                    onClick={resetForm}
+                  <input
+                    id="admin-product-name"
+                    name="nome"
+                    type="text"
+                    value={form.nome}
+                    onChange={handleInputChange}
+                    maxLength={150}
+                    required
+                    autoComplete="off"
+                    aria-invalid={Boolean(fieldErrors.nome)}
+                    aria-describedby={
+                      fieldErrors.nome ? "admin-product-name-error" : undefined
+                    }
                     disabled={submitting}
-                  >
-                    Cancelar edição
-                  </button>
-                )}
+                  />
 
-                <button
-                  className="admin-products__button admin-products__button--primary"
-                  type="submit"
-                  disabled={submitting || plans.length === 0}
-                >
-                  {submitting
-                    ? "Salvando..."
-                    : editingId
-                      ? "Salvar alterações"
-                      : "Cadastrar produto"}
-                </button>
-              </div>
-            </form>
+                  {fieldErrors.nome && (
+                    <span
+                      className="admin-products__field-error"
+                      id="admin-product-name-error"
+                    >
+                      {fieldErrors.nome}
+                    </span>
+                  )}
+                </div>
+
+                <div className="admin-products__field">
+                  <label htmlFor="admin-product-model">Modelo *</label>
+
+                  <input
+                    id="admin-product-model"
+                    name="modelo_produto"
+                    type="text"
+                    value={form.modelo_produto}
+                    onChange={handleInputChange}
+                    maxLength={100}
+                    required
+                    autoComplete="off"
+                    aria-invalid={Boolean(fieldErrors.modelo_produto)}
+                    aria-describedby={
+                      fieldErrors.modelo_produto
+                        ? "admin-product-model-error"
+                        : undefined
+                    }
+                    disabled={submitting}
+                  />
+
+                  {fieldErrors.modelo_produto && (
+                    <span
+                      className="admin-products__field-error"
+                      id="admin-product-model-error"
+                    >
+                      {fieldErrors.modelo_produto}
+                    </span>
+                  )}
+                </div>
+
+                <div className="admin-products__field">
+                  <label htmlFor="admin-product-stock">Estoque *</label>
+
+                  <input
+                    id="admin-product-stock"
+                    name="stock"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={form.stock}
+                    onChange={handleInputChange}
+                    required
+                    aria-invalid={Boolean(fieldErrors.stock)}
+                    aria-describedby={
+                      fieldErrors.stock
+                        ? "admin-product-stock-error"
+                        : undefined
+                    }
+                    disabled={submitting}
+                  />
+
+                  {fieldErrors.stock && (
+                    <span
+                      className="admin-products__field-error"
+                      id="admin-product-stock-error"
+                    >
+                      {fieldErrors.stock}
+                    </span>
+                  )}
+                </div>
+
+                <div className="admin-products__field">
+                  <label htmlFor="admin-product-plan">
+                    Plano padrão do produto *
+                  </label>
+
+                  <select
+                    id="admin-product-plan"
+                    name="id_plano"
+                    value={form.id_plano}
+                    onChange={handleInputChange}
+                    required
+                    aria-invalid={Boolean(fieldErrors.id_plano)}
+                    aria-describedby={
+                      fieldErrors.id_plano
+                        ? "admin-product-plan-error"
+                        : undefined
+                    }
+                    disabled={submitting || plans.length === 0}
+                  >
+                    <option value="">Selecione um plano</option>
+
+                    {plans.map((plan) => (
+                      <option key={plan.id} value={plan.id}>
+                        {getPlanLabel(plan)}
+                      </option>
+                    ))}
+                  </select>
+
+                  {fieldErrors.id_plano && (
+                    <span
+                      className="admin-products__field-error"
+                      id="admin-product-plan-error"
+                    >
+                      {fieldErrors.id_plano}
+                    </span>
+                  )}
+
+                  <span className="admin-products__field-help">
+                    O plano anual de 12 meses é selecionado por padrão. Você
+                    pode escolher o mensal.
+                  </span>
+                </div>
+
+                <div className="admin-products__field admin-products__field--full">
+                  <label htmlFor="admin-product-description">Descrição *</label>
+
+                  <textarea
+                    id="admin-product-description"
+                    name="description"
+                    value={form.description}
+                    onChange={handleInputChange}
+                    rows={4}
+                    required
+                    aria-invalid={Boolean(fieldErrors.description)}
+                    aria-describedby={
+                      fieldErrors.description
+                        ? "admin-product-description-error"
+                        : undefined
+                    }
+                    disabled={submitting}
+                  />
+
+                  {fieldErrors.description && (
+                    <span
+                      className="admin-products__field-error"
+                      id="admin-product-description-error"
+                    >
+                      {fieldErrors.description}
+                    </span>
+                  )}
+                </div>
+
+                <div className="admin-products__field admin-products__field--full">
+                  <label htmlFor="admin-product-image">Imagem do produto</label>
+
+                  <input
+                    ref={fileInputRef}
+                    id="admin-product-image"
+                    name="imagem"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={handleImageChange}
+                    aria-describedby="admin-product-image-help"
+                    disabled={submitting}
+                  />
+
+                  <span
+                    className="admin-products__field-help"
+                    id="admin-product-image-help"
+                  >
+                    Formatos aceitos: PNG, JPEG e WebP. Tamanho máximo: 5 MB.
+                    {editingId &&
+                      " Se não selecionar uma nova imagem, a imagem atual será mantida."}
+                  </span>
+
+                  {form.image_url && (
+                    <div className="admin-products__image-preview">
+                      <img
+                        src={getImageSource(form.image_url)}
+                        alt={`Imagem atual de ${form.nome || "produto"}`}
+                        loading="lazy"
+                        onError={(event) => {
+                          event.currentTarget.style.visibility = "hidden";
+                        }}
+                      />
+
+                      <span>
+                        {selectedImage
+                          ? `Nova imagem: ${selectedImage.name}`
+                          : "Imagem atual"}
+                      </span>
+                    </div>
+                  )}
+
+                  {selectedImage && !form.image_url && (
+                    <p className="admin-products__field-help">
+                      Nova imagem selecionada: {selectedImage.name}
+                    </p>
+                  )}
+                </div>
+
+                <div className="admin-products__form-actions">
+                  {editingId && (
+                    <button
+                      className="admin-products__button admin-products__button--secondary"
+                      type="button"
+                      onClick={resetForm}
+                      disabled={submitting}
+                    >
+                      Cancelar edição
+                    </button>
+                  )}
+
+                  <button
+                    className="admin-products__button admin-products__button--primary"
+                    type="submit"
+                    disabled={submitting || plans.length === 0}
+                  >
+                    {submitting
+                      ? "Salvando..."
+                      : editingId
+                        ? "Salvar alterações"
+                        : "Cadastrar produto"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </section>
 
           <section

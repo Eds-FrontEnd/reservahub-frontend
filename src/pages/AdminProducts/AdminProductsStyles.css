@@ -626,3 +626,47 @@
     width: 100%;
   }
 }
+
+/* Accordion do formulário de cadastro/edição */
+.admin-products__accordion-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-products__accordion-trigger:focus-visible {
+  outline: 3px solid var(--color-primary, #003399);
+  outline-offset: 5px;
+  border-radius: 4px;
+}
+
+.admin-products__accordion-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgb(0 51 153 / 7%);
+  color: var(--color-primary, #003399);
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: transform 180ms ease;
+}
+
+.admin-products__accordion-icon--open {
+  transform: rotate(180deg);
+}
+
+.admin-products__form-content[hidden] {
+  display: none !important;
+}
