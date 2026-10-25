@@ -53,6 +53,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(null);
     };
 
+    const checkTokenExpiration = () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        synchronizeLogout();
+        return;
+      }
+
+      try {
+        const payload = token.split(".")[1];
+
+        if (!payload) {
+          return;
+        }
+
+        const decodedPayload = JSON.parse(
+          window.atob(payload.replace(/-/g, "+").replace(/_/g, "/")),
+        ) as { exp?: number };
+
+        if (
+          typeof decodedPayload.exp === "number" &&
+          Date.now() >= decodedPayload.exp * 1000
+        ) {
+          clearAuthenticationStorage();
+          synchronizeLogout();
+        }
+      } catch {
+        return;
+      }
+    };
+
     const handleStorageChange = (event: StorageEvent) => {
       if (
         (event.key === "token" && event.newValue === null) ||
@@ -65,7 +96,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     window.addEventListener(AUTH_STORAGE_CHANGED_EVENT, synchronizeLogout);
     window.addEventListener("storage", handleStorageChange);
 
+    checkTokenExpiration();
+
+    const expirationCheckInterval = window.setInterval(
+      checkTokenExpiration,
+      1000,
+    );
+
     return () => {
+      window.clearInterval(expirationCheckInterval);
       window.removeEventListener(AUTH_STORAGE_CHANGED_EVENT, synchronizeLogout);
       window.removeEventListener("storage", handleStorageChange);
     };

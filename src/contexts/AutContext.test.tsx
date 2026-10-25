@@ -1,16 +1,39 @@
 import type { ReactNode } from "react";
-import { render, screen, waitFor } from "@testing-library/react";
-import { renderHook, act } from "@testing-library/react";
+import {
+  act,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import type { User } from "../services/AuthService";
 
 import { AuthProvider, resetPassword, useAuth } from "./AutContext";
 
+const createToken = (exp: number, role?: "USER" | "ADMIN"): string => {
+  const payload = window.btoa(
+    JSON.stringify({
+      exp,
+      ...(role ? { role } : {}),
+    }),
+  );
+
+  return `header.${payload}.signature`;
+};
+
+const createValidToken = (): string =>
+  createToken(Math.floor(Date.now() / 1000) + 3600);
+
+const createExpiredToken = (role: "USER" | "ADMIN"): string =>
+  createToken(Math.floor(Date.now() / 1000) - 1, role);
+
 const createUser = (): User => ({
   name: "Edson Alves",
   email: "edson@example.com",
   password: "senha-atual",
+  perfil: "USER",
 });
 
 const AuthConsumer = () => {
@@ -47,6 +70,41 @@ describe("AuthProvider", () => {
     jest.restoreAllMocks();
   });
 
+  it.each(["USER", "ADMIN"] as const)(
+    "deve limpar os dados de autenticação quando o token do perfil %s estiver expirado",
+    async (role) => {
+      const authenticatedUser = createUser();
+
+      localStorage.setItem("token", createExpiredToken(role));
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem(
+        "authenticatedUser",
+        JSON.stringify(authenticatedUser),
+      );
+      localStorage.setItem("reservahub-show-discount-after-login", "true");
+
+      render(
+        <AuthProvider>
+          <AuthConsumer />
+        </AuthProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId("is-authenticated")).toHaveTextContent(
+          "false",
+        );
+        expect(screen.getByTestId("user")).toHaveTextContent("null");
+      });
+
+      expect(localStorage.getItem("token")).toBeNull();
+      expect(localStorage.getItem("isAuthenticated")).toBeNull();
+      expect(localStorage.getItem("authenticatedUser")).toBeNull();
+      expect(
+        localStorage.getItem("reservahub-show-discount-after-login"),
+      ).toBeNull();
+    },
+  );
+
   it("deve iniciar como não autenticado quando não existem dados no localStorage", () => {
     render(
       <AuthProvider>
@@ -55,11 +113,11 @@ describe("AuthProvider", () => {
     );
 
     expect(screen.getByTestId("is-authenticated")).toHaveTextContent("false");
-
     expect(screen.getByTestId("user")).toHaveTextContent("null");
   });
 
   it("deve recuperar o estado de autenticação do localStorage", () => {
+    localStorage.setItem("token", createValidToken());
     localStorage.setItem("isAuthenticated", "true");
 
     render(
@@ -74,6 +132,8 @@ describe("AuthProvider", () => {
   it("deve recuperar o usuário autenticado do localStorage", () => {
     const user = createUser();
 
+    localStorage.setItem("token", createValidToken());
+    localStorage.setItem("isAuthenticated", "true");
     localStorage.setItem("authenticatedUser", JSON.stringify(user));
 
     render(
@@ -86,6 +146,7 @@ describe("AuthProvider", () => {
   });
 
   it("deve iniciar com usuário null quando authenticatedUser não existe", () => {
+    localStorage.setItem("token", createValidToken());
     localStorage.setItem("isAuthenticated", "true");
 
     render(
@@ -101,17 +162,15 @@ describe("AuthProvider", () => {
     const user = userEvent.setup();
     const authenticatedUser = createUser();
 
+    localStorage.setItem("token", createValidToken());
+
     render(
       <AuthProvider>
         <AuthConsumer />
       </AuthProvider>,
     );
 
-    await user.click(
-      screen.getByRole("button", {
-        name: "Login",
-      }),
-    );
+    await user.click(screen.getByRole("button", { name: "Login" }));
 
     await waitFor(() => {
       expect(screen.getByTestId("is-authenticated")).toHaveTextContent("true");
@@ -126,20 +185,17 @@ describe("AuthProvider", () => {
     const user = userEvent.setup();
     const authenticatedUser = createUser();
 
+    localStorage.setItem("token", createValidToken());
+
     render(
       <AuthProvider>
         <AuthConsumer />
       </AuthProvider>,
     );
 
-    await user.click(
-      screen.getByRole("button", {
-        name: "Login",
-      }),
-    );
+    await user.click(screen.getByRole("button", { name: "Login" }));
 
     expect(localStorage.getItem("isAuthenticated")).toBe("true");
-
     expect(localStorage.getItem("authenticatedUser")).toBe(
       JSON.stringify(authenticatedUser),
     );
@@ -149,6 +205,7 @@ describe("AuthProvider", () => {
     const user = userEvent.setup();
     const authenticatedUser = createUser();
 
+    localStorage.setItem("token", createValidToken());
     localStorage.setItem("isAuthenticated", "true");
     localStorage.setItem(
       "authenticatedUser",
@@ -162,16 +219,11 @@ describe("AuthProvider", () => {
     );
 
     expect(screen.getByTestId("is-authenticated")).toHaveTextContent("true");
-
     expect(screen.getByTestId("user")).toHaveTextContent(
       JSON.stringify(authenticatedUser),
     );
 
-    await user.click(
-      screen.getByRole("button", {
-        name: "Logout",
-      }),
-    );
+    await user.click(screen.getByRole("button", { name: "Logout" }));
 
     await waitFor(() => {
       expect(screen.getByTestId("is-authenticated")).toHaveTextContent("false");
@@ -180,15 +232,17 @@ describe("AuthProvider", () => {
     expect(screen.getByTestId("user")).toHaveTextContent("null");
   });
 
-  it("deve remover os dados do usuário do localStorage ao realizar logout", async () => {
+  it("deve remover os dados de autenticação do localStorage ao realizar logout", async () => {
     const user = userEvent.setup();
     const authenticatedUser = createUser();
 
+    localStorage.setItem("token", createValidToken());
     localStorage.setItem("isAuthenticated", "true");
     localStorage.setItem(
       "authenticatedUser",
       JSON.stringify(authenticatedUser),
     );
+    localStorage.setItem("reservahub-show-discount-after-login", "true");
 
     render(
       <AuthProvider>
@@ -196,50 +250,42 @@ describe("AuthProvider", () => {
       </AuthProvider>,
     );
 
-    await user.click(
-      screen.getByRole("button", {
-        name: "Logout",
-      }),
-    );
+    await user.click(screen.getByRole("button", { name: "Logout" }));
 
+    expect(localStorage.getItem("token")).toBeNull();
     expect(localStorage.getItem("isAuthenticated")).toBeNull();
     expect(localStorage.getItem("authenticatedUser")).toBeNull();
+    expect(
+      localStorage.getItem("reservahub-show-discount-after-login"),
+    ).toBeNull();
   });
 
   it("deve permitir realizar login novamente após logout", async () => {
     const user = userEvent.setup();
 
+    localStorage.setItem("token", createValidToken());
+
     render(
       <AuthProvider>
         <AuthConsumer />
       </AuthProvider>,
     );
 
-    await user.click(
-      screen.getByRole("button", {
-        name: "Login",
-      }),
-    );
+    await user.click(screen.getByRole("button", { name: "Login" }));
 
     await waitFor(() => {
       expect(screen.getByTestId("is-authenticated")).toHaveTextContent("true");
     });
 
-    await user.click(
-      screen.getByRole("button", {
-        name: "Logout",
-      }),
-    );
+    await user.click(screen.getByRole("button", { name: "Logout" }));
 
     await waitFor(() => {
       expect(screen.getByTestId("is-authenticated")).toHaveTextContent("false");
     });
 
-    await user.click(
-      screen.getByRole("button", {
-        name: "Login",
-      }),
-    );
+    localStorage.setItem("token", createValidToken());
+
+    await user.click(screen.getByRole("button", { name: "Login" }));
 
     await waitFor(() => {
       expect(screen.getByTestId("is-authenticated")).toHaveTextContent("true");
@@ -262,9 +308,7 @@ describe("useAuth", () => {
   });
 
   it("deve disponibilizar o contexto através do hook", () => {
-    const { result } = renderHook(() => useAuth(), {
-      wrapper,
-    });
+    const { result } = renderHook(() => useAuth(), { wrapper });
 
     expect(result.current.isAuthenticated).toBe(false);
     expect(result.current.user).toBeNull();
@@ -275,9 +319,7 @@ describe("useAuth", () => {
   it("deve atualizar o estado através do login", () => {
     const user = createUser();
 
-    const { result } = renderHook(() => useAuth(), {
-      wrapper,
-    });
+    const { result } = renderHook(() => useAuth(), { wrapper });
 
     act(() => {
       result.current.login(user);
@@ -285,7 +327,6 @@ describe("useAuth", () => {
 
     expect(result.current.isAuthenticated).toBe(true);
     expect(result.current.user).toEqual(user);
-
     expect(localStorage.getItem("isAuthenticated")).toBe("true");
     expect(localStorage.getItem("authenticatedUser")).toBe(
       JSON.stringify(user),
@@ -295,9 +336,7 @@ describe("useAuth", () => {
   it("deve limpar o estado através do logout", () => {
     const user = createUser();
 
-    const { result } = renderHook(() => useAuth(), {
-      wrapper,
-    });
+    const { result } = renderHook(() => useAuth(), { wrapper });
 
     act(() => {
       result.current.login(user);
@@ -312,7 +351,7 @@ describe("useAuth", () => {
 
     expect(result.current.isAuthenticated).toBe(false);
     expect(result.current.user).toBeNull();
-
+    expect(localStorage.getItem("token")).toBeNull();
     expect(localStorage.getItem("isAuthenticated")).toBeNull();
     expect(localStorage.getItem("authenticatedUser")).toBeNull();
   });
