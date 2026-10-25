@@ -564,3 +564,57 @@
     gap: 0.35rem;
   }
 }
+
+.admin-coupons__accordion-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-coupons__accordion-trigger:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 5px;
+  border-radius: 4px;
+}
+
+.admin-coupons__accordion-icon {
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background-color: var(--admin-reset-table-row-hover-bg);
+  color: var(--color-primary);
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: transform 180ms ease;
+}
+
+.admin-coupons__accordion-icon--open {
+  transform: rotate(180deg);
+}
+
+.admin-coupons__form-content[hidden] {
+  display: none !important;
+}
+
+.admin-coupons__form-content:not([hidden]) {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-coupons__accordion-icon {
+    transition: none;
+  }
+}

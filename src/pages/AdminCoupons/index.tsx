@@ -72,6 +72,7 @@ const formatDate = (date: string): string => {
 
 const AdminCouponsPage = () => {
   const [coupons, setCoupons] = useState<CupomPromocional[]>([]);
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const [form, setForm] = useState<FormValues>(INITIAL_FORM);
   const [editForm, setEditForm] = useState<EditFormValues>(INITIAL_EDIT_FORM);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -677,122 +678,153 @@ const AdminCouponsPage = () => {
             className="admin-coupons__form-section"
             aria-labelledby="admin-coupons-form-title"
           >
-            <h2
-              id="admin-coupons-form-title"
-              className="admin-coupons__subtitle"
-            >
-              Cadastrar cupom
+            <h2 className="admin-coupons__subtitle">
+              <button
+                id="admin-coupons-form-title"
+                type="button"
+                className="admin-coupons__accordion-trigger"
+                aria-expanded={isCreateFormOpen}
+                aria-controls="admin-coupons-form-content"
+                onClick={() => setIsCreateFormOpen((current) => !current)}
+              >
+                <span className="admin-coupons__section-title">
+                  Cadastrar cupom
+                </span>
+
+                <span
+                  className={`admin-coupons__accordion-icon${
+                    isCreateFormOpen
+                      ? " admin-coupons__accordion-icon--open"
+                      : ""
+                  }`}
+                  aria-hidden="true"
+                >
+                  ▾
+                </span>
+              </button>
             </h2>
 
-            <form className="admin-coupons__form" onSubmit={handleCreateCoupon}>
-              <div className="admin-coupons__field">
-                <label htmlFor="coupon-email">E-mail do usuário</label>
-                <input
-                  id="coupon-email"
-                  name="emailUsuario"
-                  type="email"
-                  autoComplete="off"
-                  maxLength={254}
-                  value={form.emailUsuario}
-                  onChange={handleInputChange}
-                  placeholder="cliente@email.com"
-                  disabled={
-                    submitting || processingId !== null || editingId !== null
-                  }
-                  aria-invalid={Boolean(fieldErrors.emailUsuario)}
-                  aria-describedby={
-                    fieldErrors.emailUsuario ? "coupon-email-help" : undefined
-                  }
-                />
-                {fieldErrors.emailUsuario && (
-                  <span
-                    id="coupon-email-help"
-                    className="admin-coupons__field-help"
-                    role="alert"
-                  >
-                    {fieldErrors.emailUsuario}
-                  </span>
-                )}
-              </div>
+            <div
+              id="admin-coupons-form-content"
+              className="admin-coupons__form-content"
+              hidden={!isCreateFormOpen}
+            >
+              <form
+                className="admin-coupons__form"
+                onSubmit={handleCreateCoupon}
+              >
+                <div className="admin-coupons__field">
+                  <label htmlFor="coupon-email">E-mail do usuário</label>
+                  <input
+                    id="coupon-email"
+                    name="emailUsuario"
+                    type="email"
+                    autoComplete="off"
+                    maxLength={254}
+                    value={form.emailUsuario}
+                    onChange={handleInputChange}
+                    placeholder="cliente@email.com"
+                    disabled={
+                      submitting || processingId !== null || editingId !== null
+                    }
+                    aria-invalid={Boolean(fieldErrors.emailUsuario)}
+                    aria-describedby={
+                      fieldErrors.emailUsuario ? "coupon-email-help" : undefined
+                    }
+                  />
 
-              <div className="admin-coupons__field">
-                <label htmlFor="coupon-code">Código do cupom</label>
-                <input
-                  id="coupon-code"
-                  name="cupom"
-                  type="text"
-                  minLength={3}
-                  maxLength={20}
-                  pattern="[A-Za-z0-9_%\-]{3,20}"
-                  value={form.cupom}
-                  onChange={handleInputChange}
-                  placeholder="DESC6%"
-                  title="Digite letras, números, hífen, underline ou percentual."
-                  disabled={
-                    submitting || processingId !== null || editingId !== null
-                  }
-                  aria-invalid={Boolean(fieldErrors.cupom)}
-                  aria-describedby={
-                    fieldErrors.cupom ? "coupon-code-help" : undefined
-                  }
-                />
-                {fieldErrors.cupom && (
-                  <span
-                    id="coupon-code-help"
-                    className="admin-coupons__field-help"
-                    role="alert"
-                  >
-                    {fieldErrors.cupom}
-                  </span>
-                )}
-              </div>
+                  {fieldErrors.emailUsuario && (
+                    <span
+                      id="coupon-email-help"
+                      className="admin-coupons__field-help"
+                      role="alert"
+                    >
+                      {fieldErrors.emailUsuario}
+                    </span>
+                  )}
+                </div>
 
-              <div className="admin-coupons__field">
-                <label htmlFor="coupon-percentage">Desconto (%)</label>
-                <input
-                  id="coupon-percentage"
-                  name="percentual"
-                  type="number"
-                  min={1}
-                  max={100}
-                  step={1}
-                  inputMode="numeric"
-                  value={form.percentual}
-                  onChange={handleInputChange}
-                  disabled={
-                    submitting || processingId !== null || editingId !== null
-                  }
-                  aria-invalid={Boolean(fieldErrors.percentual)}
-                  aria-describedby={
-                    fieldErrors.percentual
-                      ? "coupon-percentage-help"
-                      : undefined
-                  }
-                />
-                {fieldErrors.percentual && (
-                  <span
-                    id="coupon-percentage-help"
-                    className="admin-coupons__field-help"
-                    role="alert"
-                  >
-                    {fieldErrors.percentual}
-                  </span>
-                )}
-              </div>
+                <div className="admin-coupons__field">
+                  <label htmlFor="coupon-code">Código do cupom</label>
+                  <input
+                    id="coupon-code"
+                    name="cupom"
+                    type="text"
+                    minLength={3}
+                    maxLength={20}
+                    pattern="[A-Za-z0-9\_%\\-]{3,20}"
+                    value={form.cupom}
+                    onChange={handleInputChange}
+                    placeholder="DESC6%"
+                    title="Digite letras, números, hífen, underline ou percentual."
+                    disabled={
+                      submitting || processingId !== null || editingId !== null
+                    }
+                    aria-invalid={Boolean(fieldErrors.cupom)}
+                    aria-describedby={
+                      fieldErrors.cupom ? "coupon-code-help" : undefined
+                    }
+                  />
 
-              <div className="admin-coupons__form-actions">
-                <Button
-                  type="submit"
-                  backgroundColor="var(--color-primary)"
-                  hoverBackgroundColor="var(--color-secondary)"
-                  disabled={
-                    submitting || processingId !== null || editingId !== null
-                  }
-                >
-                  {submitting ? "Cadastrando..." : "Criar cupom"}
-                </Button>
-              </div>
-            </form>
+                  {fieldErrors.cupom && (
+                    <span
+                      id="coupon-code-help"
+                      className="admin-coupons__field-help"
+                      role="alert"
+                    >
+                      {fieldErrors.cupom}
+                    </span>
+                  )}
+                </div>
+
+                <div className="admin-coupons__field">
+                  <label htmlFor="coupon-percentage">Desconto (%)</label>
+                  <input
+                    id="coupon-percentage"
+                    name="percentual"
+                    type="number"
+                    min={1}
+                    max={100}
+                    step={1}
+                    inputMode="numeric"
+                    value={form.percentual}
+                    onChange={handleInputChange}
+                    disabled={
+                      submitting || processingId !== null || editingId !== null
+                    }
+                    aria-invalid={Boolean(fieldErrors.percentual)}
+                    aria-describedby={
+                      fieldErrors.percentual
+                        ? "coupon-percentage-help"
+                        : undefined
+                    }
+                  />
+
+                  {fieldErrors.percentual && (
+                    <span
+                      id="coupon-percentage-help"
+                      className="admin-coupons__field-help"
+                      role="alert"
+                    >
+                      {fieldErrors.percentual}
+                    </span>
+                  )}
+                </div>
+
+                <div className="admin-coupons__form-actions">
+                  <Button
+                    type="submit"
+                    backgroundColor="var(--color-primary)"
+                    hoverBackgroundColor="var(--color-secondary)"
+                    disabled={
+                      submitting || processingId !== null || editingId !== null
+                    }
+                  >
+                    {submitting ? "Cadastrando..." : "Criar cupom"}
+                  </Button>
+                </div>
+              </form>
+            </div>
           </section>
 
           <section
@@ -891,6 +923,7 @@ const AdminCouponsPage = () => {
                             <span className="admin-coupons__user-name">
                               {coupon.nomeUsuario}
                             </span>
+
                             <span className="admin-coupons__user-email">
                               {coupon.emailUsuario}
                             </span>
@@ -904,13 +937,14 @@ const AdminCouponsPage = () => {
                                 >
                                   Código
                                 </label>
+
                                 <input
                                   id={`coupon-edit-code-${coupon.id}`}
                                   name="cupom"
                                   type="text"
                                   minLength={3}
                                   maxLength={20}
-                                  pattern="[A-Za-z0-9_%\-]{3,20}"
+                                  pattern="[A-Za-z0-9\_%\\-]{3,20}"
                                   value={editForm.cupom}
                                   onChange={handleEditInputChange}
                                   disabled={isProcessing}
@@ -925,6 +959,7 @@ const AdminCouponsPage = () => {
                                       : undefined
                                   }
                                 />
+
                                 {fieldErrors["edit-cupom"] && (
                                   <span
                                     id={`coupon-edit-code-help-${coupon.id}`}
@@ -950,6 +985,7 @@ const AdminCouponsPage = () => {
                                 >
                                   Desconto (%)
                                 </label>
+
                                 <input
                                   id={`coupon-edit-percentage-${coupon.id}`}
                                   name="percentual"
@@ -970,6 +1006,7 @@ const AdminCouponsPage = () => {
                                       : undefined
                                   }
                                 />
+
                                 {fieldErrors["edit-percentual"] && (
                                   <span
                                     id={`coupon-edit-percentage-help-${coupon.id}`}
