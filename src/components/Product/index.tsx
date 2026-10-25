@@ -53,6 +53,7 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ item }) => {
           decoding="async"
           className="phone-card__image"
           onLoad={() => setImageLoading(false)}
+          onError={() => setImageLoading(false)}
         />
 
         {imageLoading && (

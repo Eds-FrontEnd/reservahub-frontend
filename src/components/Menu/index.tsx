@@ -26,6 +26,10 @@ const menuItems: MenuItem[] = [
 
 const adminMenuItems = [
   {
+    href: "/admin/produtos",
+    label: "Produtos cadastrados",
+  },
+  {
     href: "/admin/cupons",
     label: "Cupons promocionais",
   },

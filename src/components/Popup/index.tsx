@@ -214,18 +214,6 @@ function Popup() {
 
         const percentualInRange = percentual >= 1 && percentual <= 100;
 
-        console.log("[Popup] Diagnóstico da validação:", {
-          couponOriginal: couponIssue.cupom,
-          normalizedCoupon,
-          couponValid,
-          percentualOriginal: couponIssue.percentual,
-          percentual,
-          percentualInteger,
-          percentualInRange,
-          ativo: couponIssue.ativo,
-          utilizado: couponIssue.utilizado,
-        });
-
         if (
           !normalizedCoupon ||
           !couponValid ||

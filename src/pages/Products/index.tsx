@@ -5,12 +5,12 @@ import AddIcon from "@mui/icons-material/Add";
 import Warning from "@mui/icons-material/Warning";
 import Tooltip from "@mui/material/Tooltip";
 
-import Header from "../../components/Header";
+import { Button } from "../../components/Button";
 import Footer from "../../components/Footer";
+import Header from "../../components/Header";
 import ProductCard, {
   type SmartphoneSubscriptionItem,
 } from "../../components/Product/index";
-import { Button } from "../../components/Button";
 
 import { SmartphoneService } from "../../services/SmartphoneService";
 
@@ -33,10 +33,10 @@ export const ProductsPage: React.FC = () => {
       const data = await SmartphoneService.listarPagina(page, ITEMS_PER_PAGE);
 
       setSmartphones((prevSmartphones) =>
-        page === 0 ? data.produtos : [...prevSmartphones, ...data.produtos],
+        page === 0 ? data.content : [...prevSmartphones, ...data.content],
       );
 
-      setCurrentPage(data.currentPage);
+      setCurrentPage(data.number);
       setTotalPages(data.totalPages);
     } catch (error) {
       console.error("Erro ao carregar smartphones:", error);

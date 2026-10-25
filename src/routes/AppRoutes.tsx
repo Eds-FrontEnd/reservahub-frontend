@@ -8,6 +8,7 @@ import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
 import { useAuth } from "../contexts/AutContext";
 import AdminGraphic from "../pages/AdminGraphic";
+import AdminProducts from "../pages/AdminProducts";
 
 const HomePage = lazy(() => import("../pages/Home"));
 const LoginPage = lazy(() => import("../pages/Login"));
@@ -80,6 +81,7 @@ const AppRoutes = () => {
           />
           <Route path="/admin/grafico" element={<AdminGraphic />} />
           <Route path="/admin/cupons" element={<AdminCouponsPage />} />
+          <Route path="/admin/produtos" element={<AdminProducts />} />
         </Route>
 
         <Route element={<PublicRoute />}>

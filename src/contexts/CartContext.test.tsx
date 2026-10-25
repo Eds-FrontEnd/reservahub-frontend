@@ -974,7 +974,7 @@ describe("CartProvider", () => {
 
     jest
       .mocked(SmartphoneService.escutarAtualizacoesEstoque)
-      .mockImplementation((callback) => {
+      .mockImplementation((callback: (idsProdutos: string[]) => void) => {
         onUpdate = callback;
 
         return cancelarAtualizacoes;

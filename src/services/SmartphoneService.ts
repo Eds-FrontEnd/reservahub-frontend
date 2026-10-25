@@ -50,72 +50,95 @@ const request = async <T>(
   return response.json() as Promise<T>;
 };
 
+const resolveImageUrl = (imagePath: string): string => {
+  const normalizedPath = imagePath.trim().replace(/\\/g, "/");
+
+  if (!normalizedPath) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(normalizedPath)) {
+    return normalizedPath;
+  }
+
+  const fileName = normalizedPath.split("/").pop() ?? "";
+
+  if (!fileName || fileName === "." || fileName === "..") {
+    return "";
+  }
+
+  return `${API_URL}/uploads/products/${encodeURIComponent(fileName)}`;
+};
+
 const mapSmartphone = (
   smartphone: SmartphoneApiItem,
-): SmartphoneSubscriptionItem => ({
-  id: smartphone.id,
-  product: smartphone.nome,
-  stock: smartphone.stock,
-  description: smartphone.description,
-  model: smartphone.modelo_produto,
-  image: smartphone.image_url,
-  monthlyPrice: smartphone.preco_mensal,
-  planType: smartphone.plano,
-  benefits: [],
-});
+): SmartphoneSubscriptionItem => {
+  const imageUrl = resolveImageUrl(smartphone.image_url);
 
-export const SmartphoneService = {
+  return {
+    id: smartphone.id,
+    product: smartphone.nome,
+    stock: smartphone.stock,
+    description: smartphone.description,
+    model: smartphone.modelo_produto,
+    image: imageUrl,
+    monthlyPrice: smartphone.preco_mensal,
+    planType: smartphone.plano,
+    benefits: [],
+  };
+};
+
+const SmartphoneService = {
   async listarPagina(
-    page: number,
-    size: number,
+    page = 0,
+    size = 4,
   ): Promise<{
-    produtos: SmartphoneSubscriptionItem[];
-    totalPages: number;
+    content: SmartphoneSubscriptionItem[];
+    number: number;
     totalElements: number;
-    currentPage: number;
+    totalPages: number;
+    size: number;
   }> {
-    const data = await request<SmartphonePageResponse>(
+    const response = await request<SmartphonePageResponse>(
       `/api/smartphones?page=${page}&size=${size}`,
     );
 
     return {
-      produtos: data.content.map(mapSmartphone),
-      totalPages: data.totalPages,
-      totalElements: data.totalElements,
-      currentPage: data.number,
+      ...response,
+      content: response.content.map(mapSmartphone),
     };
   },
 
   async buscarPorId(id: string): Promise<SmartphoneSubscriptionItem> {
-    const data = await request<SmartphoneApiItem>(
+    const smartphone = await request<SmartphoneApiItem>(
       `/api/smartphones/${encodeURIComponent(id)}`,
     );
 
-    return mapSmartphone(data);
+    return mapSmartphone(smartphone);
   },
 
   async buscarPorNome(nome: string): Promise<SmartphoneSubscriptionItem[]> {
-    const data = await request<SmartphoneApiItem[]>(
+    const smartphones = await request<SmartphoneApiItem[]>(
       `/api/smartphones/buscar?nome=${encodeURIComponent(nome)}`,
     );
 
-    return data.map(mapSmartphone);
+    return smartphones.map(mapSmartphone);
   },
 
   async listarDisponiveis(): Promise<SmartphoneSubscriptionItem[]> {
-    const data = await request<SmartphoneApiItem[]>(
+    const smartphones = await request<SmartphoneApiItem[]>(
       "/api/smartphones/estoque/disponiveis",
     );
 
-    return data.map(mapSmartphone);
+    return smartphones.map(mapSmartphone);
   },
 
   async listarEsgotados(): Promise<SmartphoneSubscriptionItem[]> {
-    const data = await request<SmartphoneApiItem[]>(
+    const smartphones = await request<SmartphoneApiItem[]>(
       "/api/smartphones/estoque/esgotados",
     );
 
-    return data.map(mapSmartphone);
+    return smartphones.map(mapSmartphone);
   },
 
   escutarAtualizacoesEstoque(
@@ -129,9 +152,15 @@ export const SmartphoneService = {
       `${API_URL}/api/smartphones/estoque/eventos`,
     );
 
+    let active = true;
+
     source.addEventListener(
       "estoque-atualizado",
       (event: MessageEvent<string>) => {
+        if (!active) {
+          return;
+        }
+
         try {
           const idsProdutos: unknown = JSON.parse(event.data);
 
@@ -148,9 +177,15 @@ export const SmartphoneService = {
     );
 
     return () => {
+      if (!active) {
+        return;
+      }
+
+      active = false;
       source.close();
     };
   },
 };
 
+export { SmartphoneService };
 export default SmartphoneService;
