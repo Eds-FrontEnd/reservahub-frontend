@@ -10,6 +10,7 @@ import { Logo } from "../../components/Logo";
 import Modal from "../../components/Modal";
 import { PasswordInput } from "../../components/PasswordInput";
 import { useAuth } from "../../contexts/AutContext";
+import { useLoading } from "../../contexts/LoadingContext";
 import { loginSchema } from "../../schemas/loginSchema";
 import { loginUser } from "../../services/AuthService";
 
@@ -76,6 +77,7 @@ const hasAdminRole = (user: unknown): boolean => {
 const AdminLoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { startLoading } = useLoading();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -149,6 +151,8 @@ const AdminLoginPage = () => {
     setLoginError(false);
     setAccessDenied(false);
 
+    const finishLoading = startLoading();
+
     try {
       const authenticatedUser = await loginUser(
         formData.email.trim(),
@@ -173,6 +177,8 @@ const AdminLoginPage = () => {
     } catch (error) {
       console.error("Erro ao realizar acesso administrativo:", error);
       setErrorModalOpen(true);
+    } finally {
+      finishLoading();
     }
   };
 

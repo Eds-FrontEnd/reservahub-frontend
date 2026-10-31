@@ -12,6 +12,7 @@ import Modal from "../../components/Modal";
 import { type SmartphoneSubscriptionItem } from "../../components/Product";
 import { useAuth } from "../../contexts/AutContext";
 import { useCart } from "../../contexts/CartContext";
+import { useLoading } from "../../contexts/LoadingContext";
 
 import NotFound from "../NotFound";
 import "./ProductDetailStyle.css";
@@ -23,6 +24,7 @@ export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated } = useAuth();
   const { addItem, items } = useCart();
+  const { startLoading } = useLoading();
 
   const [item, setItem] = useState<SmartphoneSubscriptionItem | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -40,14 +42,19 @@ export const ProductDetailPage: React.FC = () => {
   useEffect(() => {
     let active = true;
 
+    if (!id) {
+      setItem(null);
+      setIsLoading(false);
+
+      return () => {
+        active = false;
+      };
+    }
+
+    const finishLoading = startLoading();
+
     const carregarSmartphone = async () => {
       setIsLoading(true);
-
-      if (!id) {
-        setItem(null);
-        setIsLoading(false);
-        return;
-      }
 
       try {
         const data = await SmartphoneService.buscarPorId(id);
@@ -70,6 +77,8 @@ export const ProductDetailPage: React.FC = () => {
         );
         setModalOpen(true);
       } finally {
+        finishLoading();
+
         if (active) setIsLoading(false);
       }
     };
@@ -78,8 +87,9 @@ export const ProductDetailPage: React.FC = () => {
 
     return () => {
       active = false;
+      finishLoading();
     };
-  }, [id]);
+  }, [id, startLoading]);
 
   useEffect(() => {
     if (!id) return;

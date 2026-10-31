@@ -13,6 +13,7 @@ import { PasswordInput } from "../../components/PasswordInput";
 import { registerSchema } from "../../schemas/registerSchema";
 import { registerUser } from "../../services/AuthService";
 import { fetchCepData } from "../../services/ViaCepService";
+import { useLoading } from "../../contexts/LoadingContext";
 
 import "./RegisterStyle.css";
 
@@ -117,6 +118,7 @@ const getFormErrors = (formData: RegisterFormData): RegistrationErrors => {
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { startLoading } = useLoading();
 
   const cepRequestId = useRef(0);
   const cepAbortController = useRef<AbortController | null>(null);
@@ -316,6 +318,8 @@ const RegisterPage = () => {
     setErrors({});
     setRegisterError(false);
 
+    const finishLoading = startLoading();
+
     try {
       const registered = await registerUser({
         ...formData,
@@ -327,6 +331,8 @@ const RegisterPage = () => {
     } catch (error) {
       console.error("Erro ao realizar cadastro:", error);
       setErrorModalOpen(true);
+    } finally {
+      finishLoading();
     }
   };
 

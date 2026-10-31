@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import Header from "../../components/Header";
+import { useLoading } from "../../contexts/LoadingContext";
 import {
   adminProductSchema,
   type AdminProductFormData,
@@ -154,6 +155,8 @@ const getDefaultPlanId = (plans: AdminPlan[]): string => {
 };
 
 const AdminProducts = () => {
+  const { startLoading } = useLoading();
+
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [plans, setPlans] = useState<AdminPlan[]>([]);
   const [form, setForm] = useState<ProductFormState>(INITIAL_FORM);
@@ -460,6 +463,7 @@ const AdminProducts = () => {
     }
 
     setSubmitting(true);
+    const finishLoading = startLoading();
 
     try {
       let imageUrl = form.image_url;
@@ -510,6 +514,8 @@ const AdminProducts = () => {
           : "Não foi possível salvar o produto.",
       );
     } finally {
+      finishLoading();
+
       if (mounted.current) {
         setSubmitting(false);
       }
@@ -532,6 +538,8 @@ const AdminProducts = () => {
     setProcessingId(product.id);
     setError("");
     setFeedback("");
+
+    const finishLoading = startLoading();
 
     try {
       await excluirProdutoAdmin(product.id);
@@ -556,6 +564,8 @@ const AdminProducts = () => {
           : "Não foi possível excluir o produto.",
       );
     } finally {
+      finishLoading();
+
       if (mounted.current) {
         setProcessingId(null);
       }

@@ -10,6 +10,7 @@ import { Logo } from "../../components/Logo";
 import Modal from "../../components/Modal";
 import { PasswordInput } from "../../components/PasswordInput";
 import { useAuth } from "../../contexts/AutContext";
+import { useLoading } from "../../contexts/LoadingContext";
 import { loginSchema } from "../../schemas/loginSchema";
 import { loginUser, requestPasswordReset } from "../../services/AuthService";
 
@@ -18,6 +19,7 @@ import "./LoginStyle.css";
 const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { startLoading } = useLoading();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -96,6 +98,8 @@ const LoginPage = () => {
     setResetSubmitting(true);
     setResetRequestError("");
 
+    const finishLoading = startLoading();
+
     try {
       const solicitacao = await requestPasswordReset(formData.email);
 
@@ -114,6 +118,7 @@ const LoginPage = () => {
       );
     } finally {
       setResetSubmitting(false);
+      finishLoading();
     }
   };
 
@@ -145,6 +150,8 @@ const LoginPage = () => {
     setLoginError(false);
     setAccessDenied(false);
 
+    const finishLoading = startLoading();
+
     try {
       const authenticatedUser = await loginUser(
         formData.email,
@@ -170,6 +177,8 @@ const LoginPage = () => {
       console.error("Erro ao realizar login:", error);
 
       setErrorModalOpen(true);
+    } finally {
+      finishLoading();
     }
   };
 

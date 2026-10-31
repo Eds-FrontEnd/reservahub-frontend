@@ -14,6 +14,7 @@ import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 import Modal from "../../components/Modal";
 import { Button } from "../../components/Button";
+import { useLoading } from "../../contexts/LoadingContext";
 import { saveContact } from "../../services/ContactService";
 import { contactSchema } from "../../schemas/ContactSchema";
 import "./ContactStyles.css";
@@ -58,8 +59,11 @@ const contactChannels: ContactChannel[] = [
 const ContactPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const { startLoading } = useLoading();
 
   const validateField = (field: keyof ContactFormData, value: string) => {
     const result = contactSchema.shape[field].safeParse(value);
@@ -89,6 +93,10 @@ const ContactPage = () => {
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (isSubmitting) {
+      return;
+    }
 
     const form = event.currentTarget;
 
@@ -120,6 +128,9 @@ const ContactPage = () => {
     }
 
     setErrors({});
+    setIsSubmitting(true);
+
+    const finishLoading = startLoading();
 
     try {
       const response = await saveContact(result.data);
@@ -134,6 +145,9 @@ const ContactPage = () => {
       setModalOpen(true);
     } catch {
       setErrorModalOpen(true);
+    } finally {
+      finishLoading();
+      setIsSubmitting(false);
     }
   };
 
@@ -334,6 +348,7 @@ const ContactPage = () => {
               type="submit"
               backgroundColor="var(--color-secondary)"
               hoverBackgroundColor="var(--color-primary)"
+              disabled={isSubmitting}
             >
               Enviar mensagem
             </Button>

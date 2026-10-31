@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../../components/Button";
 import Header from "../../components/Header";
 import Modal from "../../components/Modal";
+import { useLoading } from "../../contexts/LoadingContext";
 import {
   subscribePasswordResetStatus,
   type PasswordResetStatusResponse,
@@ -124,6 +125,8 @@ const AdminResetPasswordPage = () => {
     title: "",
     message: "",
   });
+
+  const { startLoading } = useLoading();
 
   const hasConnectedBefore = useRef(false);
   const activeRequestController = useRef<AbortController | null>(null);
@@ -416,6 +419,8 @@ const AdminResetPasswordPage = () => {
     setError("");
     setFeedback("");
 
+    const finishLoading = startLoading();
+
     try {
       const response = await fetch(
         `${REQUESTS_ENDPOINT}/${request.id}/${action}`,
@@ -449,6 +454,7 @@ const AdminResetPasswordPage = () => {
       setError(errorMessage);
       showFeedbackModal("Não foi possível concluir", errorMessage, action);
     } finally {
+      finishLoading();
       setProcessingId(null);
     }
   };

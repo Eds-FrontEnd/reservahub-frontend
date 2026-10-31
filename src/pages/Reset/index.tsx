@@ -8,6 +8,7 @@ import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
 import Modal from "../../components/Modal";
 import { PasswordInput } from "../../components/PasswordInput";
+import { useLoading } from "../../contexts/LoadingContext";
 import {
   getPasswordResetStatus,
   resetPassword,
@@ -19,6 +20,7 @@ import "./ResetStyle.css";
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { startLoading } = useLoading();
 
   const solicitacaoIdParam = searchParams.get("solicitacaoId");
   const solicitacaoId =
@@ -172,6 +174,8 @@ const ResetPasswordPage = () => {
     setSubmitError("");
     setSubmitting(true);
 
+    const finishLoading = startLoading();
+
     try {
       await resetPassword({
         solicitacaoId,
@@ -187,6 +191,7 @@ const ResetPasswordPage = () => {
       );
     } finally {
       setSubmitting(false);
+      finishLoading();
     }
   };
 
