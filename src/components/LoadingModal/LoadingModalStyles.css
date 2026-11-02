@@ -1,7 +1,7 @@
 .loading-modal .MuiDialog-paper {
   position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: 320px;
   margin: 1rem;
   border: 1px solid rgb(0 51 153 / 8%);
   border-radius: 28px;
@@ -12,21 +12,6 @@
     0 12px 32px rgb(0 51 153 / 10%),
     0 2px 8px rgb(0 0 0 / 4%);
   animation: loading-modal-appear 0.35s ease-out both;
-}
-
-.loading-modal .MuiDialog-paper::before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 5px;
-  background: linear-gradient(
-    90deg,
-    var(--color-primary) 0%,
-    var(--color-secondary) 55%,
-    rgb(0 128 0 / 75%) 100%
-  );
-  content: "";
 }
 
 .loading-modal .MuiDialog-container {
@@ -48,27 +33,9 @@
 }
 
 .loading-modal__icon {
-  position: relative;
   display: flex;
   justify-content: center;
-  align-items: center;
-  width: 84px;
-  height: 84px;
-  border: 1px solid rgb(0 51 153 / 12%);
-  border-radius: 26px;
-  background: linear-gradient(
-    145deg,
-    rgb(0 51 153 / 12%) 0%,
-    rgb(0 51 153 / 5%) 55%,
-    rgb(0 128 0 / 5%) 100%
-  );
-  box-shadow:
-    0 10px 24px rgb(0 51 153 / 9%),
-    inset 0 1px 0 rgb(255 255 255 / 90%);
-  transform: rotate(-3deg);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+  margin: 1rem;
 }
 
 .loading-modal__progress {
