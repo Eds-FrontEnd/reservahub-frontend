@@ -23,7 +23,6 @@ const HomePage = () => {
               size="large"
               align="left"
               color="var(--color-primary)"
-              title="Seu próximo smartphone está a poucos toques de distância."
               padding="1.5rem 0 1.5rem 0"
               id="home_title"
             >
