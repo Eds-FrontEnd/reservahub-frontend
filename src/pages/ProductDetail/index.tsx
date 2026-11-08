@@ -360,10 +360,6 @@ export const ProductDetailPage: React.FC = () => {
         onClose={handleCloseAuthModal}
       />
 
-      <div className="product-detail__footer">
-        <Footer />
-      </div>
-
       <Modal
         open={modalOpen}
         title="Não foi possível carregar o smartphone"

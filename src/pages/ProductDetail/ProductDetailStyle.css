@@ -26,7 +26,6 @@
 
 .product-detail__image {
   width: 100%;
-  min-width: 450px;
   height: auto;
   object-fit: contain;
   border-radius: 8px;
@@ -218,12 +217,6 @@
   padding: 1rem;
   font-size: 1.1rem;
   font-weight: 700;
-}
-
-.product-detail__footer {
-  width: 100%;
-  position: absolute;
-  bottom: 0;
 }
 
 .product-detail__shimmer {
