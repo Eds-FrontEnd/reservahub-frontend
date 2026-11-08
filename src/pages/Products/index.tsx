@@ -12,11 +12,14 @@ import ProductCard, {
   type SmartphoneSubscriptionItem,
 } from "../../components/Product/index";
 
+import { useLoading } from "../../contexts/LoadingContext";
 import { SmartphoneService } from "../../services/SmartphoneService";
 
 const ITEMS_PER_PAGE = 4;
 
 export const ProductsPage: React.FC = () => {
+  const { startLoading } = useLoading();
+
   const [smartphones, setSmartphones] = useState<SmartphoneSubscriptionItem[]>(
     [],
   );
@@ -26,6 +29,8 @@ export const ProductsPage: React.FC = () => {
   const [hasError, setHasError] = useState<boolean>(false);
 
   const carregarSmartphones = async (page: number) => {
+    const finishLoading = startLoading();
+
     try {
       setIsLoading(true);
       setHasError(false);
@@ -49,6 +54,7 @@ export const ProductsPage: React.FC = () => {
       }
     } finally {
       setIsLoading(false);
+      finishLoading();
     }
   };
 
@@ -64,6 +70,14 @@ export const ProductsPage: React.FC = () => {
     }
 
     carregarSmartphones(currentPage + 1);
+  };
+
+  const handleReload = () => {
+    if (isLoading) {
+      return;
+    }
+
+    carregarSmartphones(0);
   };
 
   const showError = !isLoading && hasError && smartphones.length === 0;
@@ -92,6 +106,16 @@ export const ProductsPage: React.FC = () => {
                 sua conta e entre novamente. Persistindo o problema, entre em
                 contato com a nossa equipe.
               </p>
+
+              <Button
+                type="button"
+                onClick={handleReload}
+                disabled={isLoading}
+                backgroundColor="var(--color-primary)"
+                hoverBackgroundColor="var(--color-secondary)"
+              >
+                Tentar novamente
+              </Button>
             </div>
           </div>
         ) : (
