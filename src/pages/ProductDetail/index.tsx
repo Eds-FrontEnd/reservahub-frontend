@@ -6,7 +6,6 @@ import { useParams } from "react-router-dom";
 import { SmartphoneService } from "../../services/SmartphoneService";
 
 import { Button } from "../../components/Button";
-import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 import Modal from "../../components/Modal";
 import { type SmartphoneSubscriptionItem } from "../../components/Product";
